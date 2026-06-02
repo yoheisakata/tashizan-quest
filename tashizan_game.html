@@ -41,6 +41,14 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .save-toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(46,213,115,0.9);color:#000;font-family:'Nunito',sans-serif;font-size:0.85rem;font-weight:900;padding:8px 20px;border-radius:100px;z-index:999;opacity:0;pointer-events:none;transition:opacity 0.3s;}
 .save-toast.show{opacity:1;}
 
+/* ── ACHIEVEMENT TOAST ── */
+.ach-toast{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-80px);background:linear-gradient(135deg,#a855f7,#7c3aed);color:#fff;font-family:'Nunito',sans-serif;border-radius:14px;padding:10px 16px;z-index:1000;pointer-events:none;transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);display:flex;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(168,85,247,0.4);white-space:nowrap;}
+.ach-toast.show{transform:translateX(-50%) translateY(0);}
+.ach-toast-emoji{font-size:1.5rem;}
+.ach-toast-text{display:flex;flex-direction:column;}
+.ach-toast-label{font-size:0.6rem;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:1px;}
+.ach-toast-name{font-size:0.85rem;font-weight:900;}
+
 /* ── CHAR SELECT ── */
 .char-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;width:100%;max-width:360px;margin:12px 0;}
 .char-card{background:var(--card);border:2px solid rgba(255,255,255,0.1);border-radius:16px;padding:12px 8px;text-align:center;cursor:pointer;transition:all 0.15s;}
@@ -62,7 +70,9 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .battle-start-btn:active{transform:scale(0.95);}
 
 /* ── HERO PANEL ── */
-.char-panel{background:var(--card);border-radius:18px;padding:12px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.07);display:flex;gap:10px;align-items:center;}
+.char-panel{background:var(--card);border-radius:18px;padding:12px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.07);display:flex;gap:10px;align-items:center;transition:box-shadow 0.3s;}
+.char-panel.hp-danger{box-shadow:0 0 0 2px var(--red), 0 0 16px rgba(255,71,87,0.3);animation:dangerPulse 1.2s ease-in-out infinite;}
+@keyframes dangerPulse{0%,100%{box-shadow:0 0 0 2px var(--red), 0 0 16px rgba(255,71,87,0.3);}50%{box-shadow:0 0 0 2px var(--red), 0 0 28px rgba(255,71,87,0.5);}}
 .char-avatar{font-size:2.8rem;text-align:center;min-width:56px;}
 .char-info{flex:1;}
 .char-info-name{font-size:0.95rem;font-weight:900;color:var(--gold);margin-bottom:3px;}
@@ -79,7 +89,6 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .stat-row{display:flex;gap:5px;margin-top:3px;}
 .stat-pill{background:rgba(255,255,255,0.06);border-radius:7px;padding:2px 7px;font-size:0.6rem;color:var(--muted);}
 .stat-pill b{color:var(--text);}
-
 
 .level-badge{text-align:center;margin-bottom:7px;}
 .level-badge span{background:rgba(168,85,247,0.2);color:#c084fc;font-size:0.68rem;font-weight:700;padding:3px 12px;border-radius:100px;border:1px solid rgba(168,85,247,0.3);}
@@ -137,7 +146,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   pointer-events:none;}
 
 /* ground */
-.battle-ground{position:absolute;bottom:0;left:0;right:0;height:80px;background:linear-gradient(180deg,transparent,rgba(100,60,20,0.3));border-top:2px solid rgba(100,60,20,0.4);}
+.battle-ground{position:absolute;bottom:180px;left:0;right:0;height:60px;background:linear-gradient(180deg,transparent,rgba(100,60,20,0.3));border-top:2px solid rgba(100,60,20,0.4);}
 
 /* top bar */
 .battle-topbar{display:flex;justify-content:space-between;align-items:flex-start;padding:14px 16px 0;position:relative;z-index:2;}
@@ -154,7 +163,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .b-level{font-size:0.6rem;color:var(--muted);margin-top:2px;}
 
 /* arena */
-.battle-arena{flex:1;position:relative;display:flex;align-items:flex-end;justify-content:space-between;padding:0 40px 80px;}
+.battle-arena{flex:1;position:relative;display:flex;align-items:flex-end;justify-content:space-between;padding:0 40px 60px;min-height:0;}
 
 /* sprites */
 .b-sprite{font-size:4.5rem;position:relative;text-align:center;user-select:none;transition:transform 0.3s;}
@@ -177,9 +186,23 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 @keyframes dmgFloat{0%{transform:translateY(0);opacity:1;}100%{transform:translateY(-60px);opacity:0;}}
 
 /* battle log */
-.battle-log{position:relative;z-index:2;background:rgba(0,0,0,0.6);border-top:1px solid rgba(255,255,255,0.08);padding:10px 16px;min-height:56px;font-size:0.85rem;font-weight:700;color:var(--text);text-align:center;}
+.battle-log{position:relative;z-index:2;background:rgba(0,0,0,0.6);border-top:1px solid rgba(255,255,255,0.08);padding:8px 16px 4px;min-height:42px;font-size:0.85rem;font-weight:700;color:var(--text);text-align:center;}
 .battle-log .log-line{opacity:0;animation:logFade 0.4s ease forwards;}
 @keyframes logFade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── BATTLE QUIZ ── */
+.battle-quiz{position:relative;z-index:2;background:rgba(0,0,0,0.7);border-top:1px solid rgba(255,255,255,0.06);padding:8px 12px 10px;}
+.b-quiz-label{text-align:center;font-size:0.65rem;color:var(--muted);margin-bottom:4px;letter-spacing:1px;}
+.b-question{text-align:center;font-size:1.4rem;font-weight:900;color:var(--gold);margin-bottom:6px;}
+.b-question .num{color:var(--text);}
+.b-answers{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:6px;}
+.b-ans-btn{background:var(--card2);border:2px solid rgba(255,255,255,0.12);border-radius:10px;color:var(--text);font-family:'Nunito',sans-serif;font-size:1.1rem;font-weight:900;padding:10px 6px;cursor:pointer;transition:all 0.1s;}
+.b-ans-btn:active{transform:scale(0.92);}
+.b-ans-btn:disabled{cursor:default;}
+.b-ans-btn.b-correct{background:rgba(46,213,115,0.25);border-color:var(--green);color:var(--green);}
+.b-ans-btn.b-wrong{background:rgba(255,71,87,0.15);border-color:rgba(255,71,87,0.4);color:rgba(255,71,87,0.6);}
+.b-timer-track{background:rgba(255,255,255,0.08);border-radius:100px;height:4px;overflow:hidden;}
+.b-timer-fill{height:100%;border-radius:100px;width:100%;}
 
 /* battle result */
 .battle-result{display:none;position:absolute;inset:0;background:rgba(0,0,0,0.85);z-index:10;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;}
@@ -210,6 +233,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .shop-price.owned-label{color:var(--green);font-size:0.75rem;}
 .back-btn{background:rgba(255,255,255,0.08);border:none;border-radius:100px;color:var(--text);font-family:'Nunito',sans-serif;font-size:0.85rem;font-weight:700;padding:9px 22px;cursor:pointer;margin-top:14px;}
 .shop-scroll{overflow-y:auto;width:100%;max-width:360px;display:flex;flex-direction:column;align-items:center;padding-bottom:20px;}
+.shop-feedback{text-align:center;font-size:0.85rem;font-weight:900;height:22px;margin-bottom:4px;color:var(--red);}
 </style>
 </head>
 <body>
@@ -224,6 +248,14 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 </div>
 <!-- save toast -->
 <div class="save-toast" id="saveToast">💾 セーブした！</div>
+<!-- achievement toast -->
+<div class="ach-toast" id="achToast">
+  <div class="ach-toast-emoji" id="achEmoji">🏆</div>
+  <div class="ach-toast-text">
+    <div class="ach-toast-label">じつりょく かいほう！</div>
+    <div class="ach-toast-name" id="achName"></div>
+  </div>
+</div>
 
 <!-- ══ CHAR SELECT ══ -->
 <div class="screen" id="screenCharSelect">
@@ -272,6 +304,14 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   <div class="battle-ground"></div>
   <div class="battle-log" id="battleLog"><span class="log-line">たたかいがはじまった！</span></div>
 
+  <!-- Battle Quiz -->
+  <div class="battle-quiz" id="battleQuiz" style="display:none;">
+    <div class="b-quiz-label">⚔️ こたえてこうげき！</div>
+    <div class="b-question" id="bQuestion">3 ＋ 4 ＝ ？</div>
+    <div class="b-answers" id="bAnswers"></div>
+    <div class="b-timer-track"><div class="b-timer-fill" id="bTimerFill"></div></div>
+  </div>
+
   <!-- Battle result -->
   <div class="battle-result" id="battleResult">
     <div class="result-emoji" id="resultEmoji">🎉</div>
@@ -285,6 +325,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 <div class="screen" id="screenShop">
   <div class="shop-header">⚔️ ショップ</div>
   <div class="shop-coins" id="shopCoinRow"></div>
+  <div class="shop-feedback" id="shopFeedback"></div>
   <div class="shop-scroll">
     <div class="shop-section">⚔️ ぶき</div>
     <div class="shop-items" id="shopWeapons"></div>
@@ -308,7 +349,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     </div>
   </div>
 
-  <div class="char-panel">
+  <div class="char-panel" id="charPanel">
     <div class="char-avatar" id="charAvatar">⚔️</div>
     <div class="char-info">
       <div class="char-info-name" id="charInfoName">ゆうしゃ Lv.1</div>
@@ -379,6 +420,101 @@ const LEVEL_CONFIG=[
 ];
 const EMOJIS=['🎂','🍎','⭐','🐶','🚗'];
 
+// ══ ACHIEVEMENTS ══
+const ACHIEVEMENTS=[
+  {id:'first_correct',   emoji:'⭐', name:'はじめてのせいかい！'},
+  {id:'streak_3',        emoji:'🔥', name:'3れんぞく！'},
+  {id:'streak_5',        emoji:'🔥🔥',name:'5れんぞく！'},
+  {id:'streak_10',       emoji:'💫', name:'10れんぞく！すごい！'},
+  {id:'level_3',         emoji:'🌟', name:'レベル3たっせい！'},
+  {id:'level_5',         emoji:'👑', name:'さいこうレベル！'},
+  {id:'first_battle_win',emoji:'⚔️', name:'はじめてのかちどき！'},
+  {id:'coins_50',        emoji:'💰', name:'50コインたっせい！'},
+  {id:'coins_100',       emoji:'💎', name:'100コインたっせい！'},
+];
+let unlockedAchievements=new Set();
+let _achQueue=[];
+let _achShowing=false;
+
+function checkAchievement(id){
+  if(unlockedAchievements.has(id))return;
+  const a=ACHIEVEMENTS.find(x=>x.id===id);
+  if(!a)return;
+  unlockedAchievements.add(id);
+  _achQueue.push(a);
+  if(!_achShowing) processAchQueue();
+}
+function processAchQueue(){
+  if(!_achQueue.length){_achShowing=false;return;}
+  _achShowing=true;
+  const a=_achQueue.shift();
+  const toast=document.getElementById('achToast');
+  document.getElementById('achEmoji').textContent=a.emoji;
+  document.getElementById('achName').textContent=a.name;
+  toast.classList.add('show');
+  playSound('achievement');
+  setTimeout(()=>{
+    toast.classList.remove('show');
+    setTimeout(processAchQueue, 500);
+  }, 2800);
+}
+
+// ══ SOUND SYSTEM ══
+let _audioCtx=null;
+function getAudioCtx(){
+  if(!_audioCtx) _audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  return _audioCtx;
+}
+function playTone(freq,dur,type='sine',vol=0.25,delay=0){
+  try{
+    const ctx=getAudioCtx();
+    const osc=ctx.createOscillator();
+    const gain=ctx.createGain();
+    osc.connect(gain);gain.connect(ctx.destination);
+    osc.frequency.value=freq;osc.type=type;
+    gain.gain.setValueAtTime(vol,ctx.currentTime+delay);
+    gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+delay+dur);
+    osc.start(ctx.currentTime+delay);
+    osc.stop(ctx.currentTime+delay+dur);
+  }catch(e){}
+}
+function playSound(type){
+  try{
+    switch(type){
+      case 'correct':
+        playTone(880,0.1);playTone(1320,0.15,undefined,undefined,0.08);
+        break;
+      case 'wrong':
+        playTone(180,0.25,'sawtooth',0.18);
+        break;
+      case 'timeout':
+        playTone(220,0.3,'square',0.15);
+        break;
+      case 'levelup':
+        [523,659,784,1047].forEach((f,i)=>playTone(f,0.18,undefined,0.22,i*0.1));
+        break;
+      case 'attack':
+        playTone(440,0.08,'square',0.15);playTone(330,0.12,'square',0.1,0.06);
+        break;
+      case 'hit':
+        playTone(200,0.15,'sawtooth',0.12);
+        break;
+      case 'win':
+        [523,659,784,1047,1047].forEach((f,i)=>playTone(f,0.15,undefined,0.2,i*0.09));
+        break;
+      case 'lose':
+        [330,277,220].forEach((f,i)=>playTone(f,0.25,undefined,0.18,i*0.15));
+        break;
+      case 'achievement':
+        playTone(1047,0.1);playTone(1319,0.1,undefined,undefined,0.1);playTone(1568,0.2,undefined,undefined,0.2);
+        break;
+      case 'coin':
+        playTone(1200,0.06,undefined,0.15);playTone(1600,0.08,undefined,0.12,0.05);
+        break;
+    }
+  }catch(e){}
+}
+
 // ── STATE ──
 let coins=0,streak=0,answered=false,correctAnswer=0;
 let quizLevel=1;
@@ -426,6 +562,7 @@ function startGame(){
   const c=charTemplate;
   hero={name:c.name,emoji:c.emoji,lv:1,exp:0,expNext:10,hp:c.baseHp,hpMax:c.baseHp,atk:c.baseAtk,def:c.baseDef,weapon:'stick',armor:'rags',owned:{weapons:['stick'],armors:['rags']},charId:c.id,expRate:c.expRate};
   coins=0;streak=0;quizLevel=1;
+  unlockedAchievements=new Set();
   updateHeroUI();showGame();generateQuestion();
 }
 
@@ -448,6 +585,9 @@ function updateHeroUI(){
   document.getElementById('statDef').textContent=heroTotalDef();
   document.getElementById('statStreak').textContent='x'+streak;
   document.getElementById('coinDisplay').textContent=coins;
+  // HP danger warning
+  const panel=document.getElementById('charPanel');
+  if(panel) panel.className='char-panel'+(hero.hp/hero.hpMax<0.3?' hp-danger':'');
 }
 
 // ── QUIZ ──
@@ -476,7 +616,6 @@ function generateQuestion(){
   document.getElementById('levelLabel').textContent=cfg.label;
 }
 
-function timeUp(){}
 function answer(idx){
   if(answered)return;answered=true;
   const btns=document.querySelectorAll('.ans-btn');
@@ -488,7 +627,16 @@ function answer(idx){
     const expGain=Math.ceil((1)*hero.expRate);hero.exp+=expGain;
     if(streak%5===0&&hero.hp<hero.hpMax) hero.hp=Math.min(hero.hpMax,hero.hp+3);
     let msg=streak>=5?`🔥 ${streak}れんぞく！ +${earned}G`:`⭕ せいかい！ +${earned}G +${expGain}EXP`;
-    showFeedback(msg,'correct');spawnCoin(earned,btns[idx]);
+    showFeedback(msg,'correct');
+    spawnCoin(earned,btns[idx]);
+    playSound('correct');
+    // achievements
+    checkAchievement('first_correct');
+    if(streak>=3) checkAchievement('streak_3');
+    if(streak>=5) checkAchievement('streak_5');
+    if(streak>=10) checkAchievement('streak_10');
+    if(coins>=50) checkAchievement('coins_50');
+    if(coins>=100) checkAchievement('coins_100');
     checkHeroLevelUp();
     if(hero.lv>quizLevel&&quizLevel<5) quizLevel=Math.min(5,hero.lv);
     updateHeroUI();
@@ -499,6 +647,7 @@ function answer(idx){
     const dmg=Math.max(1,4-Math.floor(heroTotalDef()/3));
     hero.hp=Math.max(0,hero.hp-dmg);
     showFeedback(`❌ ちがうよ！ -${dmg}HP`,'wrong');
+    playSound('wrong');
     highlightCorrect();updateHeroUI();
     setTimeout(generateQuestion,1400);
   }
@@ -508,7 +657,13 @@ function showFeedback(msg,type){const el=document.getElementById('feedback');el.
 function spawnCoin(n,btn){
   const rect=btn?btn.getBoundingClientRect():{left:160,top:300};
   for(let i=0;i<Math.min(n,3);i++){
-    setTimeout(()=>{const el=document.createElement('div');el.className='coin-pop';el.innerHTML=coinSVG(24);el.style.left=(rect.left+rect.width/2-12+(Math.random()-.5)*26)+'px';el.style.top=(rect.top+rect.height/2-12+window.scrollY)+'px';document.body.appendChild(el);setTimeout(()=>el.remove(),950);},i*160);
+    setTimeout(()=>{
+      const el=document.createElement('div');el.className='coin-pop';el.innerHTML=coinSVG(24);
+      el.style.left=(rect.left+rect.width/2-12+(Math.random()-.5)*26)+'px';
+      el.style.top=(rect.top+rect.height/2-12+window.scrollY)+'px';
+      document.body.appendChild(el);setTimeout(()=>el.remove(),950);
+      playSound('coin');
+    },i*160);
   }
 }
 
@@ -523,6 +678,8 @@ function checkHeroLevelUp(){
     const hg=c.id==='knight'?5:c.id==='mage'?3:4;
     hero.atk+=ag;hero.def+=dg;hero.hpMax+=hg;hero.hp=hero.hpMax;
     lvupQueue.push({ag,dg,hg});
+    if(hero.lv>=3) checkAchievement('level_3');
+    if(hero.lv>=5) checkAchievement('level_5');
   }
   if(lvupQueue.length===1) displayNextLvup();
 }
@@ -533,7 +690,7 @@ function displayNextLvup(){
   document.getElementById('lvupDesc').textContent='キャラがつよくなったよ！HPもかいふく！';
   document.getElementById('lvupStats').innerHTML=`<div class="lvup-stat"><b>+${ag}</b>こうげき</div><div class="lvup-stat"><b>+${dg}</b>ぼうぐ</div><div class="lvup-stat"><b>+${hg}</b>HP</div>`;
   document.getElementById('lvupOverlay').classList.add('show');
-  
+  playSound('levelup');
 }
 function closeLvup(){
   document.getElementById('lvupOverlay').classList.remove('show');
@@ -543,18 +700,15 @@ function closeLvup(){
 }
 
 // ═══════════════════════════════
-// ── BATTLE SYSTEM ──
+// ── BATTLE SYSTEM (INTERACTIVE) ──
 // ═══════════════════════════════
-let battleMon=null,battleHeroHp=0,battleMonHp=0,battleTurn=0,battleRunning=false,battleTimeout=null;
+let battleMon=null,battleHeroHp=0,battleMonHp=0,battleRunning=false;
+let battleQuizTimer=null,battleCorrectAnswer=0,battleQuizAnswered=false;
 
 function openBattle(){
-  
-  // pick monster based on hero level
   const idx=Math.min(hero.lv-1,MONSTERS.length-1);
-  // random ±1
   const pick=Math.max(0,Math.min(MONSTERS.length-1,idx+randInt(-1,1)));
   battleMon={...MONSTERS[pick]};
-  // scale monster to hero level
   const scale=1+hero.lv*0.15;
   battleMon.hp=Math.round(battleMon.hp*scale);
   battleMon.atk=Math.round(battleMon.atk*scale);
@@ -564,7 +718,6 @@ function openBattle(){
 
   battleHeroHp=hero.hp;
   battleMonHp=battleMon.hp;
-  battleTurn=0;
   battleRunning=true;
 
   // setup UI
@@ -577,12 +730,12 @@ function openBattle(){
   document.getElementById('monsterSprite').className='b-sprite monster-sprite';
   document.getElementById('heroSprite').className='b-sprite hero-sprite';
   document.getElementById('battleResult').classList.remove('show');
+  document.getElementById('battleQuiz').style.display='none';
 
   document.getElementById('bHeroName').textContent=`${hero.name} Lv.${hero.lv}`;
   document.getElementById('bHeroStats').textContent=`⚔️${heroTotalAtk()} 🛡️${heroTotalDef()}`;
   document.getElementById('bMonName').textContent=battleMon.name;
   document.getElementById('bMonLevel').textContent=`モンスター Lv.${battleMon.lv}`;
-
   updateBattleHpBars();
 
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
@@ -590,7 +743,13 @@ function openBattle(){
   document.getElementById('battleScreen').classList.add('active');
 
   setBattleLog(`${battleMon.name}があらわれた！`);
-  setTimeout(()=>runBattleTurn(),1200);
+  setTimeout(()=>{
+    setBattleLog('⚔️ といてこうげきしよう！');
+    setTimeout(()=>{
+      document.getElementById('battleQuiz').style.display='block';
+      startBattleQuestion();
+    },800);
+  },1200);
 }
 
 function updateBattleHpBars(){
@@ -599,9 +758,9 @@ function updateBattleHpBars(){
   const hBar=document.getElementById('bHeroHpBar');
   hBar.style.width=hPct+'%';
   hBar.className='b-hp-fill'+(hPct<30?' low':hPct<60?' mid':'');
-  document.getElementById('bHeroHpVal').textContent=`${Math.max(0,battleHeroHp)}/${hero.hpMax}`;
+  document.getElementById('bHeroHpVal').textContent=`${Math.max(0,Math.round(battleHeroHp))}/${hero.hpMax}`;
   document.getElementById('bMonHpBar').style.width=mPct+'%';
-  document.getElementById('bMonHpVal').textContent=`${Math.max(0,battleMonHp)}/${battleMon.hp}`;
+  document.getElementById('bMonHpVal').textContent=`${Math.max(0,Math.round(battleMonHp))}/${battleMon.hp}`;
 }
 
 function setBattleLog(msg){
@@ -619,51 +778,99 @@ function spawnBattleDmg(amount,isHero,isHeal){
   setTimeout(()=>el.remove(),1000);
 }
 
-function runBattleTurn(){
-  if(!battleRunning) return;
-  battleTurn++;
+// ── BATTLE QUIZ ──
+function startBattleQuestion(){
+  if(!battleRunning)return;
+  battleQuizAnswered=false;
+  const cfg=getLvCfg();
+  const a=randInt(1,cfg.aMax),b=randInt(1,cfg.bMax);
+  battleCorrectAnswer=a+b;
+  document.getElementById('bQuestion').innerHTML=`<span class="num">${a}</span> ＋ <span class="num">${b}</span> ＝ ？`;
 
-  // Hero attacks
-  const hAtk=heroTotalAtk();
-  const heroDmg=Math.max(1,hAtk-battleMon.def+randInt(-2,3));
-  battleMonHp-=heroDmg;
+  const opts=new Set([battleCorrectAnswer]);let att=0;
+  while(opts.size<4&&att<200){att++;const d=randInt(1,4)*(Math.random()<0.5?1:-1);const w=battleCorrectAnswer+d;if(w>0)opts.add(w);}
+  const arr=[...opts].sort(()=>Math.random()-0.5);
+  const btnsWrap=document.getElementById('bAnswers');
+  btnsWrap.innerHTML='';
+  arr.forEach(v=>{
+    const btn=document.createElement('button');
+    btn.className='b-ans-btn';btn.textContent=v;
+    btn.onclick=()=>handleBattleAnswer(v===battleCorrectAnswer);
+    btnsWrap.appendChild(btn);
+  });
+
+  // Battle timer (slightly shorter than quiz timer)
+  const battleTime=Math.max(5,cfg.time-2);
+  clearTimeout(battleQuizTimer);
+  const fill=document.getElementById('bTimerFill');
+  fill.style.transition='none';fill.style.width='100%';
+  fill.style.background='linear-gradient(90deg,#2ed573,#f5c518)';
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      fill.style.transition=`width ${battleTime}s linear`;
+      fill.style.width='0%';
+      setTimeout(()=>{fill.style.background='linear-gradient(90deg,#ff4757,#ff9800)';},battleTime*500);
+    });
+  });
+  battleQuizTimer=setTimeout(()=>handleBattleAnswer(false,true),battleTime*1000);
+}
+
+function handleBattleAnswer(correct,isTimeout=false){
+  if(battleQuizAnswered||!battleRunning)return;
+  battleQuizAnswered=true;
+  clearTimeout(battleQuizTimer);
+
+  const allBtns=document.querySelectorAll('.b-ans-btn');
+  allBtns.forEach(b=>{b.disabled=true;});
+  if(!isTimeout){
+    allBtns.forEach(b=>{
+      if(parseInt(b.textContent)===battleCorrectAnswer) b.classList.add('b-correct');
+      else b.classList.add('b-wrong');
+    });
+  }
 
   const heroSprite=document.getElementById('heroSprite');
   const monSprite=document.getElementById('monsterSprite');
 
-  // Hero attack animation
-  heroSprite.style.animation='none';
-  void heroSprite.offsetWidth;
-  heroSprite.style.animation='heroAtk 0.5s ease';
-  setTimeout(()=>{
-    monSprite.style.animation='none';
-    void monSprite.offsetWidth;
-    monSprite.style.animation='spriteHurt 0.4s ease';
-    spawnBattleDmg(heroDmg,false,false);
-    updateBattleHpBars();
+  if(correct){
+    // Hero attacks
+    const hAtk=heroTotalAtk();
+    const heroDmg=Math.max(1,hAtk-battleMon.def+randInt(-2,3));
+    setBattleLog(`せいかい！${battleMon.name}に ${heroDmg} のダメージ！`);
+    playSound('attack');
 
-    if(battleMonHp<=0){
-      // Monster dead
-      setTimeout(()=>{
-        monSprite.style.animation='none';
-        void monSprite.offsetWidth;
-        monSprite.style.animation='spriteDead 0.6s ease forwards';
-        setBattleLog(`${battleMon.name}をたおした！🎉`);
-        setTimeout(()=>battleWin(),900);
-      },400);
-      return;
-    }
-
-    // Monster's turn — show intermediate log
-    setBattleLog(`${hero.name}のこうげき！ ${battleMon.name}に ${heroDmg} のダメージ！`);
+    heroSprite.style.animation='none';
+    void heroSprite.offsetWidth;
+    heroSprite.style.animation='heroAtk 0.5s ease';
+    setTimeout(()=>{
+      monSprite.style.animation='none';
+      void monSprite.offsetWidth;
+      monSprite.style.animation='spriteHurt 0.4s ease';
+      battleMonHp-=heroDmg;
+      spawnBattleDmg(heroDmg,false,false);
+      updateBattleHpBars();
+      if(battleMonHp<=0){
+        setTimeout(()=>{
+          monSprite.style.animation='none';
+          void monSprite.offsetWidth;
+          monSprite.style.animation='spriteDead 0.6s ease forwards';
+          setBattleLog(`${battleMon.name}をたおした！🎉`);
+          document.getElementById('battleQuiz').style.display='none';
+          setTimeout(()=>battleWin(),900);
+        },400);
+        return;
+      }
+      setTimeout(startBattleQuestion,1100);
+    },300);
+  } else {
+    // Monster counterattacks
+    const label=isTimeout?`⏰ じかんぎれ！`:` はずれ！`;
+    const mAtk=battleMon.atk;
+    const monDmg=Math.max(1,mAtk-heroTotalDef()+randInt(-1,2));
+    setBattleLog(`${label} ${battleMon.name}のはんげき！ -${monDmg}HP`);
+    playSound('wrong');
 
     setTimeout(()=>{
-      if(!battleRunning) return;
-      // Monster attacks
-      const mAtk=battleMon.atk;
-      const monDmg=Math.max(1,mAtk-heroTotalDef()+randInt(-1,3));
-      battleHeroHp-=monDmg;
-
       monSprite.style.animation='none';
       void monSprite.offsetWidth;
       monSprite.style.animation='monsterAtk 0.5s ease';
@@ -671,63 +878,53 @@ function runBattleTurn(){
         heroSprite.style.animation='none';
         void heroSprite.offsetWidth;
         heroSprite.style.animation='spriteHurt 0.4s ease';
+        battleHeroHp-=monDmg;
         spawnBattleDmg(monDmg,true,false);
         updateBattleHpBars();
-
+        playSound('hit');
         if(battleHeroHp<=0){
-          // Hero dead
           setTimeout(()=>{
             heroSprite.style.animation='heroDeadAnim 0.6s ease forwards';
             setBattleLog(`${hero.name}はたおれた…😢`);
+            document.getElementById('battleQuiz').style.display='none';
             setTimeout(()=>battleLose(),900);
           },400);
           return;
         }
-
-        setBattleLog(`${battleMon.name}のこうげき！ ${hero.name}に ${monDmg} のダメージ！`);
-
-        // Continue battle (max 20 turns)
-        if(battleTurn>=20){
-          setTimeout(()=>{setBattleLog('じかんぎれ！ひきわけ！');setTimeout(()=>battleDraw(),800);},600);
-        } else {
-          setTimeout(()=>runBattleTurn(),1400);
-        }
+        setTimeout(startBattleQuestion,1100);
       },300);
-    },700);
-  },300);
+    },400);
+  }
 }
 
 function battleWin(){
   battleRunning=false;
-  hero.hp=Math.max(1,battleHeroHp); // carry over HP
+  hero.hp=Math.max(1,Math.round(battleHeroHp));
   hero.exp+=battleMon.exp;
   coins+=battleMon.gold;
   checkHeroLevelUp();
+  checkAchievement('first_battle_win');
+  if(coins>=50) checkAchievement('coins_50');
+  if(coins>=100) checkAchievement('coins_100');
   updateHeroUI();
+  playSound('win');
   document.getElementById('resultEmoji').textContent='🏆';
   document.getElementById('resultTitle').textContent='かった！';document.getElementById('resultTitle').className='result-title win';
-  document.getElementById('resultRewards').innerHTML=`+<b>${battleMon.exp}</b> EXP　　+<b>${battleMon.gold}</b> G<br>のこりHP：<b>${Math.max(1,battleHeroHp)}</b>`;
+  document.getElementById('resultRewards').innerHTML=`+<b>${battleMon.exp}</b> EXP　　+<b>${battleMon.gold}</b> G<br>のこりHP：<b>${Math.max(1,Math.round(battleHeroHp))}</b>`;
   document.getElementById('battleResult').classList.add('show');
 }
 function battleLose(){
   battleRunning=false;
-  hero.hp=Math.max(1,Math.floor(hero.hpMax*0.3)); // revive at 30%
+  hero.hp=Math.max(1,Math.floor(hero.hpMax*0.3));
   updateHeroUI();
+  playSound('lose');
   document.getElementById('resultEmoji').textContent='💀';
   document.getElementById('resultTitle').textContent='まけた…';document.getElementById('resultTitle').className='result-title lose';
   document.getElementById('resultRewards').innerHTML=`HP が <b>${hero.hp}</b> までかいふくしたよ。<br>もっとつよくなってリベンジしよう！`;
   document.getElementById('battleResult').classList.add('show');
 }
-function battleDraw(){
-  battleRunning=false;
-  hero.hp=Math.max(1,battleHeroHp);
-  updateHeroUI();
-  document.getElementById('resultEmoji').textContent='⚖️';
-  document.getElementById('resultTitle').textContent='ひきわけ！';document.getElementById('resultTitle').className='result-title win';
-  document.getElementById('resultRewards').innerHTML=`ちょうどいいたたかいだったね！`;
-  document.getElementById('battleResult').classList.add('show');
-}
 function closeBattle(){
+  clearTimeout(battleQuizTimer);
   document.getElementById('battleScreen').classList.remove('active');
   showGame();
   generateQuestion();
@@ -735,8 +932,8 @@ function closeBattle(){
 
 // ── SHOP ──
 function openShop(){
-  
   document.getElementById('shopCoinRow').innerHTML=coinSVG(20)+`<span>${coins}</span> コイン`;
+  document.getElementById('shopFeedback').textContent='';
   buildShop();showScreen('screenShop');
 }
 function closeShop(){showGame();generateQuestion();}
@@ -760,11 +957,18 @@ function renderShopItems(cid,items,type){
   });
 }
 function buyItem(type,item){
-  if(coins<item.price){showFeedback('コインがたりない！','wrong');return;}
+  const fb=document.getElementById('shopFeedback');
+  if(coins<item.price){
+    fb.textContent='コインがたりない！';
+    playSound('wrong');
+    return;
+  }
   coins-=item.price;
+  fb.textContent='';
   if(type==='weapon') hero.owned.weapons.push(item.id);
   else hero.owned.armors.push(item.id);
   equipItem(type,item.id);
+  playSound('coin');
 }
 function equipItem(type,id){
   if(type==='weapon') hero.weapon=id;
@@ -774,57 +978,53 @@ function equipItem(type,id){
 }
 
 // ══ SAVE / LOAD ══
-const SAVE_KEY = 'tashizan_save';
+const SAVE_KEY='tashizan_save';
 
 function saveGame(){
-  const data = {
-    hero: hero,
-    coins: coins,
-    quizLevel: quizLevel,
-    savedAt: new Date().toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})
+  const data={
+    hero:hero,coins:coins,quizLevel:quizLevel,
+    achievements:[...unlockedAchievements],
+    savedAt:new Date().toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})
   };
-  try {
-    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+  try{
+    localStorage.setItem(SAVE_KEY,JSON.stringify(data));
     showSaveToast();
-  } catch(e) {
-    alert('セーブできなかった…');
-  }
+  }catch(e){alert('セーブできなかった…');}
 }
 
 function loadSave(){
-  try {
-    const raw = localStorage.getItem(SAVE_KEY);
-    if(!raw) return;
+  try{
+    const raw=localStorage.getItem(SAVE_KEY);
+    if(!raw)return;
     loadGame(JSON.parse(raw));
-  } catch(e){ alert('よみこめなかった…'); }
+  }catch(e){alert('よみこめなかった…');}
 }
 function loadGame(data){
-  hero = data.hero;
-  coins = data.coins;
-  quizLevel = data.quizLevel || 1;
-  streak = 0;
-  updateHeroUI();
-  showGame();
-  generateQuestion();
+  hero=data.hero;
+  coins=data.coins;
+  quizLevel=data.quizLevel||1;
+  streak=0;
+  unlockedAchievements=new Set(data.achievements||[]);
+  updateHeroUI();showGame();generateQuestion();
 }
 
 function deleteSave(){
-  if(!confirm('セーブデータをけす？')) return;
+  if(!confirm('セーブデータをけす？'))return;
   localStorage.removeItem(SAVE_KEY);
   renderSaveSlots();
 }
 
 function renderSaveSlots(){
-  const wrap = document.getElementById('saveSlots');
-  if(!wrap) return;
-  try {
-    const raw = localStorage.getItem(SAVE_KEY);
-    if(!raw){ wrap.innerHTML=''; return; }
-    const data = JSON.parse(raw);
-    const h = data.hero;
-    const wep = WEAPONS.find(w=>w.id===h.weapon)||WEAPONS[0];
-    const arm = ARMORS.find(a=>a.id===h.armor)||ARMORS[0];
-    wrap.innerHTML = `
+  const wrap=document.getElementById('saveSlots');
+  if(!wrap)return;
+  try{
+    const raw=localStorage.getItem(SAVE_KEY);
+    if(!raw){wrap.innerHTML='';return;}
+    const data=JSON.parse(raw);
+    const h=data.hero;
+    const wep=WEAPONS.find(w=>w.id===h.weapon)||WEAPONS[0];
+    const arm=ARMORS.find(a=>a.id===h.armor)||ARMORS[0];
+    wrap.innerHTML=`
       <div class="save-card" style="flex-direction:column;text-align:center;">
         <div class="save-card-avatar" style="font-size:2.8rem;margin-bottom:4px;">${h.emoji}</div>
         <div class="save-card-info" style="width:100%;margin-bottom:6px;">
@@ -838,28 +1038,22 @@ function renderSaveSlots(){
           <button class="big-btn red" style="margin:3px 0;padding:8px 16px;font-size:0.75rem;" onclick="deleteSave()">けす</button>
         </div>
       </div>`;
-  } catch(e){ wrap.innerHTML=''; }
+  }catch(e){wrap.innerHTML='';}
 }
 
 function showSaveToast(){
-  const t = document.getElementById('saveToast');
+  const t=document.getElementById('saveToast');
   t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 2000);
+  setTimeout(()=>t.classList.remove('show'),2000);
 }
 
-// auto-save on correct answer (piggyback updateHeroUI calls)
-const _origUpdateHeroUI = updateHeroUI;
-// auto-save every 5 correct answers
-let _saveCounter = 0;
+let _saveCounter=0;
 function triggerAutoSave(){
   _saveCounter++;
   if(_saveCounter%5===0) saveGame();
 }
 
-// Run on page load
-window.addEventListener('load', ()=>{
-  renderSaveSlots();
-});
+window.addEventListener('load',()=>{renderSaveSlots();});
 </script>
 </body>
 </html>
