@@ -101,9 +101,9 @@ header{display:flex;align-items:center;gap:12px;padding:16px;background:#fff;bor
   <div class="setup-inner">
     <div class="setup-icon">🔑</div>
     <div class="setup-title">APIキーを設定</div>
-    <div class="setup-desc">Anthropic の API キーを入力してください。<br>キーはこのデバイスのみに保存されます。</div>
-    <div class="setup-label">ANTHROPIC_API_KEY</div>
-    <input id="api-key-input" class="setup-input" type="password" placeholder="sk-ant-..." />
+    <div class="setup-desc">Google AI Studio の API キーを入力してください。<br>無料で取得できます。キーはこのデバイスのみに保存されます。</div>
+    <div class="setup-label">GOOGLE_AI_API_KEY</div>
+    <input id="api-key-input" class="setup-input" type="password" placeholder="AIza..." />
     <div id="setup-error" class="error-msg" style="display:none"></div>
     <button id="setup-btn" class="setup-btn">保存して始める</button>
     <div class="setup-note">キーは localStorage に保存されます。他人と共有しないでください。</div>
@@ -181,28 +181,40 @@ let chatLoading = false;
 // ===== INIT =====
 if (apiKey) showHome();
 
+// ===== GEMINI API =====
+const GEMINI_URL = key =>
+  `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
+
+async function gemini(key, systemPrompt, contents) {
+  const res = await fetch(GEMINI_URL(key), {
+    method: 'POST',
+    headers: {'content-type': 'application/json'},
+    body: JSON.stringify({
+      system_instruction: {parts: [{text: systemPrompt}]},
+      contents
+    })
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error?.message || 'API error');
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+}
+
 // ===== SETUP =====
 document.getElementById('setup-btn').addEventListener('click', async () => {
   const key = document.getElementById('api-key-input').value.trim();
-  if (!key.startsWith('sk-')) {
-    showError('APIキーは sk- で始まる必要があります');
+  if (!key.startsWith('AIza')) {
+    showError('APIキーは AIza で始まる必要があります');
     return;
   }
   document.getElementById('setup-btn').disabled = true;
   document.getElementById('setup-btn').textContent = '確認中...';
   try {
-    const ok = await testApiKey(key);
-    if (ok) {
-      localStorage.setItem('espanol_api_key', key);
-      apiKey = key;
-      showHome();
-    } else {
-      showError('APIキーが無効です。確認してください。');
-      document.getElementById('setup-btn').disabled = false;
-      document.getElementById('setup-btn').textContent = '保存して始める';
-    }
+    await gemini(key, 'You are a helpful assistant.', [{role:'user', parts:[{text:'hi'}]}]);
+    localStorage.setItem('espanol_api_key', key);
+    apiKey = key;
+    showHome();
   } catch {
-    showError('接続エラー。もう一度試してください。');
+    showError('APIキーが無効です。確認してください。');
     document.getElementById('setup-btn').disabled = false;
     document.getElementById('setup-btn').textContent = '保存して始める';
   }
@@ -212,24 +224,6 @@ function showError(msg) {
   const el = document.getElementById('setup-error');
   el.textContent = msg;
   el.style.display = 'block';
-}
-
-async function testApiKey(key) {
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'x-api-key': key,
-      'anthropic-version': '2023-06-01',
-      'content-type': 'application/json',
-      'anthropic-dangerous-direct-browser-access': 'true',
-    },
-    body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 10,
-      messages: [{role: 'user', content: 'hi'}]
-    })
-  });
-  return res.ok;
 }
 
 // ===== NAVIGATION =====
@@ -316,25 +310,12 @@ async function sendMessage() {
   scrollChatBottom();
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 400,
-        system: CHAT_SYSTEM,
-        messages: chatMessages.filter(m => m.role === 'user' || m.role === 'assistant')
-          .map(m => ({role: m.role, content: m.content}))
-      })
-    });
-
-    const data = await res.json();
-    const reply = data.content?.[0]?.text || 'エラーが発生しました。';
+    const startIdx = chatMessages.findIndex(m => m.role === 'user');
+    const contents = chatMessages.slice(startIdx).map(m => ({
+      role: m.role === 'user' ? 'user' : 'model',
+      parts: [{text: m.content}]
+    }));
+    const reply = await gemini(apiKey, CHAT_SYSTEM, contents);
     chatMessages.push({role: 'assistant', content: reply});
     renderChat();
     scrollChatBottom();
@@ -374,23 +355,8 @@ async function loadQuestion() {
   renderListening('loading');
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 300,
-        system: LISTEN_SYSTEM,
-        messages: [{role: 'user', content: '問題を1つ作成してください'}]
-      })
-    });
-    const data = await res.json();
-    const text = data.content?.[0]?.text || '';
+    const text = await gemini(apiKey, LISTEN_SYSTEM,
+      [{role: 'user', parts: [{text: '問題を1つ作成してください'}]}]);
     const match = text.match(/\{[\s\S]*\}/);
     if (!match) throw new Error('parse error');
     currentQuestion = JSON.parse(match[0]);
