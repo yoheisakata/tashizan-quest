@@ -94,6 +94,20 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Hi
 #play-btn.show{display:flex;}
 #play-btn:active{transform:translateY(-50%) scale(0.9);}
 
+/* ── MOON DAY COUNTER ── */
+#moon-day-panel{
+  position:fixed;right:14px;top:80px;z-index:10;pointer-events:none;
+  background:rgba(0,5,30,0.88);border:1px solid rgba(255,255,255,0.15);
+  border-radius:16px;padding:12px 16px;display:none;min-width:118px;
+}
+#moon-day-num{
+  font-size:1.35rem;font-weight:900;color:#fffde7;
+  text-shadow:0 0 14px rgba(255,220,100,0.7);margin-bottom:2px;
+}
+#moon-day-sub{font-size:0.58rem;color:rgba(180,220,255,0.7);margin-bottom:8px;}
+#moon-day-bar{height:5px;border-radius:3px;background:rgba(255,255,255,0.1);overflow:hidden;}
+#moon-day-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#ffaa00,#ffee88);width:0%;}
+
 /* ── MOON LABEL ── */
 #moon-label{
   position:fixed;z-index:10;pointer-events:none;
@@ -125,6 +139,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Hi
 </div>
 <div id="moon-label">🌕 つき</div>
 <div id="moon-face-label">★ おもてめん（ちきゅうがわ）</div>
+<div id="moon-day-panel">
+  <div id="moon-day-num">1日め</div>
+  <div id="moon-day-sub">27日で ちきゅうを 1しゅう</div>
+  <div id="moon-day-bar"><div id="moon-day-fill"></div></div>
+</div>
 
 <div id="dn-panel">
   <div class="dn-card">
@@ -632,7 +651,7 @@ let velY=0.001,velX=0;
 let isDragging=false,lastX=0,lastY=0;
 let autoRotating=false;
 let moonAngle=0;
-let cameraTargetZ=6,cameraTargetY=0,earthMoonTilt=0;
+let cameraTargetZ=6,cameraTargetY=0,earthMoonTilt=0,moonDayOffset=0;
 let solarRotY=0.3,solarRotX=0.58,solarVelY=0,solarVelX=0;
 let galaxyT=0;
 const tmpV=new THREE.Vector3();
@@ -714,8 +733,13 @@ function setMode(m){
   cameraTargetY=cfg.camY;
 
   if(cfg.initRotY!==null){rotY=cfg.initRotY;velY=0;}
-  if(m==='moon'){rotX=0;velX=0;autoRotating=false;document.getElementById('play-btn').textContent='▶';}
+  if(m==='moon'){
+    rotX=0;velX=0;autoRotating=false;
+    document.getElementById('play-btn').textContent='▶';
+    moonDayOffset=moonPivot.rotation.y;
+  }
   earthMoonTilt=(m==='moon')?0.38:0;
+  document.getElementById('moon-day-panel').style.display=(m==='moon')?'block':'none';
 
   const inSolar=(m==='solar');
   earthMesh.visible=!inSolar;
@@ -890,6 +914,12 @@ function animate(){
     // Moon orbit
     if(mode==='moon'){
       moonPivot.rotation.y=rotY*0.15;
+      // Day counter: elapsed angle since mode entry → 1〜27日
+      const elapsed=((moonPivot.rotation.y-moonDayOffset)%(Math.PI*2)+Math.PI*2)%(Math.PI*2);
+      const pct=elapsed/(Math.PI*2);
+      const day=Math.min(27,Math.floor(pct*27)+1);
+      document.getElementById('moon-day-num').textContent=day+'日め';
+      document.getElementById('moon-day-fill').style.width=(pct*100).toFixed(1)+'%';
     } else {
       moonAngle+=dt*(mode==='space'?0.15:0.25);
       moonPivot.rotation.y=moonAngle;
