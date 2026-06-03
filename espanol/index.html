@@ -202,8 +202,8 @@ async function gemini(key, systemPrompt, contents) {
 // ===== SETUP =====
 document.getElementById('setup-btn').addEventListener('click', async () => {
   const key = document.getElementById('api-key-input').value.trim();
-  if (!key.startsWith('AIza')) {
-    showError('APIキーは AIza で始まる必要があります');
+  if (key.length < 10) {
+    showError('APIキーを正しく入力してください');
     return;
   }
   document.getElementById('setup-btn').disabled = true;
