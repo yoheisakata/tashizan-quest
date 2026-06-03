@@ -232,6 +232,7 @@ document.getElementById('btn').addEventListener('click',act);
 // ═══════════════════════════════════════════
 const MS=.055,TS=.038;
 let tick=0,respT=0,walkPh=0,bob=0,isMoving=false;
+let headTurn=0, curTurn=0;
 
 function update(){
   tick++;
@@ -243,6 +244,7 @@ function update(){
   if(JL.on){fwd-=JL.sy/JL.R; turn+=JL.sx/JL.R*.65;}
   if(JR.on){turn+=JR.sx/JR.R;}
 
+  curTurn=turn; // track current turn direction for head rotation
   isMoving=Math.abs(fwd)>.05;
   if(isMoving){
     walkPh+=.11;
@@ -253,6 +255,7 @@ function update(){
   if(Math.abs(turn)>.05)rotPl(turn*TS);
 
   bob+=((isMoving?Math.sin(walkPh)*3.5:0)-bob)*.18;
+  headTurn+=(Math.max(-1,Math.min(1,curTurn))*.85-headTurn)*.14;
 
   if(acd>0)acd--;
   if(grabT>0)grabT--;
@@ -389,11 +392,10 @@ function drawBankLabel(){
 }
 
 // ═══════════════════════════════════════════
-//  DISNEY CHARACTER — first-person full body
-//  Looking-down perspective: shoes/legs/body
-//  visible at the bottom of the screen
+//  CHARACTER — first-person full body
+//  Simple & clean. Head faces walk direction.
 // ═══════════════════════════════════════════
-function drawDisneyEye(ex,ey,r){
+function drawDisneyEye(ex,ey,r){  // kept for compat but simplified
   cx.fillStyle='#fff';
   cx.beginPath();cx.ellipse(ex,ey,r,r*1.3,0,0,Math.PI*2);cx.fill();
   cx.fillStyle='#0ea5e9';
@@ -407,200 +409,161 @@ function drawDisneyEye(ex,ey,r){
   cx.beginPath();cx.ellipse(ex,ey,r*1.06,r*1.42,0,Math.PI,0);cx.stroke();
 }
 
+// ── Simple clean character body ───────────
 function drawCharBody(){
-  const sw=isMoving?Math.sin(walkPh)*7:0;    // side sway
-  const vb=isMoving?Math.abs(Math.sin(walkPh))*6:0; // vertical bob
-  const g=grabT/22;  // grab extend 0→1
-  const lStep=isMoving?Math.sin(walkPh)*18:0; // leg alternation
+  const sw=isMoving?Math.sin(walkPh)*6:0;
+  const vb=isMoving?Math.abs(Math.sin(walkPh))*5:0;
+  const g=grabT/22;
+  const lStep=isMoving?Math.sin(walkPh)*16:0;
 
-  // ── BODY BASE (torso peeking from bottom) ──
-  // Yellow barrel jacket — lower portion visible
-  const bodyY=H-160+vb;
-  const bodyX=W/2+sw*.3;
-  const bodyG=cx.createRadialGradient(bodyX-15,bodyY-20,10,bodyX,bodyY,90);
-  bodyG.addColorStop(0,'#fde047');bodyG.addColorStop(1,'#f59e0b');
-  cx.fillStyle=bodyG;
-  cx.beginPath();cx.ellipse(bodyX,bodyY,88,68,0,0,Math.PI*2);cx.fill();
-  // Jacket collar / zipper line
-  cx.strokeStyle='rgba(0,0,0,.18)';cx.lineWidth=2;
-  cx.beginPath();cx.moveTo(bodyX,bodyY-60);cx.lineTo(bodyX,bodyY+30);cx.stroke();
-  // Belt line
-  cx.strokeStyle='rgba(0,0,0,.22)';cx.lineWidth=3;
-  cx.beginPath();cx.moveTo(bodyX-80,bodyY+30);cx.quadraticCurveTo(bodyX,bodyY+40,bodyX+80,bodyY+30);cx.stroke();
-  // Collar accent (red)
-  cx.fillStyle='#dc2626';
-  cx.beginPath();cx.ellipse(bodyX,bodyY-60,20,13,0,0,Math.PI*2);cx.fill();
-
-  // ── LEFT ARM ──
-  const lax=W/2-110-sw, lay=H-180+vb-lStep*.4;
-  // Yellow sleeve
-  const lag=cx.createLinearGradient(lax+50,lay-80,lax-10,lay+30);
-  lag.addColorStop(0,'#fde047');lag.addColorStop(1,'#f59e0b');
-  cx.fillStyle=lag;
-  cx.beginPath();
-  cx.moveTo(lax+50,lay-80);
-  cx.bezierCurveTo(lax+80,lay-30,lax+50,lay+10,lax+20,lay+40);
-  cx.lineTo(lax-15,lay+30);
-  cx.bezierCurveTo(lax-20,lay+0,lax+5,lay-30,lax-10,lay-80);
-  cx.closePath();cx.fill();
-  // Cuff
-  cx.fillStyle='#1e40af';cx.fillRect(lax-10,lay+20,38,18);
-  // Big round hand (Disney glove style)
-  cx.fillStyle='#fce4c8';
-  cx.beginPath();cx.arc(lax+12,lay+50,22,0,Math.PI*2);cx.fill();
-  // Knuckle lines
-  cx.strokeStyle='rgba(0,0,0,.12)';cx.lineWidth=1.2;
-  for(let i=0;i<3;i++){cx.beginPath();cx.arc(lax+12,lay+50,22,(.3+i*.35),(.65+i*.35));cx.stroke();}
-
-  // ── RIGHT ARM + TONGS ──
-  const rax=W/2+110+sw, ray=H-180+vb+lStep*.4;
-  // Sleeve
-  const rag=cx.createLinearGradient(rax-50,ray-80,rax+10,ray+30);
-  rag.addColorStop(0,'#fde047');rag.addColorStop(1,'#f59e0b');
-  cx.fillStyle=rag;
-  cx.beginPath();
-  cx.moveTo(rax-50,ray-80);
-  cx.bezierCurveTo(rax-80,ray-30,rax-50,ray+10,rax-20,ray+40);
-  cx.lineTo(rax+15,ray+30);
-  cx.bezierCurveTo(rax+20,ray+0,rax-5,ray-30,rax+10,ray-80);
-  cx.closePath();cx.fill();
-  // Cuff
-  cx.fillStyle='#1e40af';cx.fillRect(rax-28,ray+20,38,18);
-  // Hand
-  cx.fillStyle='#fce4c8';
-  cx.beginPath();cx.arc(rax-12,ray+50,22,0,Math.PI*2);cx.fill();
-  for(let i=0;i<3;i++){cx.strokeStyle='rgba(0,0,0,.12)';cx.lineWidth=1.2;cx.beginPath();cx.arc(rax-12,ray+50,22,Math.PI-.3-i*.35,Math.PI-.65-i*.35);cx.stroke();}
-  // Tongs from right hand
-  const hx=rax-12, hy=ray+38;
-  const ta=-Math.PI/2.6 - g*.55; // angle pointing forward-up
-  const tl=90+g*55;
-  cx.strokeStyle='#6b7280';cx.lineWidth=5;cx.lineCap='round';
-  cx.beginPath();cx.moveTo(hx,hy);cx.lineTo(hx+Math.cos(ta)*tl*.45,hy+Math.sin(ta)*tl*.45);cx.stroke();
-  const sp=.16+g*.24;
-  const t1x=hx+Math.cos(ta-sp)*tl, t1y=hy+Math.sin(ta-sp)*tl;
-  const t2x=hx+Math.cos(ta+sp)*tl, t2y=hy+Math.sin(ta+sp)*tl;
-  cx.strokeStyle='#9ca3af';cx.lineWidth=3.5;
-  cx.beginPath();cx.moveTo(hx,hy);cx.lineTo(t1x,t1y);cx.stroke();
-  cx.beginPath();cx.moveTo(hx,hy);cx.lineTo(t2x,t2y);cx.stroke();
-  cx.strokeStyle='#e2e8f0';cx.lineWidth=2.5;
-  cx.beginPath();cx.moveTo(t1x,t1y);cx.lineTo(t1x+Math.cos(ta+.4)*12,t1y+Math.sin(ta+.4)*12);cx.stroke();
-  cx.beginPath();cx.moveTo(t2x,t2y);cx.lineTo(t2x+Math.cos(ta-.4)*12,t2y+Math.sin(ta-.4)*12);cx.stroke();
-  if(g>.35){
-    cx.save();cx.shadowColor='#4ade80';cx.shadowBlur=14;
-    cx.font='18px sans-serif';cx.textAlign='center';
-    cx.fillText('✨',(t1x+t2x)/2,(t1y+t2y)/2-8);
-    cx.restore();
-  }
+  // ── BASKET (left shoulder, behind head) ──
+  const baskX=W/2-58+sw*.2, baskY=H-230+vb;
+  drawBasket2(baskX,baskY);
 
   // ── LEGS ──
-  const lLegX=W/2-52+sw*.5, rLegX=W/2+52-sw*.5;
-  const lLegY=H+20+lStep*.35, rLegY=H+20-lStep*.35;
-
+  const lLX=W/2-50+sw*.5, rLX=W/2+50-sw*.5;
+  const lLY=H+18+lStep*.3, rLY=H+18-lStep*.3;
   // Left trouser
   cx.fillStyle='#1d4ed8';
   cx.beginPath();
-  cx.moveTo(W/2-82+sw*.3, H-160+vb);
-  cx.lineTo(W/2-30+sw*.3, H-160+vb);
-  cx.lineTo(lLegX+22, lLegY);
-  cx.lineTo(lLegX-22, lLegY);
-  cx.closePath();cx.fill();
+  cx.moveTo(W/2-78+sw*.3,H-155+vb); cx.lineTo(W/2-28+sw*.3,H-155+vb);
+  cx.lineTo(lLX+20,lLY); cx.lineTo(lLX-20,lLY); cx.closePath(); cx.fill();
   // Right trouser
-  cx.fillStyle='#1e40af';
+  cx.fillStyle='#2563eb';
   cx.beginPath();
-  cx.moveTo(W/2+30-sw*.3, H-160+vb);
-  cx.lineTo(W/2+82-sw*.3, H-160+vb);
-  cx.lineTo(rLegX+22, rLegY);
-  cx.lineTo(rLegX-22, rLegY);
+  cx.moveTo(W/2+28-sw*.3,H-155+vb); cx.lineTo(W/2+78-sw*.3,H-155+vb);
+  cx.lineTo(rLX+20,rLY); cx.lineTo(rLX-20,rLY); cx.closePath(); cx.fill();
+  // Shoes (simple, clean)
+  for(const[sx2,sy2,flip] of [[lLX,lLY,.1],[rLX,rLY,-.1]]){
+    cx.fillStyle='#e2e8f0';
+    cx.save();cx.translate(sx2,sy2+8);cx.scale(1,.42);
+    cx.beginPath();cx.ellipse(0,0,32,20,flip,0,Math.PI*2);cx.fill();
+    cx.strokeStyle='#94a3b8';cx.lineWidth=1.5;cx.stroke();
+    cx.restore();
+  }
+
+  // ── BODY (torso, clean blue jacket) ──
+  const bY=H-158+vb, bX=W/2+sw*.2;
+  cx.fillStyle='#2563eb';
+  cx.beginPath();cx.ellipse(bX,bY,78,62,0,0,Math.PI*2);cx.fill();
+  // Simple jacket detail
+  cx.strokeStyle='rgba(255,255,255,.18)';cx.lineWidth=1.5;
+  cx.beginPath();cx.moveTo(bX,bY-55);cx.lineTo(bX,bY+28);cx.stroke();
+  cx.strokeStyle='rgba(255,255,255,.12)';cx.lineWidth=1;
+  cx.beginPath();cx.moveTo(bX-70,bY+20);cx.quadraticCurveTo(bX,bY+32,bX+70,bY+20);cx.stroke();
+
+  // ── LEFT ARM ──
+  const laX=W/2-108-sw, laY=H-168+vb-lStep*.35;
+  cx.fillStyle='#2563eb';
+  cx.beginPath();cx.moveTo(laX+45,laY-70);
+  cx.bezierCurveTo(laX+68,laY-20,laX+42,laY+15,laX+18,laY+42);
+  cx.lineTo(laX-12,laY+32);
+  cx.bezierCurveTo(laX-18,laY-5,laX+8,laY-25,laX-5,laY-70);
   cx.closePath();cx.fill();
-  // Trouser cuff lines
-  cx.strokeStyle='rgba(0,0,0,.18)';cx.lineWidth=2;
-  cx.beginPath();cx.moveTo(lLegX-22,lLegY-20);cx.lineTo(lLegX+22,lLegY-20);cx.stroke();
-  cx.beginPath();cx.moveTo(rLegX-22,rLegY-20);cx.lineTo(rLegX+22,rLegY-20);cx.stroke();
+  // Hand (simple oval)
+  cx.fillStyle='#fcd8b0';
+  cx.beginPath();cx.ellipse(laX+8,laY+50,16,14,-.2,0,Math.PI*2);cx.fill();
 
-  // ── BIG ROUND DISNEY SHOES ──
-  // Left shoe
-  cx.fillStyle='#f0f9ff';
-  cx.save();cx.translate(lLegX,lLegY+10);cx.scale(1,.45);
-  cx.beginPath();cx.ellipse(0,0,38,24,.12,0,Math.PI*2);cx.fill();
-  cx.strokeStyle='#bfdbfe';cx.lineWidth=2;cx.stroke();
-  cx.restore();
-  // Shoe highlight
-  cx.fillStyle='rgba(255,255,255,.5)';
-  cx.save();cx.translate(lLegX-12,lLegY+3);cx.scale(1,.35);
-  cx.beginPath();cx.ellipse(0,0,14,10,0,0,Math.PI*2);cx.fill();cx.restore();
+  // ── RIGHT ARM + TONGS ──
+  const raX=W/2+108+sw, raY=H-168+vb+lStep*.35;
+  cx.fillStyle='#2563eb';
+  cx.beginPath();cx.moveTo(raX-45,raY-70);
+  cx.bezierCurveTo(raX-68,raY-20,raX-42,raY+15,raX-18,raY+42);
+  cx.lineTo(raX+12,raY+32);
+  cx.bezierCurveTo(raX+18,raY-5,raX-8,raY-25,raX+5,raY-70);
+  cx.closePath();cx.fill();
+  cx.fillStyle='#fcd8b0';
+  cx.beginPath();cx.ellipse(raX-8,raY+50,16,14,.2,0,Math.PI*2);cx.fill();
+  // Tongs
+  const hx=raX-8, hy=raY+38;
+  const ta=-Math.PI/2.5-g*.5;
+  const tl=80+g*52;
+  cx.strokeStyle='#64748b';cx.lineWidth=4.5;cx.lineCap='round';
+  cx.beginPath();cx.moveTo(hx,hy);cx.lineTo(hx+Math.cos(ta)*tl*.45,hy+Math.sin(ta)*tl*.45);cx.stroke();
+  const sp=.15+g*.22;
+  const t1x=hx+Math.cos(ta-sp)*tl,t1y=hy+Math.sin(ta-sp)*tl;
+  const t2x=hx+Math.cos(ta+sp)*tl,t2y=hy+Math.sin(ta+sp)*tl;
+  cx.strokeStyle='#94a3b8';cx.lineWidth=3;
+  cx.beginPath();cx.moveTo(hx,hy);cx.lineTo(t1x,t1y);cx.stroke();
+  cx.beginPath();cx.moveTo(hx,hy);cx.lineTo(t2x,t2y);cx.stroke();
+  cx.strokeStyle='#cbd5e1';cx.lineWidth=2.2;
+  cx.beginPath();cx.moveTo(t1x,t1y);cx.lineTo(t1x+Math.cos(ta+.4)*10,t1y+Math.sin(ta+.4)*10);cx.stroke();
+  cx.beginPath();cx.moveTo(t2x,t2y);cx.lineTo(t2x+Math.cos(ta-.4)*10,t2y+Math.sin(ta-.4)*10);cx.stroke();
+  if(g>.3){cx.save();cx.shadowColor='#4ade80';cx.shadowBlur=12;cx.font='16px sans-serif';cx.textAlign='center';cx.fillText('✨',(t1x+t2x)/2,(t1y+t2y)/2-6);cx.restore();}
 
-  // Right shoe
-  cx.fillStyle='#f0f9ff';
-  cx.save();cx.translate(rLegX,rLegY+10);cx.scale(1,.45);
-  cx.beginPath();cx.ellipse(0,0,38,24,-.12,0,Math.PI*2);cx.fill();
-  cx.strokeStyle='#bfdbfe';cx.lineWidth=2;cx.stroke();
-  cx.restore();
-  cx.fillStyle='rgba(255,255,255,.5)';
-  cx.save();cx.translate(rLegX+12,rLegY+3);cx.scale(1,.35);
-  cx.beginPath();cx.ellipse(0,0,14,10,0,0,Math.PI*2);cx.fill();cx.restore();
+  // ── HEAD (faces walk direction via headTurn) ──
+  const headX=W/2+sw*.2+headTurn*10;
+  const headY=H-242+vb;
+  cx.save();
+  cx.translate(headX,headY);
+  // Squish head horizontally to show turning
+  cx.scale(1-Math.abs(headTurn)*.18, 1);
 
-  // ── HEAD peeking from top of body ──
-  const headX=W/2+sw*.2, headY=H-248+vb;
-  // Head (big, round)
-  const hg=cx.createRadialGradient(headX-8,headY-10,3,headX,headY,22);
-  hg.addColorStop(0,'#fde8c8');hg.addColorStop(1,'#f9c99a');
-  cx.fillStyle=hg;
-  cx.beginPath();cx.arc(headX,headY,22,0,Math.PI*2);cx.fill();
-  // Cheek blush
-  cx.fillStyle='rgba(255,140,110,.28)';
-  cx.beginPath();cx.ellipse(headX-15,headY+4,9,6,0,0,Math.PI*2);cx.fill();
-  cx.beginPath();cx.ellipse(headX+15,headY+4,9,6,0,0,Math.PI*2);cx.fill();
-  // Hair (teal, fluffy)
-  cx.fillStyle='#0891b2';
-  cx.beginPath();cx.ellipse(headX,headY-20,20,11,0,0,Math.PI*2);cx.fill();
-  cx.beginPath();cx.ellipse(headX-18,headY-12,9,14,-.35,0,Math.PI*2);cx.fill();
-  cx.beginPath();cx.ellipse(headX+18,headY-12,9,14,.35,0,Math.PI*2);cx.fill();
-  cx.fillStyle='#0e7490';
-  cx.beginPath();cx.ellipse(headX,headY-18,20,7,0,0,Math.PI*2);cx.fill();
-  // Hair highlight
-  cx.fillStyle='rgba(255,255,255,.22)';
-  cx.beginPath();cx.ellipse(headX-6,headY-23,8,4,-.3,0,Math.PI*2);cx.fill();
-  // Disney eyes
-  drawDisneyEye(headX-9,headY-1,7);
-  drawDisneyEye(headX+9,headY-1,7);
-  // Nose
-  cx.fillStyle='rgba(190,90,50,.65)';
-  cx.beginPath();cx.ellipse(headX,headY+7,2.2,1.6,0,0,Math.PI*2);cx.fill();
-  // Big smile with teeth
-  cx.strokeStyle='#c2410c';cx.lineWidth=2.2;cx.lineCap='round';
-  cx.beginPath();cx.arc(headX,headY+8,8,.15,Math.PI-.15);cx.stroke();
+  // Neck
+  cx.fillStyle='#fcd8b0';
+  cx.fillRect(-10,12,20,18);
+
+  // Head circle
+  cx.fillStyle='#fcd8b0';
+  cx.beginPath();cx.arc(0,0,26,0,Math.PI*2);cx.fill();
+  // Ear (left)
+  cx.beginPath();cx.ellipse(-24,2,7,9,-.2,0,Math.PI*2);cx.fill();
+  // Ear (right) — hidden when turning left
+  if(headTurn>-.5){cx.beginPath();cx.ellipse(24,2,7,9,.2,0,Math.PI*2);cx.fill();}
+
+  // Hair (simple, dark brown)
+  cx.fillStyle='#3d1c02';
+  cx.beginPath();cx.ellipse(0,-22,26,10,0,0,Math.PI*2);cx.fill();
+  cx.beginPath();cx.ellipse(-22,-14,8,12,-.3,0,Math.PI*2);cx.fill();
+  cx.beginPath();cx.ellipse(22,-14,8,12,.3,0,Math.PI*2);cx.fill();
+
+  // Face features — shift eyes/mouth with headTurn
+  const eyeShift=headTurn*8;
+  // Eyes (simple dots with whites — NOT uncanny)
   cx.fillStyle='#fff';
-  cx.beginPath();cx.ellipse(headX,headY+12,6,3,0,0,Math.PI*2);cx.fill();
-  cx.strokeStyle='rgba(190,80,40,.25)';cx.lineWidth=.8;
-  cx.beginPath();cx.moveTo(headX,headY+9);cx.lineTo(headX,headY+15);cx.stroke();
+  cx.beginPath();cx.ellipse(-8+eyeShift,-3,7,8,0,0,Math.PI*2);cx.fill();
+  cx.beginPath();cx.ellipse(8+eyeShift,-3,7,8,0,0,Math.PI*2);cx.fill();
+  // Iris
+  cx.fillStyle='#2d4a8e';
+  cx.beginPath();cx.arc(-8+eyeShift,-3,4.5,0,Math.PI*2);cx.fill();
+  cx.beginPath();cx.arc(8+eyeShift,-3,4.5,0,Math.PI*2);cx.fill();
+  // Pupil
+  cx.fillStyle='#111';
+  cx.beginPath();cx.arc(-8+eyeShift,-3,2.5,0,Math.PI*2);cx.fill();
+  cx.beginPath();cx.arc(8+eyeShift,-3,2.5,0,Math.PI*2);cx.fill();
+  // Highlight
+  cx.fillStyle='rgba(255,255,255,.85)';
+  cx.beginPath();cx.arc(-6+eyeShift,-5,1.2,0,Math.PI*2);cx.fill();
+  cx.beginPath();cx.arc(10+eyeShift,-5,1.2,0,Math.PI*2);cx.fill();
 
-  // ── BASKET on back (visible over left shoulder) ──
-  const baskX=W/2-62+sw*.2, baskY=H-230+vb;
-  drawMiniBasket(baskX,baskY);
+  // Nose (simple, not creepy)
+  cx.strokeStyle='rgba(160,80,40,.5)';cx.lineWidth=1.5;cx.lineCap='round';
+  cx.beginPath();cx.arc(eyeShift*.4,6,3,.2,Math.PI-.2);cx.stroke();
+
+  // Mouth — friendly smile
+  cx.strokeStyle='#7c2d12';cx.lineWidth=2;
+  cx.beginPath();cx.arc(eyeShift*.3,10,8,.15,Math.PI-.15);cx.stroke();
+
+  cx.restore();
 }
 
-function drawMiniBasket(bx,by){
+function drawBasket2(bx,by){
   const fill=basket/CAP,full=basket>=CAP;
-  const BW=32,BH=26;
+  const BW=30,BH=24;
   cx.fillStyle=full?'#9a3412':'#7c2d12';
   cx.beginPath();cx.rect(bx,by,BW,BH);cx.fill();
-  cx.strokeStyle='rgba(0,0,0,.22)';cx.lineWidth=.8;
+  cx.strokeStyle='rgba(0,0,0,.2)';cx.lineWidth=.8;
   for(let i=1;i<4;i++){cx.beginPath();cx.moveTo(bx,by+BH*i/4);cx.lineTo(bx+BW,by+BH*i/4);cx.stroke();}
   for(let i=1;i<5;i++){cx.beginPath();cx.moveTo(bx+BW*i/5,by);cx.lineTo(bx+BW*i/5,by+BH);cx.stroke();}
   if(fill>0){
-    cx.fillStyle=full?'rgba(239,68,68,.75)':'rgba(74,222,128,.6)';
+    cx.fillStyle=full?'rgba(239,68,68,.72)':'rgba(74,222,128,.58)';
     cx.fillRect(bx+1.5,by+BH*(1-fill),BW-3,BH*fill);
-    cx.fillStyle='rgba(255,255,255,.7)';
-    for(let i=0;i<basket;i++)
-      cx.beginPath(),cx.arc(bx+4+(i%5)*4.5,by+BH-4-((i/5)|0)*4.5,2,0,Math.PI*2),cx.fill();
   }
   cx.strokeStyle='#92400e';cx.lineWidth=2.5;cx.lineCap='round';
-  cx.beginPath();cx.arc(bx+BW/2,by-1,10,Math.PI,0);cx.stroke();
-  if(full){
-    cx.save();cx.shadowColor='#ef4444';cx.shadowBlur=5+3*Math.sin(tick*.2);
-    cx.font='bold 9px Helvetica';cx.textAlign='center';cx.fillStyle='#fca5a5';
-    cx.fillText('FULL!',bx+BW/2,by-10);cx.restore();
-  }
+  cx.beginPath();cx.arc(bx+BW/2,by-1,9,Math.PI,0);cx.stroke();
+  cx.fillStyle='rgba(255,255,255,.6)';cx.font='bold 8px Helvetica';cx.textAlign='center';
+  cx.fillText(basket+'/'+CAP,bx+BW/2,by+BH+10);
+  if(full){cx.save();cx.shadowColor='#ef4444';cx.shadowBlur=5;cx.fillStyle='#fca5a5';cx.font='bold 9px Helvetica';cx.fillText('FULL!',bx+BW/2,by-10);cx.restore();}
 }
 
 // ── Crosshair ────────────────────────────
