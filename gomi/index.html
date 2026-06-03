@@ -198,7 +198,6 @@ const TRASH_TYPES=[{emoji:'🥤',name:'ペットボトル',val:10,size:36,weight
 const POWERS=[{emoji:'🧲',name:'マグネット',id:'magnet'},{emoji:'⭐',name:'×2コイン',id:'x2'},{emoji:'⏰',name:'＋10秒',id:'time'}];
 let selectedChar=0,playerName='',money=0,gomiCount=0,timeLeft=30,level=1,gameRunning=false,x2Active=false,x2Timer=0,inventory=[null,null,null],timerInterval=null,spawnInterval=null,specialSpawnInterval=null,activeFalling=[],idCounter=0;
 const SAVES_KEY='gomiquest_saves';
-
 firebase.initializeApp({apiKey:"AIzaSyC-9KfSYvJQ8FJ9AfHWxmvyIN8GV3nc2A8",authDomain:"gomi-quest-e16a0.firebaseapp.com",databaseURL:"https://gomi-quest-e16a0-default-rtdb.firebaseio.com",projectId:"gomi-quest-e16a0",storageBucket:"gomi-quest-e16a0.firebasestorage.app",messagingSenderId:"331215038744",appId:"1:331215038744:web:23554f9dd4d768c619166d"});
 const rankingRef=firebase.database().ref('ranking');
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');if(id==='titleScreen')renderSaveCards();if(id==='rankingScreen')renderRanking();}
