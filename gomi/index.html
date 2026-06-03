@@ -104,6 +104,8 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .howto-label{font-size:0.7rem;color:var(--muted);}
 .howto-val{font-size:0.75rem;font-weight:900;color:var(--text);}
 </style>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"><\/script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"><\/script>
 </head>
 <body>
 <div id="titleScreen" class="screen active">
@@ -132,7 +134,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     <div class="header-char" id="hChar"></div>
     <div class="header-money" id="hMoney">💴 ¥0</div>
     <div class="header-level" id="hLevel">Lv.1</div>
-    <div class="header-timer" id="hTimer">60</div>
+    <div class="header-timer" id="hTimer">30</div>
   </div>
   <div class="active-powers" id="activePowers"></div>
   <div class="field" id="field"><div class="effect-overlay" id="effectOverlay"></div></div>
@@ -168,7 +170,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 <div id="howtoScreen" class="screen">
   <div class="title-hero">❓</div>
   <div class="title-main" style="font-size:1.6rem;">あそびかた</div>
-  <div style="color:var(--muted);font-size:0.8rem;margin-bottom:12px;text-align:center;">画面に落ちてくるゴミをタップして集めよう！<br>60秒でどれだけ稼げるかな？</div>
+  <div style="color:var(--muted);font-size:0.8rem;margin-bottom:12px;text-align:center;">画面に落ちてくるゴミをタップして集めよう！<br>30秒でどれだけ稼げるかな？</div>
   <div class="section-title">ゴミの種類と値段</div>
   <div class="howto-grid">
     <div class="howto-card"><div class="howto-icon">🥤</div><div class="howto-val">¥10</div><div class="howto-label">ペットボトル</div></div>
@@ -195,21 +197,22 @@ const CHARS=[{emoji:'🧹',name:'そうじき太郎',skill:'ゴミが見やす�
 const TRASH_TYPES=[{emoji:'🥤',name:'ペットボトル',val:10,size:36,weight:5,recyclable:true},{emoji:'📰',name:'新聞紙',val:20,size:34,weight:4,recyclable:true},{emoji:'📦',name:'ダンボール',val:40,size:40,weight:3,recyclable:true},{emoji:'🥫',name:'空き缶',val:60,size:32,weight:5,recyclable:true},{emoji:'🍾',name:'ガラス瓶',val:100,size:36,weight:6,recyclable:false},{emoji:'🔋',name:'電池',val:200,size:30,weight:3,recyclable:false},{emoji:'📺',name:'テレビ',val:500,size:44,weight:2,recyclable:false},{emoji:'💻',name:'パソコン',val:1000,size:42,weight:1,recyclable:false}];
 const POWERS=[{emoji:'🧲',name:'マグネット',id:'magnet'},{emoji:'⭐',name:'×2コイン',id:'x2'},{emoji:'⏰',name:'＋10秒',id:'time'}];
 let selectedChar=0,playerName='',money=0,gomiCount=0,timeLeft=30,level=1,gameRunning=false,x2Active=false,x2Timer=0,inventory=[null,null,null],timerInterval=null,spawnInterval=null,specialSpawnInterval=null,activeFalling=[],idCounter=0;
-const SAVES_KEY='gomiquest_saves',RANKING_KEY='gomiquest_ranking';
+const SAVES_KEY='gomiquest_saves';
+
+firebase.initializeApp({apiKey:"AIzaSyC-9KfSYvJQ8FJ9AfHWxmvyIN8GV3nc2A8",authDomain:"gomi-quest-e16a0.firebaseapp.com",databaseURL:"https://gomi-quest-e16a0-default-rtdb.firebaseio.com",projectId:"gomi-quest-e16a0",storageBucket:"gomi-quest-e16a0.firebasestorage.app",messagingSenderId:"331215038744",appId:"1:331215038744:web:23554f9dd4d768c619166d"});
+const rankingRef=firebase.database().ref('ranking');
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');if(id==='titleScreen')renderSaveCards();if(id==='rankingScreen')renderRanking();}
 function renderChars(){const grid=document.getElementById('charGrid');grid.innerHTML='';CHARS.forEach((c,i)=>{const el=document.createElement('div');el.className='char-card'+(i===selectedChar?' selected':'');el.innerHTML=`<div class="char-emoji">${c.emoji}</div><div class="char-name">${c.name}</div><div class="char-skill">${c.skill}</div>`;el.onclick=()=>{selectedChar=i;renderChars();};grid.appendChild(el);});}
 renderChars();
 function getSaves(){try{return JSON.parse(localStorage.getItem(SAVES_KEY)||'[]');}catch{return [];}}
 function saveSaves(arr){localStorage.setItem(SAVES_KEY,JSON.stringify(arr));}
-function getRanking(){try{return JSON.parse(localStorage.getItem(RANKING_KEY)||'[]');}catch{return [];}}
-function saveRanking(arr){localStorage.setItem(RANKING_KEY,JSON.stringify(arr.slice(0,10)));}
 function renderSaveCards(){const area=document.getElementById('saveCardArea');const saves=getSaves();area.innerHTML='';if(saves.length===0)return;saves.forEach((sv,i)=>{const el=document.createElement('div');el.className='save-card';el.innerHTML=`<div class="save-card-avatar">${CHARS[sv.charIdx]?.emoji||'♻️'}</div><div class="save-card-info"><div class="save-card-name">${sv.name}</div><div class="save-card-detail">ハイスコア ¥${sv.highScore.toLocaleString()} ・ ${sv.plays}回プレイ</div></div><div class="save-card-btns"><button class="save-small-btn load" onclick="loadSave(${i})">つづき</button><button class="save-small-btn del" onclick="deleteSave(${i})">削除</button></div>`;area.appendChild(el);});}
 function loadSave(idx){const saves=getSaves();const sv=saves[idx];if(!sv)return;selectedChar=sv.charIdx;document.getElementById('playerName').value=sv.name;renderChars();showScreen('charScreen');}
 function deleteSave(idx){const saves=getSaves();saves.splice(idx,1);saveSaves(saves);renderSaveCards();}
 function upsertSave(name,charIdx,highScore){const saves=getSaves();const existing=saves.find(s=>s.name===name&&s.charIdx===charIdx);if(existing){existing.plays=(existing.plays||0)+1;if(highScore>existing.highScore)existing.highScore=highScore;}else{saves.push({name,charIdx,highScore,plays:1});}saveSaves(saves);}
-function addToRanking(name,charIdx,score){const ranking=getRanking();ranking.push({name,charIdx,score,date:new Date().toLocaleDateString('ja-JP')});ranking.sort((a,b)=>b.score-a.score);saveRanking(ranking);}
+function addToRanking(name,charIdx,score){rankingRef.push({name,charIdx,score,date:new Date().toLocaleDateString('ja-JP')});}
 function getHighScore(name,charIdx){const saves=getSaves();const sv=saves.find(s=>s.name===name&&s.charIdx===charIdx);return sv?sv.highScore:0;}
-function startGame(){playerName=document.getElementById('playerName').value.trim()||'プレイヤー';money=0;gomiCount=0;timeleft=30;level=1;x2Active=false;x2Timer=0;inventory=[null,null,null];activeFalling=[];idCounter=0;showScreen('gameScreen');const field=document.getElementById('field');field.querySelectorAll('.trash-item,.special-item').forEach(e=>e.remove());document.getElementById('effectOverlay').className='effect-overlay';document.getElementById('activePowers').innerHTML='';document.getElementById('hChar').textContent=CHARS[selectedChar].emoji;updateHUD();updatePowerBar();clearInterval(timerInterval);clearInterval(spawnInterval);clearInterval(specialSpawnInterval);gameRunning=true;timerInterval=setInterval(()=>{timeLeft--;if(x2Timer>0){x2Timer--;if(x2Timer===0){x2Active=false;updatePowerHUD();}}updateHUD();if(timeLeft<=0)endGame();},1000);spawnInterval=setInterval(spawnTrash,getSpawnInterval());specialSpawnInterval=setInterval(spawnSpecial,8000+Math.random()*6000);for(let i=0;i<4;i++)setTimeout(spawnTrash,i*250);}
+function startGame(){playerName=document.getElementById('playerName').value.trim()||'プレイヤー';money=0;gomiCount=0;timeLeft=30;level=1;x2Active=false;x2Timer=0;inventory=[null,null,null];activeFalling=[];idCounter=0;showScreen('gameScreen');const field=document.getElementById('field');field.querySelectorAll('.trash-item,.special-item').forEach(e=>e.remove());document.getElementById('effectOverlay').className='effect-overlay';document.getElementById('activePowers').innerHTML='';document.getElementById('hChar').textContent=CHARS[selectedChar].emoji;updateHUD();updatePowerBar();clearInterval(timerInterval);clearInterval(spawnInterval);clearInterval(specialSpawnInterval);gameRunning=true;timerInterval=setInterval(()=>{timeLeft--;if(x2Timer>0){x2Timer--;if(x2Timer===0){x2Active=false;updatePowerHUD();}}updateHUD();if(timeLeft<=0)endGame();},1000);spawnInterval=setInterval(spawnTrash,getSpawnInterval());specialSpawnInterval=setInterval(spawnSpecial,8000+Math.random()*6000);for(let i=0;i<4;i++)setTimeout(spawnTrash,i*250);}
 function getSpawnInterval(){return Math.max(600,1800-(level-1)*120);}
 function updateSpawnRate(){clearInterval(spawnInterval);spawnInterval=setInterval(spawnTrash,getSpawnInterval());}
 function updateHUD(){document.getElementById('hMoney').textContent=`💴 ¥${money.toLocaleString()}`;const timerEl=document.getElementById('hTimer');timerEl.textContent=timeLeft;timerEl.className='header-timer'+(timeLeft<=10?' danger':'');const newLevel=Math.min(8,Math.floor(money/1000)+1);if(newLevel!==level){level=newLevel;document.getElementById('hLevel').textContent=`Lv.${level}`;updateSpawnRate();showToast(`⬆️ レベル${level}アップ！`);}document.getElementById('hLevel').textContent=`Lv.${level}`;}
@@ -222,10 +225,10 @@ function addToInventory(pwr){const slot=inventory.findIndex(s=>s===null);if(slot
 function updatePowerBar(){for(let i=0;i<3;i++){const el=document.getElementById(`ps${i}`);const pwr=inventory[i];if(pwr){el.className='power-slot';el.innerHTML=`<span>${pwr.emoji}</span>`;}else{el.className='power-slot empty';el.innerHTML=`<span>🎁</span>`;}}}
 function usePower(slot){const pwr=inventory[slot];if(!pwr||!gameRunning)return;inventory[slot]=null;updatePowerBar();if(pwr.id==='magnet'){const overlay=document.getElementById('effectOverlay');overlay.className='effect-overlay magnet';const snapshot=[...activeFalling];snapshot.forEach(obj=>{if(obj.active)collectTrash(obj);});setTimeout(()=>overlay.className='effect-overlay',600);showToast('🧲 マグネット発動！全ゴミ収集！');}else if(pwr.id==='x2'){x2Active=true;x2Timer=8;updatePowerHUD();const overlay=document.getElementById('effectOverlay');overlay.className='effect-overlay x2';setTimeout(()=>overlay.className='effect-overlay',600);showToast('⭐ ×2コイン発動！8秒間2倍！');}else if(pwr.id==='time'){timeLeft=Math.min(timeLeft+10,99);updateHUD();showToast('⏰ +10秒！');}}
 function endGame(){gameRunning=false;clearInterval(timerInterval);clearInterval(spawnInterval);clearInterval(specialSpawnInterval);upsertSave(playerName,selectedChar,money);addToRanking(playerName,selectedChar,money);const highScore=getHighScore(playerName,selectedChar);const isNewHigh=money>=highScore;let badge='🥉';if(money>=5000)badge='🥇';else if(money>=2000)badge='🥈';document.getElementById('resultRankBadge').textContent=isNewHigh?'🎉':badge;document.getElementById('resultTitle').textContent=isNewHigh?'新記録！':'ゲーム終了！';document.getElementById('resultMoney').textContent=`¥${money.toLocaleString()}`;document.getElementById('resultCount').textContent=`${gomiCount}個`;document.getElementById('resultLevel').textContent=`Lv.${level}`;document.getElementById('resultHigh').textContent=`¥${highScore.toLocaleString()}`;showScreen('resultScreen');}
-function renderRanking(){const list=document.getElementById('rankingList');const ranking=getRanking();list.innerHTML='';if(ranking.length===0){list.innerHTML='<div style="color:var(--muted);text-align:center;padding:20px;">まだ記録がありません</div>';return;}ranking.forEach((r,i)=>{const numClass=i===0?'gold':i===1?'silver':i===2?'bronze':'';const el=document.createElement('div');el.className='rank-row';el.innerHTML=`<div class="rank-num ${numClass}">${i+1}</div><div class="rank-avatar">${CHARS[r.charIdx]?.emoji||'♻️'}</div><div class="rank-info"><div class="rank-name">${r.name}</div><div class="rank-detail">${r.date}</div></div><div class="rank-money">¥${r.score.toLocaleString()}</div>`;list.appendChild(el);});}
+function renderRanking(){const list=document.getElementById('rankingList');list.innerHTML='<div style="color:var(--muted);text-align:center;padding:20px;">読み込み中...</div>';rankingRef.orderByChild('score').limitToLast(10).once('value',snapshot=>{const entries=[];snapshot.forEach(c=>entries.push(c.val()));entries.sort((a,b)=>b.score-a.score);list.innerHTML='';if(entries.length===0){list.innerHTML='<div style="color:var(--muted);text-align:center;padding:20px;">まだ記録がありません</div>';return;}entries.forEach((r,i)=>{const numClass=i===0?'gold':i===1?'silver':i===2?'bronze':'';const el=document.createElement('div');el.className='rank-row';el.innerHTML=`<div class="rank-num ${numClass}">${i+1}</div><div class="rank-avatar">${CHARS[r.charIdx]?.emoji||'♻️'}</div><div class="rank-info"><div class="rank-name">${r.name}</div><div class="rank-detail">${r.date}</div></div><div class="rank-money">¥${r.score.toLocaleString()}</div>`;list.appendChild(el);});});}
 let toastTimer=null;
 function showToast(msg){const el=document.getElementById('saveToast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),2000);}
 renderSaveCards();
-</script>
+<\/script>
 </body>
 </html>
