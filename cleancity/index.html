@@ -409,125 +409,139 @@ function drawDisneyEye(ex,ey,r){  // kept for compat but simplified
   cx.beginPath();cx.ellipse(ex,ey,r*1.06,r*1.42,0,Math.PI,0);cx.stroke();
 }
 
-// ── Character body (compact, natural) ────
+// ── 🐻 Bear character (first-person) ────
+const BR ='#7B4A2A'; // main fur
+const BRL='#A0622A'; // lighter fur
+const CREAM='#E8C090'; // inner ear / muzzle
+
 function drawCharBody(){
-  const sw=isMoving?Math.sin(walkPh)*4:0;
-  const vb=isMoving?Math.abs(Math.sin(walkPh))*3:0;
-  const g=grabT/22;
-  const lStep=isMoving?Math.sin(walkPh)*12:0;
-
-  // 基準Y（画面下端から少し上）
+  const sw=isMoving?Math.sin(walkPh)*3:0;
+  const vb=isMoving?Math.abs(Math.sin(walkPh))*2.5:0;
+  const lStep=isMoving?Math.sin(walkPh)*10:0;
   const baseY=H-10;
-  // キャラ全体スケール（小さめ）
-  const S=0.62;
+  const S=0.68;
 
-  // ── かご（左肩後ろ）──
-  drawBasket2(W/2-42*S+sw*.2, baseY-165*S+vb);
+  // ── かご（背中左側）──
+  drawBasket2(W/2-36*S+sw*.15, baseY-178*S+vb);
 
-  // ── 足（細め）──
-  const lLX=W/2-20*S+sw*.4, rLX=W/2+20*S-sw*.4;
-  const lLY=baseY+lStep*.25, rLY=baseY-lStep*.25;
-  cx.fillStyle='#1d4ed8';
+  // ── 後ろ足（丸くてかわいい）──
+  const lLX=W/2-16*S+sw*.35, rLX=W/2+16*S-sw*.35;
+  const lLY=baseY+lStep*.2, rLY=baseY-lStep*.2;
+  // 左足
+  cx.fillStyle=BR;
   cx.beginPath();
-  cx.moveTo(W/2-36*S+sw*.2,baseY-110*S+vb); cx.lineTo(W/2-8*S+sw*.2,baseY-110*S+vb);
-  cx.lineTo(lLX+9*S,lLY); cx.lineTo(lLX-9*S,lLY); cx.closePath(); cx.fill();
-  cx.fillStyle='#2563eb';
+  cx.moveTo(W/2-30*S+sw*.2,baseY-95*S+vb); cx.lineTo(W/2-4*S+sw*.2,baseY-95*S+vb);
+  cx.lineTo(lLX+10*S,lLY-5*S); cx.lineTo(lLX-10*S,lLY-5*S); cx.closePath(); cx.fill();
+  // 右足
+  cx.fillStyle=BRL;
   cx.beginPath();
-  cx.moveTo(W/2+8*S-sw*.2,baseY-110*S+vb); cx.lineTo(W/2+36*S-sw*.2,baseY-110*S+vb);
-  cx.lineTo(rLX+9*S,rLY); cx.lineTo(rLX-9*S,rLY); cx.closePath(); cx.fill();
-  // 靴（小さめ）
-  for(const[sx2,sy2,fl] of [[lLX,lLY,.08],[rLX,rLY,-.08]]){
-    cx.fillStyle='#e2e8f0';
-    cx.save();cx.translate(sx2,sy2+5*S);cx.scale(1,.38);
-    cx.beginPath();cx.ellipse(0,0,14*S,9*S,fl,0,Math.PI*2);cx.fill();
-    cx.strokeStyle='#94a3b8';cx.lineWidth=1;cx.stroke();
+  cx.moveTo(W/2+4*S-sw*.2,baseY-95*S+vb); cx.lineTo(W/2+30*S-sw*.2,baseY-95*S+vb);
+  cx.lineTo(rLX+10*S,rLY-5*S); cx.lineTo(rLX-10*S,rLY-5*S); cx.closePath(); cx.fill();
+  // 肉球っぽい丸い足裏
+  cx.fillStyle=CREAM;
+  cx.beginPath();cx.ellipse(lLX,lLY+4*S,13*S,7*S,0,0,Math.PI*2);cx.fill();
+  cx.beginPath();cx.ellipse(rLX,rLY+4*S,13*S,7*S,0,0,Math.PI*2);cx.fill();
+  cx.fillStyle='rgba(0,0,0,.12)'; // 肉球の点
+  for(const[ox2,oy2] of [[-5,-3],[5,-3],[0,-7]]){
+    cx.beginPath();cx.arc(lLX+ox2*S,lLY+4*S+oy2*S,2.5*S,0,Math.PI*2);cx.fill();
+    cx.beginPath();cx.arc(rLX+ox2*S,rLY+4*S+oy2*S,2.5*S,0,Math.PI*2);cx.fill();
+  }
+
+  // ── 胴体（丸くてふわふわ）──
+  cx.fillStyle=BR;
+  cx.beginPath();cx.ellipse(W/2+sw*.1,baseY-105*S+vb,32*S,42*S,0,0,Math.PI*2);cx.fill();
+  // お腹のクリーム色パッチ（後ろから少し見える）
+  cx.fillStyle=CREAM;
+  cx.beginPath();cx.ellipse(W/2+sw*.1,baseY-95*S+vb,14*S,20*S,0,0,Math.PI*2);cx.fill();
+
+  // ── 前足（短くてかわいい）──
+  const laShX=W/2-30*S, laShY=baseY-130*S+vb;
+  const laPaX=W/2-34*S-sw*.3, laPaY=baseY-95*S+vb-lStep*.25;
+  cx.strokeStyle=BR;cx.lineWidth=16*S;cx.lineCap='round';
+  cx.beginPath();cx.moveTo(laShX,laShY);cx.lineTo(laPaX,laPaY);cx.stroke();
+  cx.fillStyle=BRL;
+  cx.beginPath();cx.ellipse(laPaX,laPaY,11*S,9*S,-.2,0,Math.PI*2);cx.fill();
+  cx.fillStyle=CREAM;
+  cx.beginPath();cx.arc(laPaX,laPaY,7*S,0,Math.PI*2);cx.fill();
+  cx.fillStyle='rgba(0,0,0,.1)';
+  for(const[ox2,oy2] of [[-3,-4],[3,-4],[0,-7]]){
+    cx.beginPath();cx.arc(laPaX+ox2*S,laPaY+oy2*S,1.8*S,0,Math.PI*2);cx.fill();
+  }
+  // 右前足
+  const raShX=W/2+30*S, raShY=baseY-130*S+vb;
+  const raPaX=W/2+34*S+sw*.3, raPaY=baseY-95*S+vb+lStep*.25;
+  cx.strokeStyle=BR;
+  cx.beginPath();cx.moveTo(raShX,raShY);cx.lineTo(raPaX,raPaY);cx.stroke();
+  cx.fillStyle=BRL;
+  cx.beginPath();cx.ellipse(raPaX,raPaY,11*S,9*S,.2,0,Math.PI*2);cx.fill();
+  cx.fillStyle=CREAM;
+  cx.beginPath();cx.arc(raPaX,raPaY,7*S,0,Math.PI*2);cx.fill();
+  cx.fillStyle='rgba(0,0,0,.1)';
+  for(const[ox2,oy2] of [[-3,-4],[3,-4],[0,-7]]){
+    cx.beginPath();cx.arc(raPaX+ox2*S,raPaY+oy2*S,1.8*S,0,Math.PI*2);cx.fill();
+  }
+
+  // ゴミ拾いアニメ（前足が下がる）
+  if(grabT>0){
+    const gp=grabT/22;
+    cx.save();cx.globalAlpha=gp;
+    cx.fillStyle=CREAM;
+    cx.beginPath();cx.arc(W/2+20*S,baseY-60*S,10*S,0,Math.PI*2);cx.fill();
+    cx.shadowColor='#4ade80';cx.shadowBlur=12;
+    cx.font='16px sans-serif';cx.textAlign='center';
+    cx.fillText('✨',W/2+20*S,baseY-75*S);
     cx.restore();
   }
 
-  // ── 胴体（スリム）──
-  cx.fillStyle='#2563eb';
-  cx.beginPath();cx.ellipse(W/2+sw*.1,baseY-108*S+vb,30*S,42*S,0,0,Math.PI*2);cx.fill();
-  cx.strokeStyle='rgba(255,255,255,.16)';cx.lineWidth=1;
-  cx.beginPath();cx.moveTo(W/2+sw*.1,baseY-148*S+vb);cx.lineTo(W/2+sw*.1,baseY-70*S+vb);cx.stroke();
-
-  // ── 左腕（細め）──
-  const laShX=W/2-28*S, laShY=baseY-132*S+vb;
-  const laHaX=W/2-26*S-sw*.4, laHaY=baseY-90*S+vb-lStep*.3;
-  cx.strokeStyle='#2563eb';cx.lineWidth=9*S;cx.lineCap='round';
-  cx.beginPath();cx.moveTo(laShX,laShY);cx.lineTo(laHaX,laHaY);cx.stroke();
-  cx.fillStyle='#fcd8b0';
-  cx.beginPath();cx.arc(laHaX,laHaY,6*S,0,Math.PI*2);cx.fill();
-
-  // ── 右腕 + トング（細め）──
-  const raShX=W/2+28*S, raShY=baseY-132*S+vb;
-  const raHaX=W/2+24*S+sw*.4, raHaY=baseY-90*S+vb+lStep*.3;
-  cx.strokeStyle='#2563eb';cx.lineWidth=9*S;cx.lineCap='round';
-  cx.beginPath();cx.moveTo(raShX,raShY);cx.lineTo(raHaX,raHaY);cx.stroke();
-  cx.fillStyle='#fcd8b0';
-  cx.beginPath();cx.arc(raHaX,raHaY,6*S,0,Math.PI*2);cx.fill();
-  // トング（前方に自然に向く角度）
-  const ta=-Math.PI/2.2-g*.45;   // より垂直に近い角度
-  const tl=50*S+g*36;
-  const hx=raHaX,hy=raHaY-6*S;
-  cx.strokeStyle='#64748b';cx.lineWidth=3.5*S;cx.lineCap='round';
-  cx.beginPath();cx.moveTo(hx,hy);cx.lineTo(hx+Math.cos(ta)*tl*.45,hy+Math.sin(ta)*tl*.45);cx.stroke();
-  const sp2=.14+g*.2;
-  const t1x=hx+Math.cos(ta-sp2)*tl,t1y=hy+Math.sin(ta-sp2)*tl;
-  const t2x=hx+Math.cos(ta+sp2)*tl,t2y=hy+Math.sin(ta+sp2)*tl;
-  cx.strokeStyle='#94a3b8';cx.lineWidth=2.5*S;
-  cx.beginPath();cx.moveTo(hx,hy);cx.lineTo(t1x,t1y);cx.stroke();
-  cx.beginPath();cx.moveTo(hx,hy);cx.lineTo(t2x,t2y);cx.stroke();
-  cx.strokeStyle='#cbd5e1';cx.lineWidth=2*S;
-  cx.beginPath();cx.moveTo(t1x,t1y);cx.lineTo(t1x+Math.cos(ta+.4)*8*S,t1y+Math.sin(ta+.4)*8*S);cx.stroke();
-  cx.beginPath();cx.moveTo(t2x,t2y);cx.lineTo(t2x+Math.cos(ta-.4)*8*S,t2y+Math.sin(ta-.4)*8*S);cx.stroke();
-  if(g>.3){cx.save();cx.shadowColor='#4ade80';cx.shadowBlur=10;cx.font='14px sans-serif';cx.textAlign='center';cx.fillText('✨',(t1x+t2x)/2,(t1y+t2y)/2-5);cx.restore();}
-
-  // ── HEAD (小さめ、後頭部ビュー) ──
-  const headX=W/2+sw*.15;
-  const headY=baseY-185*S+vb;
-  cx.save();
-  cx.translate(headX,headY);
-  const HS=S*1.1; // head scale
+  // ── 頭（後頭部ビュー：丸いクマの頭）──
+  const headX=W/2+sw*.1, headY=baseY-190*S+vb;
+  cx.save();cx.translate(headX,headY);
+  const HS=S;
 
   // 首
-  cx.fillStyle='#fcd8b0';
-  cx.fillRect(-7*HS,12*HS,14*HS,14*HS);
+  cx.fillStyle=BR;cx.beginPath();cx.ellipse(0,16*HS,9*HS,8*HS,0,0,Math.PI*2);cx.fill();
 
-  // 頭（肌ベース）
-  cx.fillStyle='#fcd8b0';
-  cx.beginPath();cx.ellipse(0,0,16*HS,20*HS,0,0,Math.PI*2);cx.fill();
-  // 耳
-  cx.fillStyle='#e8b99a';
-  cx.beginPath();cx.ellipse(-15*HS,1*HS,4*HS,6*HS,-.15,0,Math.PI*2);cx.fill();
-  cx.beginPath();cx.ellipse(15*HS,1*HS,4*HS,6*HS,.15,0,Math.PI*2);cx.fill();
-  // 後頭部を髪で覆う
-  cx.fillStyle='#3d1c02';
-  cx.beginPath();cx.ellipse(0,0,16*HS,20*HS,0,0,Math.PI*2);cx.fill();
-  cx.fillStyle='#2a1200';
-  cx.beginPath();cx.ellipse(0,-3*HS,14*HS,16*HS,0,0,Math.PI*2);cx.fill();
-  cx.fillStyle='rgba(100,50,8,.3)';
-  cx.beginPath();cx.ellipse(-5*HS,-7*HS,8*HS,5*HS,-.4,0,Math.PI*2);cx.fill();
+  // 頭（大きな丸）
+  cx.fillStyle=BR;
+  cx.beginPath();cx.arc(0,0,22*HS,0,Math.PI*2);cx.fill();
 
-  // 旋回時：横顔フェードイン
+  // ★ かわいい丸耳（クマ！）
+  cx.fillStyle=BR;
+  cx.beginPath();cx.arc(-16*HS,-15*HS,9*HS,0,Math.PI*2);cx.fill();
+  cx.beginPath();cx.arc(16*HS,-15*HS,9*HS,0,Math.PI*2);cx.fill();
+  // 耳の内側（クリーム）
+  cx.fillStyle=CREAM;
+  cx.beginPath();cx.arc(-16*HS,-15*HS,5.5*HS,0,Math.PI*2);cx.fill();
+  cx.beginPath();cx.arc(16*HS,-15*HS,5.5*HS,0,Math.PI*2);cx.fill();
+
+  // 後頭部の毛並みハイライト
+  cx.fillStyle=BRL;
+  cx.beginPath();cx.arc(0,2*HS,18*HS,0,Math.PI*2);cx.fill();
+  cx.fillStyle=BR;
+  cx.beginPath();cx.arc(0,-3*HS,15*HS,0,Math.PI*2);cx.fill();
+  cx.fillStyle='rgba(80,40,10,.2)';
+  cx.beginPath();cx.ellipse(-5*HS,-8*HS,9*HS,6*HS,-.4,0,Math.PI*2);cx.fill();
+
+  // 旋回時：クマの横顔がフェードイン
   const tAbs=Math.abs(headTurn);
-  if(tAbs>0.18){
-    const t=Math.min(1,(tAbs-.18)/.7);
+  if(tAbs>0.15){
+    const t=Math.min(1,(tAbs-.15)/.7);
     const side=headTurn>0?-1:1;
     cx.globalAlpha=t;
-    cx.fillStyle='#fcd8b0';
-    cx.beginPath();cx.ellipse(side*12*HS,0,8*HS,14*HS,.1*side,0,Math.PI*2);cx.fill();
-    cx.fillStyle='#fff';
-    cx.beginPath();cx.ellipse(side*9*HS,-2*HS,4*HS,5*HS,0,0,Math.PI*2);cx.fill();
-    cx.fillStyle='#2d4a8e';
-    cx.beginPath();cx.arc(side*9*HS,-2*HS,2.5*HS,0,Math.PI*2);cx.fill();
-    cx.fillStyle='#111';
-    cx.beginPath();cx.arc(side*9*HS,-2*HS,1.4*HS,0,Math.PI*2);cx.fill();
-    cx.fillStyle='rgba(255,255,255,.8)';
-    cx.beginPath();cx.arc(side*10*HS,-4*HS,.8*HS,0,Math.PI*2);cx.fill();
-    cx.strokeStyle='rgba(160,80,40,.5)';cx.lineWidth=1.2;cx.lineCap='round';
-    cx.beginPath();cx.moveTo(side*14*HS,4*HS);cx.quadraticCurveTo(side*17*HS,7*HS,side*15*HS,10*HS);cx.stroke();
-    cx.strokeStyle='#a05030';cx.lineWidth=1.5;
-    cx.beginPath();cx.arc(side*11*HS,9*HS,4*HS,.2,Math.PI-.2);cx.stroke();
+    // 横顔の頬
+    cx.fillStyle=BR;
+    cx.beginPath();cx.ellipse(side*18*HS,1*HS,10*HS,18*HS,.1*side,0,Math.PI*2);cx.fill();
+    // 鼻先（クマらしいまずる）
+    cx.fillStyle=CREAM;
+    cx.beginPath();cx.ellipse(side*19*HS,5*HS,7*HS,5*HS,0,0,Math.PI*2);cx.fill();
+    // 鼻（黒い楕円）
+    cx.fillStyle='#1a0a00';
+    cx.beginPath();cx.ellipse(side*21*HS,4*HS,3.5*HS,2.5*HS,0,0,Math.PI*2);cx.fill();
+    // 目（つぶらな瞳）
+    cx.fillStyle='#1a0a00';
+    cx.beginPath();cx.arc(side*14*HS,-4*HS,3.5*HS,0,Math.PI*2);cx.fill();
+    cx.fillStyle='rgba(255,255,255,.85)';
+    cx.beginPath();cx.arc(side*13*HS,-5.5*HS,1.3*HS,0,Math.PI*2);cx.fill();
     cx.globalAlpha=1;
   }
   cx.restore();
