@@ -629,7 +629,7 @@ let velY=0.001,velX=0;
 let isDragging=false,lastX=0,lastY=0;
 let autoRotating=false;
 let moonAngle=0;
-let cameraTargetZ=6;
+let cameraTargetZ=6,cameraTargetY=0;
 let solarRotY=0.3,solarRotX=0.58,solarVelY=0,solarVelX=0;
 let galaxyT=0;
 const tmpV=new THREE.Vector3();
@@ -673,31 +673,31 @@ const MCFG={
     title:'🌏 ちきゅうをまわそう',
     desc:'ゆびでさわって ちきゅうをまわしてみよう！',
     fact:'⭐ ちきゅうはまあるい！まわりの長さは 約40,000km。\nとうきょうからニューヨークまで 約10,800km もあるよ！',
-    camZ:6,markers:true,showMoon:false,showDN:false,showPlay:false,sun:false,initRotY:null
+    camZ:6,camY:0,markers:true,showMoon:false,showDN:false,showPlay:false,sun:false,initRotY:null
   },
   daynight:{
     title:'🌅 ひるとよる',
     desc:'▶をおして じてんをみてみよう！',
     fact:'☀️ ちきゅうはこまのように くるくるまわっているよ！\nにほんが ひるのとき、アメリカは よるなんだ。',
-    camZ:7,markers:true,showMoon:false,showDN:true,showPlay:true,sun:true,initRotY:Math.PI
+    camZ:7,camY:0,markers:true,showMoon:false,showDN:true,showPlay:true,sun:true,initRotY:Math.PI
   },
   moon:{
     title:'🌕 つきとちきゅう',
     desc:'▶をおして うごかしてみよう！ ★マークがいつも ちきゅうをむいているよ！',
     fact:'🌕 つきはいつも おなじめんを ちきゅうにむけているよ！\nうらがわはずっとかくれていて「うらがわ」とよばれているんだ！',
-    camZ:18,markers:false,showMoon:true,showDN:false,showPlay:true,sun:false,initRotY:null
+    camZ:18,camY:7,markers:false,showMoon:true,showDN:false,showPlay:true,sun:false,initRotY:null
   },
   space:{
     title:'🚀 うちゅうからみると…',
     desc:'うちゅうからちきゅうをながめてみよう！',
     fact:'🌍 うちゅうからみると、ちきゅうはきれいなあおいまる！\n「アオイホシ」ともよばれているよ。',
-    camZ:28,markers:false,showMoon:true,showDN:false,showPlay:false,sun:false,initRotY:null
+    camZ:28,camY:0,markers:false,showMoon:true,showDN:false,showPlay:false,sun:false,initRotY:null
   },
   solar:{
     title:'🪐 たいようけい',
     desc:'ゆびでかたむけて みよう！ わくせいたちはどのくらいのはやさでまわってる？',
     fact:'☀️ たいようけいには8つのわくせい！\nかいおうせいは ちきゅうの165ねんかけて たいようを1しゅうするよ！',
-    camZ:92,markers:false,showMoon:false,showDN:false,showPlay:false,sun:false,initRotY:null
+    camZ:92,camY:0,markers:false,showMoon:false,showDN:false,showPlay:false,sun:false,initRotY:null
   },
 };
 
@@ -708,6 +708,7 @@ function setMode(m){
   document.getElementById('mode-desc').textContent=cfg.desc;
   document.getElementById('fact').textContent=cfg.fact;
   cameraTargetZ=cfg.camZ;
+  cameraTargetY=cfg.camY;
 
   if(cfg.initRotY!==null){rotY=cfg.initRotY;velY=0;}
   if(m==='moon'){rotX=0;velX=0;autoRotating=false;document.getElementById('play-btn').textContent='▶';}
@@ -821,8 +822,10 @@ function animate(){
   requestAnimationFrame(animate);
   const dt=clock.getDelta();
 
-  // Camera smooth interpolation
+  // Camera smooth interpolation — move toward target position then face origin
   camera.position.z+=(cameraTargetZ-camera.position.z)*0.04;
+  camera.position.y+=(cameraTargetY-camera.position.y)*0.04;
+  camera.lookAt(0,0,0);
 
   if(mode==='solar'){
     // Solar system: drag tilts view, planets orbit around sun
