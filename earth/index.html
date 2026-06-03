@@ -715,7 +715,7 @@ function setMode(m){
 
   if(cfg.initRotY!==null){rotY=cfg.initRotY;velY=0;}
   if(m==='moon'){rotX=0;velX=0;autoRotating=false;document.getElementById('play-btn').textContent='▶';}
-  earthMoonTilt=(m==='moon')?-0.52:0;
+  earthMoonTilt=(m==='moon')?0.52:0;
 
   const inSolar=(m==='solar');
   earthMesh.visible=!inSolar;
