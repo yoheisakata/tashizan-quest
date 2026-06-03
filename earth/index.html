@@ -94,6 +94,19 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Hi
 #play-btn.show{display:flex;}
 #play-btn:active{transform:translateY(-50%) scale(0.9);}
 
+/* ── FACT TOGGLE ── */
+#fact-toggle{
+  position:fixed;bottom:98px;left:14px;z-index:11;
+  background:rgba(0,5,30,0.82);
+  border:2px solid rgba(255,255,255,0.22);
+  border-radius:50%;width:38px;height:38px;
+  font-size:1rem;cursor:pointer;color:#bbb;
+  display:flex;align-items:center;justify-content:center;
+  transition:opacity 0.2s,border-color 0.2s;
+}
+#fact-toggle:active{transform:scale(0.88);}
+#fact-toggle.off{opacity:0.35;border-color:rgba(255,255,255,0.08);}
+
 /* ── MOON DAY COUNTER ── */
 #moon-day-panel{
   position:fixed;right:14px;top:80px;z-index:10;pointer-events:none;
@@ -161,6 +174,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Hi
 <button id="play-btn" onclick="togglePlay()">▶</button>
 
 <div id="fact">👆 ゆびでさわって ちきゅうをまわしてみよう！</div>
+<button id="fact-toggle" onclick="toggleFact()">💬</button>
 
 <div id="modes">
   <button class="mode-btn active" id="btn-free"    onclick="setMode('free')">🌏<br>まわそう</button>
@@ -776,6 +790,13 @@ function togglePlay(){
   autoRotating=!autoRotating;
   document.getElementById('play-btn').textContent=autoRotating?'⏸':'▶';
   if(autoRotating)velY=0;
+}
+
+let factVisible=true;
+function toggleFact(){
+  factVisible=!factVisible;
+  document.getElementById('fact').style.display=factVisible?'':'none';
+  document.getElementById('fact-toggle').classList.toggle('off',!factVisible);
 }
 
 // ════════════════════
