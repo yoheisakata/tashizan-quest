@@ -449,7 +449,9 @@ function onMove(e){
   if(!isDragging)return;
   const[x,y]=getXY(e);
   const dx=x-lastX, dy=y-lastY;
-  velY=dx*0.005; velX=dy*0.004;
+  velY=dx*0.005;
+  // Moon mode: only horizontal spin (自転), lock vertical tilt
+  velX=mode==='moon'?0:dy*0.004;
   rotY+=velY;
   rotX=Math.max(-Math.PI/2.4,Math.min(Math.PI/2.4,rotX+velX));
   earthMesh.rotation.set(rotX,rotY,0);
@@ -495,6 +497,8 @@ function setMode(m){
   cameraTargetZ=cfg.camZ;
 
   if(cfg.initRotY!==null){rotY=cfg.initRotY;velY=0;}
+  // Moon mode: level the Earth (reset tilt) so only spin is visible
+  if(m==='moon'){rotX=0;velX=0;}
 
   document.getElementById('japan-label').style.display=cfg.markers?'':'none';
   document.getElementById('america-label').style.display=cfg.markers?'':'none';
