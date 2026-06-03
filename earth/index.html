@@ -23,15 +23,15 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Hi
 #modes{
   position:fixed;bottom:0;left:0;right:0;z-index:10;
   background:linear-gradient(0deg,rgba(0,5,25,0.95) 70%,transparent);
-  padding:10px 12px 18px;display:flex;gap:8px;justify-content:center;
+  padding:10px 8px 18px;display:flex;gap:6px;justify-content:center;
 }
 .mode-btn{
   background:rgba(255,255,255,0.07);
   border:2px solid rgba(255,255,255,0.15);
   border-radius:14px;color:#ccc;
-  font-family:inherit;font-size:0.78rem;font-weight:700;
-  padding:9px 14px;cursor:pointer;text-align:center;
-  line-height:1.45;transition:all 0.2s;min-width:76px;
+  font-family:inherit;font-size:0.7rem;font-weight:700;
+  padding:8px 10px;cursor:pointer;text-align:center;
+  line-height:1.45;transition:all 0.2s;min-width:58px;
 }
 .mode-btn:active{transform:scale(0.93);}
 .mode-btn.active{
@@ -148,6 +148,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Hi
   <button class="mode-btn"        id="btn-daynight" onclick="setMode('daynight')">🌅<br>ひるとよる</button>
   <button class="mode-btn"        id="btn-moon"     onclick="setMode('moon')">🌕<br>つきと<br>ちきゅう</button>
   <button class="mode-btn"        id="btn-space"    onclick="setMode('space')">🚀<br>うちゅうへ</button>
+  <button class="mode-btn"        id="btn-solar"    onclick="setMode('solar')">🪐<br>たいようけい</button>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -164,14 +165,40 @@ const camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, 0.1, 2000
 camera.position.set(0,0,6);
 
 // ═══════════════
-//  STARS
+//  STARS (3D)
 // ═══════════════
 (function(){
-  const n=2500, pos=new Float32Array(n*3);
-  for(let i=0;i<n*3;i++) pos[i]=(Math.random()-0.5)*800;
+  // Main field: sphere surface distribution with star-color variation
+  const n=8000, pos=new Float32Array(n*3), col=new Float32Array(n*3);
+  for(let i=0;i<n;i++){
+    const u=Math.random(), v=Math.random();
+    const theta=2*Math.PI*u, phi=Math.acos(2*v-1);
+    const r=350+Math.random()*150;
+    pos[i*3]  =r*Math.sin(phi)*Math.cos(theta);
+    pos[i*3+1]=r*Math.cos(phi);
+    pos[i*3+2]=r*Math.sin(phi)*Math.sin(theta);
+    const t=Math.random();
+    if(t<0.52){col[i*3]=1;col[i*3+1]=1;col[i*3+2]=1;}          // white
+    else if(t<0.68){col[i*3]=0.74;col[i*3+1]=0.85;col[i*3+2]=1;} // blue-white
+    else if(t<0.84){col[i*3]=1;col[i*3+1]=0.92;col[i*3+2]=0.6;}  // yellow
+    else{col[i*3]=1;col[i*3+1]=0.5;col[i*3+2]=0.4;}              // orange-red
+  }
   const geo=new THREE.BufferGeometry();
   geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
-  scene.add(new THREE.Points(geo, new THREE.PointsMaterial({color:0xffffff,size:0.5,sizeAttenuation:true})));
+  geo.setAttribute('color',new THREE.BufferAttribute(col,3));
+  scene.add(new THREE.Points(geo,new THREE.PointsMaterial({vertexColors:true,size:0.55,sizeAttenuation:true})));
+
+  // Bright standout stars (sparse, larger)
+  const nb=120, bpos=new Float32Array(nb*3);
+  for(let i=0;i<nb;i++){
+    const theta=2*Math.PI*Math.random(), phi=Math.acos(2*Math.random()-1), r=400;
+    bpos[i*3]=r*Math.sin(phi)*Math.cos(theta);
+    bpos[i*3+1]=r*Math.cos(phi);
+    bpos[i*3+2]=r*Math.sin(phi)*Math.sin(theta);
+  }
+  const bgeo=new THREE.BufferGeometry();
+  bgeo.setAttribute('position',new THREE.BufferAttribute(bpos,3));
+  scene.add(new THREE.Points(bgeo,new THREE.PointsMaterial({color:0xffffff,size:2.0,sizeAttenuation:true,transparent:true,opacity:0.85})));
 })();
 
 // ═══════════════════
@@ -382,10 +409,11 @@ new THREE.TextureLoader().load(
 );
 
 // Atmosphere
-scene.add(new THREE.Mesh(
+const earthAtmos=new THREE.Mesh(
   new THREE.SphereGeometry(2.09,48,48),
   new THREE.MeshPhongMaterial({color:0x4488ff,transparent:true,opacity:0.07,side:THREE.FrontSide})
-));
+);
+scene.add(earthAtmos);
 
 // ════════════════
 //  MOON
@@ -458,6 +486,92 @@ sunGlow.position.copy(sunVisual.position);
 sunGlow.visible=false;
 scene.add(sunGlow);
 
+// ══════════════════════════════
+//  SOLAR SYSTEM
+// ══════════════════════════════
+const solarGroup=new THREE.Object3D();
+scene.add(solarGroup);
+solarGroup.visible=false;
+
+// Point light at sun center for planet shading
+const solarLight=new THREE.PointLight(0xfff8e7,3.5,300);
+solarLight.visible=false;
+scene.add(solarLight);
+
+// Sun sphere + glow halos
+const solarSun=new THREE.Mesh(new THREE.SphereGeometry(2.8,32,32),new THREE.MeshBasicMaterial({color:0xffdd44}));
+solarGroup.add(solarSun);
+[[4.5,0.13],[7.0,0.06],[11,0.025]].forEach(([r,op])=>{
+  solarGroup.add(new THREE.Mesh(new THREE.SphereGeometry(r,16,16),
+    new THREE.MeshBasicMaterial({color:0xff9900,transparent:true,opacity:op})));
+});
+
+// Planet definitions: [name, radius, orbitR, period(yr), color, inclination(rad), extras]
+const PLANETS=[
+  {ja:'すいせい',r:0.18,orb:5.5, p:0.241,  col:0xaaaaaa, incl:0.122},
+  {ja:'きんせい',r:0.28,orb:8.5, p:0.615,  col:0xffcc88, incl:0.059},
+  {ja:'ちきゅう',r:0.30,orb:12,  p:1.0,    col:0x55ccff, incl:0,     earth:true},
+  {ja:'かせい',  r:0.20,orb:16.5,p:1.881,  col:0xff6644, incl:0.032},
+  {ja:'もくせい',r:0.90,orb:26,  p:11.86,  col:0xe09050, incl:0.023},
+  {ja:'どせい',  r:0.75,orb:37,  p:29.46,  col:0xf5e090, incl:0.043, rings:true},
+  {ja:'てんのうせい',r:0.50,orb:47,p:84.01, col:0x7dd8e8, incl:0.013},
+  {ja:'かいおうせい',r:0.48,orb:57,p:164.8, col:0x3a6cc7, incl:0.031},
+];
+const solarAngles=PLANETS.map((_,i)=>i*Math.PI*2/8);
+const planetPivots=[],planetMeshes=[],planetLabelEls=[];
+
+PLANETS.forEach((pd,i)=>{
+  // Pivot carries the orbital inclination
+  const pivot=new THREE.Object3D();
+  pivot.rotation.z=pd.incl;
+  solarGroup.add(pivot);
+
+  // Planet mesh
+  const mesh=new THREE.Mesh(
+    new THREE.SphereGeometry(pd.r,24,24),
+    new THREE.MeshPhongMaterial({color:pd.col,shininess:18,specular:0x222222})
+  );
+  mesh.position.set(pd.orb,0,0);
+  pivot.add(mesh);
+
+  // Saturn's rings
+  if(pd.rings){
+    const ring=new THREE.Mesh(
+      new THREE.RingGeometry(pd.r*1.45,pd.r*2.5,64),
+      new THREE.MeshBasicMaterial({color:0xd4c08a,side:THREE.DoubleSide,transparent:true,opacity:0.72})
+    );
+    ring.rotation.x=Math.PI*0.38;
+    mesh.add(ring);
+  }
+
+  // Tiny moon for Earth
+  if(pd.earth){
+    const em=new THREE.Mesh(new THREE.SphereGeometry(0.07,8,8),
+      new THREE.MeshPhongMaterial({color:0xaaaaaa}));
+    em.position.set(0.55,0,0);
+    mesh.add(em);
+  }
+
+  // Orbit path as tube
+  const oPts=[];
+  for(let j=0;j<120;j++){const a=j/120*Math.PI*2;oPts.push(new THREE.Vector3(Math.cos(a)*pd.orb,0,Math.sin(a)*pd.orb));}
+  const oCurve=new THREE.CatmullRomCurve3(oPts,true);
+  pivot.add(new THREE.Mesh(
+    new THREE.TubeGeometry(oCurve,160,pd.earth?0.055:0.032,4,true),
+    new THREE.MeshBasicMaterial({color:pd.earth?0x66aaee:0x334466,transparent:true,opacity:pd.earth?0.55:0.28})
+  ));
+
+  planetPivots.push(pivot);
+  planetMeshes.push(mesh);
+
+  // HTML label
+  const el=document.createElement('div');
+  el.style.cssText='position:fixed;z-index:10;pointer-events:none;font-size:0.62rem;font-weight:900;color:rgba(200,230,255,0.9);text-shadow:0 0 6px #000,0 0 12px #000;white-space:nowrap;display:none;font-family:inherit;';
+  el.textContent=pd.ja;
+  document.body.appendChild(el);
+  planetLabelEls.push(el);
+});
+
 // ════════════════════════
 //  COUNTRY MARKERS (3D)
 // ════════════════════════
@@ -490,6 +604,7 @@ let isDragging=false,lastX=0,lastY=0;
 let autoRotating=false;
 let moonAngle=0;
 let cameraTargetZ=6;
+let solarRotY=0.3,solarRotX=0.38,solarVelY=0,solarVelX=0;
 const tmpV=new THREE.Vector3();
 
 // ════════════════════
@@ -509,12 +624,17 @@ function onMove(e){
   if(!isDragging)return;
   const[x,y]=getXY(e);
   const dx=x-lastX, dy=y-lastY;
-  velY=dx*0.005;
-  // Moon mode: only horizontal spin (自転), lock vertical tilt
-  velX=mode==='moon'?0:dy*0.004;
-  rotY+=velY;
-  rotX=Math.max(-Math.PI/2.4,Math.min(Math.PI/2.4,rotX+velX));
-  earthMesh.rotation.set(rotX,rotY,0);
+  if(mode==='solar'){
+    solarVelY=dx*0.005; solarVelX=dy*0.004;
+    solarRotY+=solarVelY;
+    solarRotX=Math.max(-Math.PI/2,Math.min(Math.PI/2,solarRotX+solarVelX));
+  } else {
+    velY=dx*0.005;
+    velX=mode==='moon'?0:dy*0.004;
+    rotY+=velY;
+    rotX=Math.max(-Math.PI/2.4,Math.min(Math.PI/2.4,rotX+velX));
+    earthMesh.rotation.set(rotX,rotY,0);
+  }
   lastX=x;lastY=y;
 }
 
@@ -546,6 +666,12 @@ const MCFG={
     fact:'🌍 うちゅうからみると、ちきゅうはきれいなあおいまる！\n「アオイホシ」ともよばれているよ。',
     camZ:28,markers:false,showMoon:true,showDN:false,showPlay:false,sun:false,initRotY:null
   },
+  solar:{
+    title:'🪐 たいようけい',
+    desc:'ゆびでかたむけて みよう！ わくせいたちはどのくらいのはやさでまわってる？',
+    fact:'☀️ たいようけいには8つのわくせい！\nかいおうせいは ちきゅうの165ねんかけて たいようを1しゅうするよ！',
+    camZ:92,markers:false,showMoon:false,showDN:false,showPlay:false,sun:false,initRotY:null
+  },
 };
 
 function setMode(m){
@@ -557,23 +683,33 @@ function setMode(m){
   cameraTargetZ=cfg.camZ;
 
   if(cfg.initRotY!==null){rotY=cfg.initRotY;velY=0;}
-  // Moon mode: level the Earth (reset tilt) so only spin is visible
   if(m==='moon'){rotX=0;velX=0;}
 
-  document.getElementById('japan-label').style.display=cfg.markers?'':'none';
-  document.getElementById('america-label').style.display=cfg.markers?'':'none';
-  document.getElementById('dn-panel').classList.toggle('show',cfg.showDN);
+  const inSolar=(m==='solar');
+  earthMesh.visible=!inSolar;
+  earthAtmos.visible=!inSolar;
+  solarGroup.visible=inSolar;
+  solarLight.visible=inSolar;
+  sunLight.visible=!inSolar;
+
+  document.getElementById('japan-label').style.display=(!inSolar&&cfg.markers)?'':'none';
+  document.getElementById('america-label').style.display=(!inSolar&&cfg.markers)?'':'none';
+  document.getElementById('dn-panel').classList.toggle('show',cfg.showDN&&!inSolar);
 
   const pb=document.getElementById('play-btn');
-  pb.classList.toggle('show',cfg.showPlay);
+  pb.classList.toggle('show',cfg.showPlay&&!inSolar);
   if(!cfg.showPlay){autoRotating=false;pb.textContent='▶';velY=0.001;}
 
   sunVisual.visible=cfg.sun;
   sunGlow.visible=cfg.sun;
-  orbitRing.visible=cfg.showMoon;
-  moonPivot.visible=cfg.showMoon;
-  moonFaceMarker.visible=(m==='moon');
-  moonFaceGlow.visible=(m==='moon');
+  if(!inSolar){
+    orbitRing.visible=cfg.showMoon;
+    moonPivot.visible=cfg.showMoon;
+    moonFaceMarker.visible=(m==='moon');
+    moonFaceGlow.visible=(m==='moon');
+  } else {
+    moonPivot.visible=false;
+  }
 
   document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('btn-'+m).classList.add('active');
@@ -626,6 +762,18 @@ function projectMoonLabel(){
   el.style.top=((-p.y+1)/2*innerHeight+30)+'px';
 }
 
+function projectPlanetLabels(){
+  planetMeshes.forEach((mesh,i)=>{
+    const el=planetLabelEls[i];
+    mesh.getWorldPosition(tmpV);
+    const p=tmpV.project(camera);
+    if(p.z>1||p.x<-1.05||p.x>1.05||p.y<-1.05||p.y>1.05){el.style.display='none';return;}
+    el.style.display='block';
+    el.style.left=((p.x+1)/2*innerWidth+8)+'px';
+    el.style.top=((-p.y+1)/2*innerHeight-18)+'px';
+  });
+}
+
 function projectMoonFaceLabel(){
   const el=document.getElementById('moon-face-label');
   if(mode!=='moon'){el.style.display='none';return;}
@@ -648,37 +796,53 @@ function animate(){
   // Camera smooth interpolation
   camera.position.z+=(cameraTargetZ-camera.position.z)*0.04;
 
-  // Earth rotation
-  if(!isDragging){
-    if(autoRotating){
-      rotY+=0.0035;
-    } else {
-      velY*=0.97;
-      velX*=0.97;
-      rotY+=(mode==='free'?velY+0.0008:velY);
-      rotX=Math.max(-Math.PI/2.4,Math.min(Math.PI/2.4,rotX+velX));
+  if(mode==='solar'){
+    // Solar system: drag tilts view, planets orbit around sun
+    if(!isDragging){
+      solarVelY*=0.97; solarVelX*=0.97;
+      solarRotY+=solarVelY+0.00025;
     }
-    earthMesh.rotation.set(rotX,rotY,0);
-  }
-
-  // Moon orbit
-  if(mode==='moon'){
-    // Sync moon position to Earth's drag rotation so spinning Earth moves the moon
-    moonPivot.rotation.y=rotY*0.15;
+    solarGroup.rotation.y=solarRotY;
+    solarGroup.rotation.x=solarRotX;
+    PLANETS.forEach((pd,i)=>{
+      solarAngles[i]+=dt*0.4/pd.p;
+      planetPivots[i].rotation.y=solarAngles[i];
+    });
+    projectPlanetLabels();
   } else {
-    moonAngle+=dt*(mode==='space'?0.15:0.25);
-    moonPivot.rotation.y=moonAngle;
-  }
+    // Hide planet labels when not in solar mode
+    planetLabelEls.forEach(el=>{el.style.display='none';});
 
-  // Labels
-  const cfg=MCFG[mode];
-  if(cfg.markers){
-    projectLabel(jpMarker,'japan-label');
-    projectLabel(usMarker,'america-label');
+    // Earth rotation
+    if(!isDragging){
+      if(autoRotating){
+        rotY+=0.0035;
+      } else {
+        velY*=0.97; velX*=0.97;
+        rotY+=(mode==='free'?velY+0.0008:velY);
+        rotX=Math.max(-Math.PI/2.4,Math.min(Math.PI/2.4,rotX+velX));
+      }
+      earthMesh.rotation.set(rotX,rotY,0);
+    }
+
+    // Moon orbit
+    if(mode==='moon'){
+      moonPivot.rotation.y=rotY*0.15;
+    } else {
+      moonAngle+=dt*(mode==='space'?0.15:0.25);
+      moonPivot.rotation.y=moonAngle;
+    }
+
+    // Labels
+    const cfg=MCFG[mode];
+    if(cfg.markers){
+      projectLabel(jpMarker,'japan-label');
+      projectLabel(usMarker,'america-label');
+    }
+    projectMoonLabel();
+    projectMoonFaceLabel();
+    updateDayNight();
   }
-  projectMoonLabel();
-  projectMoonFaceLabel();
-  updateDayNight();
 
   renderer.render(scene,camera);
 }
