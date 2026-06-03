@@ -617,7 +617,7 @@ function projectLabel(marker,labelId){
 
 function projectMoonLabel(){
   const el=document.getElementById('moon-label');
-  if(mode!=='moon'&&mode!=='space'){el.style.display='none';return;}
+  if(mode!=='space'){el.style.display='none';return;}
   moonMesh.getWorldPosition(tmpV);
   const p=tmpV.project(camera);
   if(p.z>1){el.style.display='none';return;}
