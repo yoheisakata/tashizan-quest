@@ -450,28 +450,25 @@ function drawCharBody(){
   cx.strokeStyle='rgba(255,255,255,.16)';cx.lineWidth=1.2;
   cx.beginPath();cx.moveTo(W/2+sw*.15,baseY-148*S+vb);cx.lineTo(W/2+sw*.15,baseY-70*S+vb);cx.stroke();
 
-  // ── 左腕（自然に下げる）──
-  // 肩から肘、肘から手首と自然な曲がり
-  const laShX=W/2-50*S-sw, laShY=baseY-138*S+vb;
-  const laElX=W/2-62*S-sw*1.2, laElY=baseY-100*S+vb-lStep*.2;
-  const laHaX=W/2-58*S-sw*1.4, laHaY=baseY-74*S+vb;
-  cx.strokeStyle='#2563eb';cx.lineWidth=16*S;cx.lineCap='round';cx.lineJoin='round';
-  cx.beginPath();cx.moveTo(laShX,laShY);cx.quadraticCurveTo(laElX,laElY,laHaX,laHaY);cx.stroke();
+  // ── 左腕（脇に沿って自然に垂らす）──
+  const laShX=W/2-44*S, laShY=baseY-132*S+vb;
+  const laHaX=W/2-42*S-sw*.5, laHaY=baseY-88*S+vb-lStep*.3;
+  cx.strokeStyle='#2563eb';cx.lineWidth=14*S;cx.lineCap='round';
+  cx.beginPath();cx.moveTo(laShX,laShY);cx.lineTo(laHaX,laHaY);cx.stroke();
   cx.fillStyle='#fcd8b0';
-  cx.beginPath();cx.arc(laHaX,laHaY,10*S,0,Math.PI*2);cx.fill();
+  cx.beginPath();cx.arc(laHaX,laHaY,9*S,0,Math.PI*2);cx.fill();
 
-  // ── 右腕 + トング（自然に前に伸ばす）──
-  const raShX=W/2+50*S+sw, raShY=baseY-138*S+vb;
-  const raElX=W/2+60*S+sw*1.2, raElY=baseY-105*S+vb+lStep*.2;
-  const raHaX=W/2+55*S+sw, raHaY=baseY-80*S+vb;
-  cx.strokeStyle='#2563eb';cx.lineWidth=16*S;cx.lineCap='round';cx.lineJoin='round';
-  cx.beginPath();cx.moveTo(raShX,raShY);cx.quadraticCurveTo(raElX,raElY,raHaX,raHaY);cx.stroke();
+  // ── 右腕 + トング（前に軽く差し出す）──
+  const raShX=W/2+44*S, raShY=baseY-132*S+vb;
+  const raHaX=W/2+40*S+sw*.5, raHaY=baseY-88*S+vb+lStep*.3;
+  cx.strokeStyle='#2563eb';cx.lineWidth=14*S;cx.lineCap='round';
+  cx.beginPath();cx.moveTo(raShX,raShY);cx.lineTo(raHaX,raHaY);cx.stroke();
   cx.fillStyle='#fcd8b0';
-  cx.beginPath();cx.arc(raHaX,raHaY,10*S,0,Math.PI*2);cx.fill();
+  cx.beginPath();cx.arc(raHaX,raHaY,9*S,0,Math.PI*2);cx.fill();
   // トング（前方に自然に向く角度）
-  const ta=-Math.PI/3-g*.5;
-  const tl=55*S+g*40;
-  const hx=raHaX,hy=raHaY-8*S;
+  const ta=-Math.PI/2.2-g*.45;   // より垂直に近い角度
+  const tl=50*S+g*36;
+  const hx=raHaX,hy=raHaY-6*S;
   cx.strokeStyle='#64748b';cx.lineWidth=3.5*S;cx.lineCap='round';
   cx.beginPath();cx.moveTo(hx,hy);cx.lineTo(hx+Math.cos(ta)*tl*.45,hy+Math.sin(ta)*tl*.45);cx.stroke();
   const sp2=.14+g*.2;
