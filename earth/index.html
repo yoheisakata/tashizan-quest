@@ -683,9 +683,9 @@ const MCFG={
   },
   moon:{
     title:'🌕 つきとちきゅう',
-    desc:'ちきゅうをぐりぐりして！ ★マークがいつも ちきゅうをむいているよ！',
+    desc:'▶をおして うごかしてみよう！ ★マークがいつも ちきゅうをむいているよ！',
     fact:'🌕 つきはいつも おなじめんを ちきゅうにむけているよ！\nうらがわはずっとかくれていて「うらがわ」とよばれているんだ！',
-    camZ:18,markers:false,showMoon:true,showDN:false,showPlay:false,sun:false,initRotY:null
+    camZ:18,markers:false,showMoon:true,showDN:false,showPlay:true,sun:false,initRotY:null
   },
   space:{
     title:'🚀 うちゅうからみると…',
@@ -710,7 +710,7 @@ function setMode(m){
   cameraTargetZ=cfg.camZ;
 
   if(cfg.initRotY!==null){rotY=cfg.initRotY;velY=0;}
-  if(m==='moon'){rotX=0;velX=0;}
+  if(m==='moon'){rotX=0;velX=0;autoRotating=false;document.getElementById('play-btn').textContent='▶';}
 
   const inSolar=(m==='solar');
   earthMesh.visible=!inSolar;
