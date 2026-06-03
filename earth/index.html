@@ -506,24 +506,25 @@ solarGroup.add(solarSun);
     new THREE.MeshBasicMaterial({color:0xff9900,transparent:true,opacity:op})));
 });
 
-// Planet definitions: [name, radius, orbitR, period(yr), color, inclination(rad), extras]
+// Planet definitions — inclination exaggerated for 3D visual clarity
+// (real values are 1–7°; we use 10–30° so orbits visibly cross in 3D space)
 const PLANETS=[
-  {ja:'すいせい',r:0.18,orb:5.5, p:0.241,  col:0xaaaaaa, incl:0.122},
-  {ja:'きんせい',r:0.28,orb:8.5, p:0.615,  col:0xffcc88, incl:0.059},
-  {ja:'ちきゅう',r:0.30,orb:12,  p:1.0,    col:0x55ccff, incl:0,     earth:true},
-  {ja:'かせい',  r:0.20,orb:16.5,p:1.881,  col:0xff6644, incl:0.032},
-  {ja:'もくせい',r:0.90,orb:26,  p:11.86,  col:0xe09050, incl:0.023},
-  {ja:'どせい',  r:0.75,orb:37,  p:29.46,  col:0xf5e090, incl:0.043, rings:true},
-  {ja:'てんのうせい',r:0.50,orb:47,p:84.01, col:0x7dd8e8, incl:0.013},
-  {ja:'かいおうせい',r:0.48,orb:57,p:164.8, col:0x3a6cc7, incl:0.031},
+  {ja:'すいせい',    r:0.18,orb:5.5, p:0.241,  col:0xaaaaaa, incl: 0.48},
+  {ja:'きんせい',    r:0.28,orb:8.5, p:0.615,  col:0xffcc88, incl:-0.28},
+  {ja:'ちきゅう',    r:0.30,orb:12,  p:1.0,    col:0x55ccff, incl: 0,     earth:true},
+  {ja:'かせい',      r:0.20,orb:16.5,p:1.881,  col:0xff6644, incl: 0.20},
+  {ja:'もくせい',    r:0.90,orb:26,  p:11.86,  col:0xe09050, incl:-0.22},
+  {ja:'どせい',      r:0.75,orb:37,  p:29.46,  col:0xf5e090, incl: 0.32, rings:true},
+  {ja:'てんのうせい',r:0.50,orb:47,  p:84.01,  col:0x7dd8e8, incl:-0.18},
+  {ja:'かいおうせい',r:0.48,orb:57,  p:164.8,  col:0x3a6cc7, incl: 0.24},
 ];
 const solarAngles=PLANETS.map((_,i)=>i*Math.PI*2/8);
 const planetPivots=[],planetMeshes=[],planetLabelEls=[];
 
 PLANETS.forEach((pd,i)=>{
-  // Pivot carries the orbital inclination
+  // Pivot carries the orbital inclination — rotation.x tilts the XZ orbit plane up/down
   const pivot=new THREE.Object3D();
-  pivot.rotation.z=pd.incl;
+  pivot.rotation.x=pd.incl;
   solarGroup.add(pivot);
 
   // Planet mesh
@@ -604,7 +605,7 @@ let isDragging=false,lastX=0,lastY=0;
 let autoRotating=false;
 let moonAngle=0;
 let cameraTargetZ=6;
-let solarRotY=0.3,solarRotX=0.38,solarVelY=0,solarVelX=0;
+let solarRotY=0.3,solarRotX=0.58,solarVelY=0,solarVelX=0;
 const tmpV=new THREE.Vector3();
 
 // ════════════════════
