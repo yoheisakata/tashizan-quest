@@ -67,26 +67,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Hi
 }
 .cdot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
 
-/* ── DAY / NIGHT CARDS ── */
-#dn-panel{
-  position:fixed;left:50%;
-  bottom:calc(var(--bar-h) + 6px + var(--sab));
-  transform:translateX(-50%);
-  z-index:10;display:none;gap:12px;pointer-events:none;
-}
-#dn-panel.show{display:flex;}
-.dn-card{
-  background:rgba(0,5,30,0.88);
-  border:1px solid rgba(255,255,255,0.18);
-  border-radius:14px;padding:10px 14px;
-  text-align:center;min-width:100px;
-}
-.dn-flag{font-size:1.8rem;margin-bottom:3px;}
-.dn-name{font-size:0.65rem;color:rgba(180,220,255,0.75);margin-bottom:5px;}
-.dn-status{font-size:1rem;font-weight:900;}
-.dn-status.day{color:#FFD700;}
-.dn-status.night{color:#89CFF0;}
-
 /* ── FACT BUBBLE ── */
 #fact{
   position:fixed;
@@ -292,19 +272,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Hi
 </div>
 <button id="speed-btn" onclick="toggleSpeed()">1x</button>
 
-<div id="dn-panel">
-  <div class="dn-card">
-    <div class="dn-flag">🇯🇵</div>
-    <div class="dn-name">にほん（とうきょう）</div>
-    <div class="dn-status day" id="dn-jp">☀️ ひる</div>
-  </div>
-  <div class="dn-card">
-    <div class="dn-flag">🇺🇸</div>
-    <div class="dn-name">アメリカ（ニューヨーク）</div>
-    <div class="dn-status night" id="dn-us">🌙 よる</div>
-  </div>
-</div>
-
 <button id="play-btn" onclick="togglePlay()">▶</button>
 
 <div id="fact" style="display:none">👆 ゆびでさわって ちきゅうをまわしてみよう！</div>
@@ -312,7 +279,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Hi
 
 <div id="modes">
   <button class="mode-btn active" id="btn-free"    onclick="setMode('free')">🌏<br>まわそう</button>
-  <button class="mode-btn"        id="btn-daynight" onclick="setMode('daynight')">🌅<br>ひるとよる</button>
   <button class="mode-btn"        id="btn-moon"     onclick="setMode('moon')">🌕<br>つきと<br>ちきゅう</button>
   <button class="mode-btn"        id="btn-space"    onclick="setMode('space')">🚀<br>うちゅうへ</button>
   <button class="mode-btn"        id="btn-solar"    onclick="setMode('solar')">🪐<br>たいようけい</button>
@@ -849,12 +815,6 @@ const MCFG={
     fact:'⭐ ちきゅうはまあるい！まわりの長さは 約40,000km。\nとうきょうからニューヨークまで 約10,800km もあるよ！',
     camZ:6,camY:0,markers:true,showMoon:false,showDN:false,showPlay:false,sun:false,initRotY:null
   },
-  daynight:{
-    title:'🌅 ひるとよる',
-    desc:'▶をおして じてんをみてみよう！',
-    fact:'☀️ ちきゅうはこまのように くるくるまわっているよ！\nにほんが ひるのとき、アメリカは よるなんだ。',
-    camZ:7,camY:0,markers:true,showMoon:false,showDN:true,showPlay:true,sun:true,initRotY:Math.PI
-  },
   moon:{
     title:'🌕 つきとちきゅう',
     desc:'▶をおして うごかしてみよう！ ★マークがいつも ちきゅうをむいているよ！',
@@ -906,8 +866,6 @@ function setMode(m){
 
   document.getElementById('japan-label').style.display=(!inSolar&&cfg.markers)?'':'none';
   document.getElementById('america-label').style.display=(!inSolar&&cfg.markers)?'':'none';
-  document.getElementById('dn-panel').classList.toggle('show',cfg.showDN&&!inSolar);
-
   const pb=document.getElementById('play-btn');
   pb.classList.toggle('show',cfg.showPlay&&!inSolar);
   if(!cfg.showPlay){autoRotating=false;pb.textContent='▶';velY=0.001;}
@@ -963,21 +921,6 @@ function toggleFact(){
   factVisible=!factVisible;
   document.getElementById('fact').style.display=factVisible?'':'none';
   document.getElementById('fact-toggle').classList.toggle('off',!factVisible);
-}
-
-// ════════════════════
-//  DAY / NIGHT UPDATE
-// ════════════════════
-const sunDir=sunLight.position.clone().normalize();
-function updateDayNight(){
-  if(mode!=='daynight')return;
-  [jpMarker,usMarker].forEach((mk,i)=>{
-    mk.getWorldPosition(tmpV);
-    const inDay=tmpV.normalize().dot(sunDir)>0;
-    const el=document.getElementById(i===0?'dn-jp':'dn-us');
-    el.textContent=inDay?'☀️ ひる':'🌙 よる';
-    el.className='dn-status '+(inDay?'day':'night');
-  });
 }
 
 // ════════════════════
@@ -1128,7 +1071,6 @@ function animate(){
     }
     projectMoonLabel();
     projectMoonFaceLabel();
-    updateDayNight();
   }
 
   renderer.render(scene,camera);
