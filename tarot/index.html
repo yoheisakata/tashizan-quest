@@ -488,6 +488,24 @@ body::before {
   <button class="reset-btn" id="resetBtn" style="display:none">もう一度占う</button>
 </div>
 
+<!-- Quiz link banner (fixed bottom) -->
+<a href="quiz.html" style="
+  position:fixed;bottom:0;left:0;right:0;z-index:50;
+  background:linear-gradient(135deg,rgba(124,58,237,0.92),rgba(79,30,160,0.95));
+  border-top:1px solid rgba(168,85,247,0.4);
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  padding:12px 20px;text-decoration:none;color:#e8dcc8;
+  font-family:'Noto Serif JP',serif;font-size:0.85rem;
+  backdrop-filter:blur(10px);
+">
+  <span style="font-size:1.2rem">🃏</span>
+  <span>タロットの意味を覚えよう！</span>
+  <span style="
+    background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);
+    border-radius:100px;font-size:0.7rem;padding:3px 10px;
+  ">クイズで学ぶ →</span>
+</a>
+
 <script>
 // --- Tarot Card Data (Major Arcana 22 cards) ---
 const CARDS = [

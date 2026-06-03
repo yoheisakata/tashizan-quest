@@ -9,11 +9,12 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Nunito',sans-serif;background:#0a0a18;color:#eee;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
+body{font-family:'Nunito',sans-serif;background:#0a0a18;color:#eee;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 24px 40px;}
 body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 30% 20%,rgba(168,85,247,0.1) 0%,transparent 50%),radial-gradient(ellipse at 70% 80%,rgba(46,213,115,0.08) 0%,transparent 50%);pointer-events:none;}
 .title{font-size:2rem;font-weight:900;background:linear-gradient(135deg,#f5c518,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px;text-align:center;}
 .sub{color:#777;font-size:0.85rem;margin-bottom:32px;text-align:center;}
-.games{display:flex;flex-direction:column;gap:16px;width:100%;max-width:340px;}
+.games{display:flex;flex-direction:column;gap:12px;width:100%;max-width:340px;}
+.section-label{font-size:0.65rem;font-weight:900;letter-spacing:0.15em;color:#555;text-transform:uppercase;padding:0 4px;margin-top:8px;}
 .game-card{background:#111128;border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:20px;text-decoration:none;color:#eee;transition:transform 0.15s,border-color 0.15s;display:flex;align-items:center;gap:16px;}
 .game-card:hover,.game-card:active{transform:scale(0.97);}
 .game-card.tashizan{border-color:rgba(245,197,24,0.4);}
@@ -24,19 +25,27 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .game-card.espanol:hover{border-color:rgba(251,191,36,0.8);}
 .game-card.tarot{border-color:rgba(168,85,247,0.4);}
 .game-card.tarot:hover{border-color:rgba(168,85,247,0.8);}
+.game-card.quiz{border-color:rgba(124,58,237,0.35);}
+.game-card.quiz:hover{border-color:rgba(124,58,237,0.8);}
 .game-icon{font-size:3rem;flex-shrink:0;}
+.game-icon.sm{font-size:2.2rem;}
 .game-info{flex:1;}
 .game-name{font-size:1.1rem;font-weight:900;margin-bottom:4px;}
 .game-name.gold{color:#f5c518;}
 .game-name.green{color:#2ed573;}
 .game-desc{font-size:0.75rem;color:#777;line-height:1.5;}
 .new-badge{background:linear-gradient(135deg,#ff4757,#c0392b);color:#fff;font-size:0.6rem;font-weight:900;padding:2px 7px;border-radius:100px;margin-left:6px;vertical-align:middle;}
+/* tarot sub-cards indented slightly */
+.game-card.quiz{margin-left:12px;border-radius:16px;padding:16px 20px;}
+.game-card.quiz .game-name{font-size:0.98rem;}
+.game-card.quiz .game-icon{font-size:2rem;}
 </style>
 </head>
 <body>
 <div class="title">🎮 ゲームひろば</div>
 <div class="sub">あそびたいゲームをえらんでね</div>
 <div class="games">
+
   <a class="game-card tashizan" href="tashizan/">
     <div class="game-icon">⚔️</div>
     <div class="game-info">
@@ -44,6 +53,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       <div class="game-desc">計算問題をといてモンスターをたおそう！<br>レベルアップして最強の勇者になれ！</div>
     </div>
   </a>
+
   <a class="game-card gomi" href="gomi/">
     <div class="game-icon">♻️</div>
     <div class="game-info">
@@ -51,13 +61,18 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       <div class="game-desc">落ちてくるゴミをタップして集めよう！<br>60秒でどれだけ稼げるかな？</div>
     </div>
   </a>
+
   <a class="game-card espanol" href="espanol/">
     <div class="game-icon">🇪🇸</div>
     <div class="game-info">
-      <div class="game-name" style="color:#f59e0b">Español <span class="new-badge">NEW</span></div>
+      <div class="game-name" style="color:#f59e0b">Español</div>
       <div class="game-desc">AIとスペイン語で会話練習しよう！<br>聞き取り問題にも挑戦できるよ</div>
     </div>
   </a>
+
+  <!-- Tarot section -->
+  <div class="section-label">🔮 タロット</div>
+
   <a class="game-card tarot" href="tarot/">
     <div class="game-icon">🔮</div>
     <div class="game-info">
@@ -65,6 +80,15 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       <div class="game-desc">タロットカードで今日の運勢を占おう！<br>ワンオラクル・スリーカードにも対応</div>
     </div>
   </a>
+
+  <a class="game-card quiz" href="tarot/quiz.html">
+    <div class="game-icon">🃏</div>
+    <div class="game-info">
+      <div class="game-name" style="color:#7c3aed">タロットクイズ <span class="new-badge">NEW</span></div>
+      <div class="game-desc">カードの意味を当てるクイズゲーム！<br>22枚の大アルカナをマスターしよう</div>
+    </div>
+  </a>
+
 </div>
 </body>
 </html>

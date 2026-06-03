@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🃏</text></svg>">
+<title>タロットクイズ 🃏</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Cinzel:wght@400;700&display=swap');
+
+*{box-sizing:border-box;margin:0;padding:0;}
+
+:root{
+  --gold:#d4a843;
+  --purple:#7c3aed;
+  --purple-light:#a855f7;
+  --bg:#08080f;
+  --text:#e8dcc8;
+  --text-dim:#8a7a66;
+  --correct:#22c55e;
+  --wrong:#ef4444;
+}
+
+body{
+  font-family:'Noto Serif JP',serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  overflow-x:hidden;
+}
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background:
+    radial-gradient(ellipse at 20% 10%,rgba(124,58,237,0.15) 0%,transparent 50%),
+    radial-gradient(ellipse at 80% 90%,rgba(212,168,67,0.08) 0%,transparent 50%);
+  pointer-events:none;
+  z-index:0;
+}
+
+.stars{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+.star{
+  position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;
+  animation:twinkle var(--d,3s) var(--delay,0s) infinite alternate;
+}
+@keyframes twinkle{0%{opacity:0.1;transform:scale(0.8);}100%{opacity:0.9;transform:scale(1.2);}}
+
+.container{
+  position:relative;z-index:1;
+  width:100%;max-width:480px;
+  padding:24px 20px 60px;
+  display:flex;flex-direction:column;align-items:center;
+}
+
+.back-link{
+  position:absolute;top:20px;left:20px;
+  color:var(--text-dim);text-decoration:none;
+  font-size:0.8rem;display:flex;align-items:center;gap:4px;
+  transition:color 0.2s;
+}
+.back-link:hover{color:var(--gold);}
+
+/* ===== INTRO ===== */
+.intro-screen{
+  display:flex;flex-direction:column;align-items:center;
+  text-align:center;padding-top:40px;width:100%;
+}
+.intro-icon{
+  font-size:5rem;margin-bottom:20px;
+  filter:drop-shadow(0 0 20px rgba(212,168,67,0.4));
+  animation:float 3s ease-in-out infinite;
+}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+
+.intro-title{
+  font-family:'Cinzel',serif;font-size:1.8rem;color:var(--gold);
+  letter-spacing:0.1em;margin-bottom:8px;
+  text-shadow:0 0 30px rgba(212,168,67,0.4);
+}
+.intro-subtitle{font-size:0.82rem;color:var(--text-dim);margin-bottom:28px;line-height:1.7;}
+
+.intro-rules{
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(212,168,67,0.15);
+  border-radius:16px;padding:20px;width:100%;
+  text-align:left;margin-bottom:24px;
+}
+.intro-rules h3{
+  font-size:0.75rem;color:var(--gold);letter-spacing:0.1em;
+  margin-bottom:14px;text-align:center;
+}
+.rule-item{
+  display:flex;align-items:flex-start;gap:10px;
+  margin-bottom:10px;font-size:0.82rem;color:var(--text);line-height:1.5;
+}
+.rule-item:last-child{margin-bottom:0;}
+
+.mode-selector{width:100%;display:flex;gap:10px;margin-bottom:24px;}
+.mode-btn{
+  flex:1;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(212,168,67,0.2);
+  border-radius:12px;color:var(--text-dim);
+  font-family:'Noto Serif JP',serif;font-size:0.78rem;
+  padding:12px 8px;cursor:pointer;transition:all 0.2s;
+  text-align:center;line-height:1.5;
+}
+.mode-btn.active{
+  background:rgba(212,168,67,0.1);
+  border-color:var(--gold);color:var(--gold);
+}
+
+.start-btn{
+  background:linear-gradient(135deg,rgba(212,168,67,0.2),rgba(124,58,237,0.2));
+  border:1px solid rgba(212,168,67,0.5);border-radius:100px;
+  color:var(--gold);font-family:'Cinzel',serif;
+  font-size:1.05rem;font-weight:700;padding:14px 48px;
+  cursor:pointer;transition:all 0.3s;letter-spacing:0.1em;
+}
+.start-btn:hover{
+  border-color:var(--gold);
+  box-shadow:0 0 30px rgba(212,168,67,0.25);
+  transform:translateY(-2px);
+}
+
+/* ===== GAME ===== */
+.game-screen{display:none;width:100%;}
+
+.game-header{
+  width:100%;display:flex;align-items:center;
+  justify-content:space-between;margin-bottom:12px;
+}
+.progress-info{font-size:0.78rem;color:var(--text-dim);}
+.score-display{font-family:'Cinzel',serif;font-size:1.1rem;color:var(--gold);}
+.combo-display{font-size:0.75rem;color:var(--purple-light);min-width:72px;text-align:right;}
+
+.progress-bar-bg{
+  width:100%;height:4px;background:rgba(255,255,255,0.07);
+  border-radius:100px;margin-bottom:10px;overflow:hidden;
+}
+.progress-bar-fill{
+  height:100%;
+  background:linear-gradient(90deg,var(--purple),var(--gold));
+  border-radius:100px;transition:width 0.4s ease;
+}
+
+.timer-bar-bg{
+  width:100%;height:3px;background:rgba(255,255,255,0.07);
+  border-radius:100px;margin-bottom:20px;overflow:hidden;
+}
+.timer-bar-fill{
+  height:100%;
+  background:linear-gradient(90deg,var(--correct),#84cc16);
+  border-radius:100px;transition:width 0.1s linear,background 0.5s;
+}
+.timer-bar-fill.warning{background:linear-gradient(90deg,var(--wrong),#f97316);}
+
+/* Card */
+.card-display{
+  width:150px;height:248px;
+  background:linear-gradient(160deg,#12091f,#0a1428,#120923);
+  border:2px solid rgba(212,168,67,0.5);border-radius:16px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  margin-bottom:20px;position:relative;overflow:hidden;
+  box-shadow:0 0 40px rgba(212,168,67,0.15),0 0 80px rgba(124,58,237,0.1);
+  animation:cardIn 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+@keyframes cardIn{
+  from{opacity:0;transform:translateY(-12px) scale(0.95);}
+  to{opacity:1;transform:translateY(0) scale(1);}
+}
+.card-display::before{
+  content:'';position:absolute;inset:8px;
+  border:1px solid rgba(212,168,67,0.18);border-radius:10px;
+}
+.card-display::after{
+  content:'✦ ✦ ✦';position:absolute;bottom:14px;
+  font-size:0.45rem;color:rgba(212,168,67,0.3);letter-spacing:4px;
+}
+.card-corner{
+  position:absolute;top:12px;
+  font-size:0.5rem;color:rgba(212,168,67,0.3);letter-spacing:2px;
+}
+.card-corner.left{left:12px;}
+.card-corner.right{right:12px;}
+
+.card-display-emoji{
+  font-size:5rem;line-height:1;margin-bottom:10px;
+  filter:drop-shadow(0 0 12px rgba(212,168,67,0.5));
+  position:relative;z-index:1;
+}
+.card-display-name-en{
+  font-family:'Cinzel',serif;font-size:0.52rem;color:var(--gold);
+  letter-spacing:0.1em;position:relative;z-index:1;
+  text-align:center;padding:0 14px;line-height:1.4;
+}
+.card-display-name-jp{
+  font-size:0.75rem;color:var(--text-dim);margin-top:3px;
+  position:relative;z-index:1;
+}
+
+.question-text{
+  font-size:0.85rem;color:var(--text-dim);
+  text-align:center;margin-bottom:16px;letter-spacing:0.04em;
+}
+
+/* Answers */
+.answers-grid{
+  width:100%;display:grid;
+  grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;
+}
+.answer-btn{
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.1);border-radius:12px;
+  color:var(--text);font-family:'Noto Serif JP',serif;font-size:0.79rem;
+  padding:14px 10px;cursor:pointer;transition:all 0.2s;
+  text-align:center;line-height:1.45;
+  min-height:58px;display:flex;align-items:center;justify-content:center;
+}
+.answer-btn:hover:not(:disabled){
+  background:rgba(212,168,67,0.06);
+  border-color:rgba(212,168,67,0.4);color:var(--gold);
+  transform:translateY(-1px);
+}
+.answer-btn.correct{
+  background:rgba(34,197,94,0.15);border-color:var(--correct);
+  color:var(--correct);transform:scale(1.02);
+}
+.answer-btn.wrong{
+  background:rgba(239,68,68,0.12);border-color:var(--wrong);
+  color:var(--wrong);animation:shake 0.3s ease;
+}
+.answer-btn.reveal{
+  background:rgba(34,197,94,0.07);
+  border-color:rgba(34,197,94,0.35);color:var(--correct);
+}
+.answer-btn:disabled{cursor:not-allowed;}
+
+@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-5px);}75%{transform:translateX(5px);}}
+
+.hint-area{
+  width:100%;min-height:46px;padding:10px 14px;
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.06);border-radius:10px;
+  font-size:0.78rem;color:var(--text-dim);text-align:center;line-height:1.5;
+}
+.hint-area.ok{
+  border-color:rgba(34,197,94,0.3);color:var(--correct);
+  background:rgba(34,197,94,0.05);
+}
+.hint-area.ng{
+  border-color:rgba(239,68,68,0.3);color:var(--wrong);
+  background:rgba(239,68,68,0.05);
+}
+
+/* ===== RESULT ===== */
+.result-screen{display:none;width:100%;text-align:center;flex-direction:column;align-items:center;}
+
+.result-title{
+  font-family:'Cinzel',serif;font-size:1.5rem;color:var(--gold);
+  margin-bottom:8px;text-shadow:0 0 20px rgba(212,168,67,0.4);
+}
+.result-subtitle{font-size:0.82rem;color:var(--text-dim);margin-bottom:28px;}
+
+.result-score-big{
+  font-family:'Cinzel',serif;font-size:3.8rem;color:var(--gold);
+  text-shadow:0 0 30px rgba(212,168,67,0.5);margin-bottom:4px;
+  animation:scoreIn 0.6s cubic-bezier(0.4,0,0.2,1);
+}
+@keyframes scoreIn{from{opacity:0;transform:scale(0.7);}to{opacity:1;transform:scale(1);}}
+
+.result-score-label{font-size:0.72rem;color:var(--text-dim);letter-spacing:0.15em;margin-bottom:28px;}
+
+.result-stats{
+  display:grid;grid-template-columns:1fr 1fr 1fr;
+  gap:10px;width:100%;margin-bottom:24px;
+}
+.stat-card{
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:14px 8px;
+}
+.stat-value{font-family:'Cinzel',serif;font-size:1.4rem;color:var(--text);margin-bottom:4px;}
+.stat-label{font-size:0.65rem;color:var(--text-dim);}
+
+.rank-display{
+  background:linear-gradient(135deg,rgba(212,168,67,0.1),rgba(124,58,237,0.08));
+  border:1px solid rgba(212,168,67,0.3);border-radius:16px;
+  padding:18px;margin-bottom:24px;width:100%;
+}
+.rank-label{font-size:0.68rem;color:var(--text-dim);margin-bottom:6px;}
+.rank-name{font-family:'Cinzel',serif;font-size:1.15rem;color:var(--gold);}
+
+.missed-section{width:100%;text-align:left;margin-bottom:24px;}
+.missed-title{font-size:0.72rem;color:var(--text-dim);letter-spacing:0.08em;margin-bottom:10px;}
+.missed-cards{display:flex;flex-wrap:wrap;gap:8px;}
+.missed-tag{
+  background:rgba(239,68,68,0.08);
+  border:1px solid rgba(239,68,68,0.22);
+  border-radius:8px;padding:6px 11px;
+  font-size:0.75rem;color:var(--text-dim);
+  display:flex;align-items:center;gap:6px;
+}
+
+.result-btns{display:flex;flex-direction:column;gap:12px;width:100%;}
+.retry-btn{
+  background:linear-gradient(135deg,rgba(212,168,67,0.15),rgba(124,58,237,0.15));
+  border:1px solid rgba(212,168,67,0.4);border-radius:100px;
+  color:var(--gold);font-family:'Cinzel',serif;
+  font-size:0.95rem;padding:14px;cursor:pointer;transition:all 0.2s;
+  letter-spacing:0.08em;
+}
+.retry-btn:hover{border-color:var(--gold);box-shadow:0 0 20px rgba(212,168,67,0.2);}
+.nav-link-btn{
+  background:transparent;border:1px solid rgba(255,255,255,0.08);
+  border-radius:100px;color:var(--text-dim);
+  font-family:'Noto Serif JP',serif;font-size:0.82rem;
+  padding:11px;cursor:pointer;transition:all 0.2s;
+  text-decoration:none;display:block;text-align:center;
+}
+.nav-link-btn:hover{border-color:rgba(255,255,255,0.2);color:var(--text);}
+
+/* ===== OVERLAYS ===== */
+.feedback-overlay{
+  position:fixed;top:50%;left:50%;
+  transform:translate(-50%,-50%) scale(0.5);
+  font-size:5rem;opacity:0;transition:all 0.15s;
+  pointer-events:none;z-index:100;
+}
+.feedback-overlay.show{transform:translate(-50%,-50%) scale(1);opacity:1;}
+.feedback-overlay.fade{transform:translate(-50%,-50%) scale(1.4);opacity:0;}
+
+.combo-popup{
+  position:fixed;top:38%;left:50%;transform:translateX(-50%);
+  font-family:'Cinzel',serif;font-size:1.3rem;
+  color:var(--purple-light);text-shadow:0 0 20px var(--purple);
+  opacity:0;pointer-events:none;z-index:99;
+}
+.combo-popup.show{animation:comboAnim 0.9s ease forwards;}
+@keyframes comboAnim{
+  0%{opacity:0;transform:translateX(-50%) translateY(0) scale(0.7);}
+  30%{opacity:1;transform:translateX(-50%) translateY(-10px) scale(1.1);}
+  70%{opacity:1;transform:translateX(-50%) translateY(-16px) scale(1);}
+  100%{opacity:0;transform:translateX(-50%) translateY(-32px) scale(0.9);}
+}
+
+.particle{
+  position:fixed;pointer-events:none;z-index:90;
+  font-size:1.1rem;animation:particleFly 0.9s ease forwards;
+}
+@keyframes particleFly{
+  0%{opacity:1;transform:translate(0,0) scale(1);}
+  100%{opacity:0;transform:translate(var(--tx),var(--ty)) scale(0.2);}
+}
+
+@media(max-width:380px){
+  .card-display{width:130px;height:215px;}
+  .card-display-emoji{font-size:4rem;}
+  .answers-grid{gap:8px;}
+  .answer-btn{font-size:0.74rem;padding:12px 8px;}
+}
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+
+<div class="container">
+  <a class="back-link" href="./">← タロット占いへ</a>
+
+  <!-- ===== INTRO ===== -->
+  <div class="intro-screen" id="introScreen">
+    <div class="intro-icon">🃏</div>
+    <div class="intro-title">TAROT QUIZ</div>
+    <div class="intro-subtitle">
+      カードを見て、正しい意味を当てよう！<br>
+      大アルカナ22枚をマスターせよ
+    </div>
+
+    <div class="intro-rules">
+      <h3>✦ あそびかた ✦</h3>
+      <div class="rule-item"><span>🃏</span><span>カードの絵と名前が表示されます</span></div>
+      <div class="rule-item"><span>⏱️</span><span>15秒以内に正しいキーワードを4択から選ぼう</span></div>
+      <div class="rule-item"><span>🔥</span><span>連続正解でコンボ！スコアがどんどん増える</span></div>
+      <div class="rule-item"><span>⚡</span><span>早く答えるほどタイムボーナスあり</span></div>
+      <div class="rule-item"><span>💫</span><span>全10問・自分のランクを確かめよう</span></div>
+    </div>
+
+    <div class="mode-selector">
+      <button class="mode-btn active" data-mode="normal">
+        🌙 ふつう<br><span style="font-size:0.7em;opacity:0.7">大まかな意味</span>
+      </button>
+      <button class="mode-btn" data-mode="hard">
+        ⚡ ハード<br><span style="font-size:0.7em;opacity:0.7">より深い解釈</span>
+      </button>
+    </div>
+
+    <button class="start-btn" id="startBtn">✦ スタート ✦</button>
+  </div>
+
+  <!-- ===== GAME ===== -->
+  <div class="game-screen" id="gameScreen">
+    <div class="game-header">
+      <div class="progress-info" id="progressInfo">1 / 10</div>
+      <div class="score-display" id="scoreDisplay">0</div>
+      <div class="combo-display" id="comboDisplay"></div>
+    </div>
+
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+    </div>
+    <div class="timer-bar-bg">
+      <div class="timer-bar-fill" id="timerFill" style="width:100%"></div>
+    </div>
+
+    <div class="card-display" id="cardDisplay">
+      <div class="card-corner left">✦</div>
+      <div class="card-corner right">✦</div>
+      <div class="card-display-emoji" id="cardEmoji">🌟</div>
+      <div class="card-display-name-en" id="cardNameEn">THE FOOL</div>
+      <div class="card-display-name-jp" id="cardNameJp">愚者</div>
+    </div>
+
+    <div class="question-text">このカードのキーワードはどれ？</div>
+    <div class="answers-grid" id="answersGrid"></div>
+    <div class="hint-area" id="hintArea">カードの絵をよく見て考えよう ✦</div>
+  </div>
+
+  <!-- ===== RESULT ===== -->
+  <div class="result-screen" id="resultScreen">
+    <div class="result-title" id="resultTitle">結果発表</div>
+    <div class="result-subtitle" id="resultSubtitle"></div>
+
+    <div class="result-score-big" id="resultScore">0</div>
+    <div class="result-score-label">TOTAL SCORE</div>
+
+    <div class="result-stats">
+      <div class="stat-card">
+        <div class="stat-value" id="statCorrect">0</div>
+        <div class="stat-label">正解数</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statAccuracy">0%</div>
+        <div class="stat-label">正答率</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statCombo">0</div>
+        <div class="stat-label">最高コンボ</div>
+      </div>
+    </div>
+
+    <div class="rank-display">
+      <div class="rank-label">✦ あなたのランク</div>
+      <div class="rank-name" id="rankName">見習い占い師</div>
+    </div>
+
+    <div class="missed-section" id="missedSection">
+      <div class="missed-title">✦ 復習しよう</div>
+      <div class="missed-cards" id="missedCards"></div>
+    </div>
+
+    <div class="result-btns">
+      <button class="retry-btn" id="retryBtn">✦ もう一度挑戦 ✦</button>
+      <a class="nav-link-btn" href="./">🔮 タロット占いへ</a>
+      <a class="nav-link-btn" href="../">← ゲームひろばへ</a>
+    </div>
+  </div>
+</div>
+
+<div class="feedback-overlay" id="feedbackOverlay"></div>
+<div class="combo-popup" id="comboPopup"></div>
+
+<script>
+const CARDS = [
+  {
+    emoji:'🌟', nameJp:'愚者', nameEn:'THE FOOL',
+    keyword:'新しい始まり・冒険',
+    keywordHard:'純粋な可能性と無邪気な勇気で未知へ踏み出す',
+    hint:'恐れなく未知の世界へ踏み出す、自由な魂の象徴'
+  },
+  {
+    emoji:'🪄', nameJp:'魔術師', nameEn:'THE MAGICIAN',
+    keyword:'意志力・創造の実現',
+    keywordHard:'才能とリソースをすべて活かして夢を現実にする',
+    hint:'持てるすべての力を使いこなす達人'
+  },
+  {
+    emoji:'🌙', nameJp:'女教皇', nameEn:'THE HIGH PRIESTESS',
+    keyword:'内なる知恵・直感',
+    keywordHard:'潜在意識と神秘への深い洞察と沈黙の知恵',
+    hint:'沈黙の中に真実を知る神秘の守護者'
+  },
+  {
+    emoji:'👑', nameJp:'女帝', nameEn:'THE EMPRESS',
+    keyword:'豊穣・母なる愛情',
+    keywordHard:'生命と創造性を育む大地の母の豊かさ',
+    hint:'生命力と豊かさをもたらす母なる存在'
+  },
+  {
+    emoji:'⚔️', nameJp:'皇帝', nameEn:'THE EMPEROR',
+    keyword:'権威・秩序・安定',
+    keywordHard:'規律あるリーダーシップと強固な意志で築く秩序',
+    hint:'規律と力で世界を統べる支配者'
+  },
+  {
+    emoji:'🏛️', nameJp:'法王', nameEn:'THE HIEROPHANT',
+    keyword:'伝統・精神的な指導',
+    keywordHard:'信仰と慣習の中に宿る集合知と精神の橋渡し',
+    hint:'神と人を結ぶ精神的な橋渡し役'
+  },
+  {
+    emoji:'💕', nameJp:'恋人', nameEn:'THE LOVERS',
+    keyword:'愛・重要な選択',
+    keywordHard:'価値観の一致と魂のつながりから生まれる選択',
+    hint:'心の奥底からの選択と深い絆'
+  },
+  {
+    emoji:'🏆', nameJp:'戦車', nameEn:'THE CHARIOT',
+    keyword:'勝利・前進・克服',
+    keywordHard:'強い意志と自制心で困難を打ち砕き前進する',
+    hint:'障害を乗り越え、勝利へと突き進む力'
+  },
+  {
+    emoji:'🦁', nameJp:'力', nameEn:'STRENGTH',
+    keyword:'内なる強さ・忍耐',
+    keywordHard:'慈悲と優しさが生み出す真の勇気と粘り強さ',
+    hint:'力づくではなく、愛で困難を乗り越える'
+  },
+  {
+    emoji:'🏮', nameJp:'隠者', nameEn:'THE HERMIT',
+    keyword:'内省・孤独の知恵',
+    keywordHard:'孤独の中で磨かれた深い精神的洞察と導き',
+    hint:'世界から離れ、内なる光で道を照らす'
+  },
+  {
+    emoji:'☸️', nameJp:'運命の輪', nameEn:'WHEEL OF FORTUNE',
+    keyword:'運命の転換点・チャンス',
+    keywordHard:'宇宙の循環と流れに乗る大きな変化の時',
+    hint:'絶えず回り続ける運命の巡り合わせ'
+  },
+  {
+    emoji:'⚖️', nameJp:'正義', nameEn:'JUSTICE',
+    keyword:'公平・因果応報',
+    keywordHard:'誠実さと論理的思考が生む真のバランス',
+    hint:'行いに見合った結果をもたらす天秤'
+  },
+  {
+    emoji:'🙃', nameJp:'吊られた男', nameEn:'THE HANGED MAN',
+    keyword:'停止・視点の転換',
+    keywordHard:'自発的な停止から生まれる逆転の発見と洞察',
+    hint:'逆さまになって世界を新鮮な目で見る'
+  },
+  {
+    emoji:'💀', nameJp:'死神', nameEn:'DEATH',
+    keyword:'変容・終わりと再生',
+    keywordHard:'古いものを手放すことで訪れる新しい命と変革',
+    hint:'終わりは始まり、死は次の誕生への扉'
+  },
+  {
+    emoji:'✨', nameJp:'節制', nameEn:'TEMPERANCE',
+    keyword:'バランス・調和',
+    keywordHard:'対立するものを穏やかに統合する忍耐の知恵',
+    hint:'極端を避け、流れるように混ぜ合わせる'
+  },
+  {
+    emoji:'😈', nameJp:'悪魔', nameEn:'THE DEVIL',
+    keyword:'束縛・執着・誘惑',
+    keywordHard:'恐れと物質への執着が生む幻の見えない鎖',
+    hint:'自分で作り出した幻の鎖に縛られている'
+  },
+  {
+    emoji:'⚡', nameJp:'塔', nameEn:'THE TOWER',
+    keyword:'突然の崩壊・解放',
+    keywordHard:'偽りの構造が壊れ、真実が露わになる瞬間',
+    hint:'稲妻が偽りを打ち砕き、本物だけが残る'
+  },
+  {
+    emoji:'⭐', nameJp:'星', nameEn:'THE STAR',
+    keyword:'希望・癒し・インスピレーション',
+    keywordHard:'傷を癒し未来への道を照らす純粋な希望の光',
+    hint:'嵐の後に輝く希望の星、心に注がれる癒し'
+  },
+  {
+    emoji:'🌕', nameJp:'月', nameEn:'THE MOON',
+    keyword:'幻想・潜在意識',
+    keywordHard:'不安と夢の狭間で揺れる潜在的な真実',
+    hint:'見えない闇の中で揺れる影と幻'
+  },
+  {
+    emoji:'☀️', nameJp:'太陽', nameEn:'THE SUN',
+    keyword:'喜び・成功・活力',
+    keywordHard:'無邪気な幸福と輝く生命エネルギーの解放',
+    hint:'すべてを明るく照らす、純粋な喜びの光'
+  },
+  {
+    emoji:'📯', nameJp:'審判', nameEn:'JUDGEMENT',
+    keyword:'覚醒・再生・使命',
+    keywordHard:'魂が呼び覚まされる高次の使命への目覚め',
+    hint:'高みからの呼びかけに応え、真の自己に目覚める'
+  },
+  {
+    emoji:'🌍', nameJp:'世界', nameEn:'THE WORLD',
+    keyword:'完成・達成・統合',
+    keywordHard:'一つのサイクルの美しい完結と全体性の獲得',
+    hint:'すべてが一つにつながる、完全なる円環'
+  }
+];
+
+// ===== STATE =====
+let mode = 'normal';
+let questions = [];
+let qIndex = 0;
+let score = 0;
+let combo = 0;
+let maxCombo = 0;
+let correctCount = 0;
+let missedCards = [];
+let timerInterval = null;
+let timeLeft = 15;
+let answered = false;
+const TOTAL = 10;
+const TIME = 15;
+
+// ===== STARS =====
+(function initStars() {
+  const el = document.getElementById('stars');
+  for (let i = 0; i < 70; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*4}s;--delay:${Math.random()*4}s;opacity:${0.2+Math.random()*0.5};`;
+    el.appendChild(s);
+  }
+})();
+
+// ===== MODE SELECT =====
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    mode = btn.dataset.mode;
+  });
+});
+
+document.getElementById('startBtn').addEventListener('click', startGame);
+document.getElementById('retryBtn').addEventListener('click', () => showScreen('intro'));
+
+// ===== GAME =====
+function startGame() {
+  score = 0; combo = 0; maxCombo = 0;
+  correctCount = 0; missedCards = []; qIndex = 0;
+
+  questions = [...CARDS].sort(() => Math.random() - 0.5).slice(0, TOTAL);
+  showScreen('game');
+  loadQuestion();
+}
+
+function loadQuestion() {
+  if (qIndex >= TOTAL) { showResult(); return; }
+
+  answered = false;
+  const card = questions[qIndex];
+
+  document.getElementById('progressInfo').textContent = `${qIndex + 1} / ${TOTAL}`;
+  document.getElementById('scoreDisplay').textContent = score.toLocaleString();
+  document.getElementById('comboDisplay').textContent = combo >= 2 ? `🔥 ${combo}コンボ` : '';
+  document.getElementById('progressFill').style.width = `${(qIndex / TOTAL) * 100}%`;
+
+  // Refresh card animation by cloning
+  const display = document.getElementById('cardDisplay');
+  display.style.animation = 'none';
+  void display.offsetWidth;
+  display.style.animation = '';
+
+  document.getElementById('cardEmoji').textContent = card.emoji;
+  document.getElementById('cardNameEn').textContent = card.nameEn;
+  document.getElementById('cardNameJp').textContent = card.nameJp;
+
+  const correctKw = mode === 'hard' ? card.keywordHard : card.keyword;
+
+  // Build 3 wrong choices from other cards
+  const wrongs = CARDS
+    .filter(c => c.nameJp !== card.nameJp)
+    .sort(() => Math.random() - 0.5)
+    .slice(0, 3)
+    .map(c => mode === 'hard' ? c.keywordHard : c.keyword);
+
+  const choices = [correctKw, ...wrongs].sort(() => Math.random() - 0.5);
+
+  const grid = document.getElementById('answersGrid');
+  grid.innerHTML = '';
+  choices.forEach(kw => {
+    const btn = document.createElement('button');
+    btn.className = 'answer-btn';
+    btn.textContent = kw;
+    btn.addEventListener('click', () => onAnswer(btn, kw === correctKw, card, correctKw));
+    grid.appendChild(btn);
+  });
+
+  const hint = document.getElementById('hintArea');
+  hint.className = 'hint-area';
+  hint.textContent = 'カードの絵をよく見て考えよう ✦';
+
+  startTimer(card, correctKw);
+}
+
+function startTimer(card, correctKw) {
+  clearInterval(timerInterval);
+  timeLeft = TIME;
+  updateTimer();
+  timerInterval = setInterval(() => {
+    timeLeft = Math.max(0, timeLeft - 0.1);
+    updateTimer();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      if (!answered) onAnswer(null, false, card, correctKw, true);
+    }
+  }, 100);
+}
+
+function updateTimer() {
+  const pct = (timeLeft / TIME) * 100;
+  const fill = document.getElementById('timerFill');
+  fill.style.width = pct + '%';
+  fill.classList.toggle('warning', pct < 30);
+}
+
+function onAnswer(clickedBtn, isCorrect, card, correctKw, timeout = false) {
+  if (answered) return;
+  answered = true;
+  clearInterval(timerInterval);
+
+  const btns = document.getElementById('answersGrid').querySelectorAll('.answer-btn');
+  btns.forEach(b => b.disabled = true);
+
+  if (isCorrect) {
+    correctCount++;
+    combo++;
+    if (combo > maxCombo) maxCombo = combo;
+
+    const timeBonus = Math.floor(timeLeft * 6);
+    const mult = combo >= 5 ? 3 : combo >= 3 ? 2 : 1;
+    score += (100 + timeBonus) * mult;
+
+    clickedBtn.classList.add('correct');
+    showFeedback('⭕');
+
+    const hint = document.getElementById('hintArea');
+    hint.className = 'hint-area ok';
+    hint.textContent = `✓ 正解！　${card.hint}`;
+
+    if (combo >= 3) showCombo(combo);
+    if (mult > 1) spawnParticles();
+
+  } else {
+    combo = 0;
+    missedCards.push(card);
+
+    if (clickedBtn) clickedBtn.classList.add('wrong');
+    btns.forEach(b => { if (b.textContent === correctKw) b.classList.add('reveal'); });
+    showFeedback(timeout ? '⏰' : '❌');
+
+    const hint = document.getElementById('hintArea');
+    hint.className = 'hint-area ng';
+    hint.textContent = timeout
+      ? `⏰ 時間切れ！　正解：${correctKw}`
+      : `✗ 不正解　正解：${correctKw}`;
+  }
+
+  document.getElementById('scoreDisplay').textContent = score.toLocaleString();
+  document.getElementById('comboDisplay').textContent = combo >= 2 ? `🔥 ${combo}コンボ` : '';
+
+  setTimeout(() => { qIndex++; loadQuestion(); }, 1900);
+}
+
+// ===== FEEDBACK =====
+function showFeedback(emoji) {
+  const el = document.getElementById('feedbackOverlay');
+  el.textContent = emoji;
+  el.className = 'feedback-overlay show';
+  setTimeout(() => el.className = 'feedback-overlay fade', 500);
+  setTimeout(() => el.className = 'feedback-overlay', 800);
+}
+
+function showCombo(n) {
+  const el = document.getElementById('comboPopup');
+  el.textContent = `🔥 ${n}コンボ！`;
+  el.className = 'combo-popup show';
+  setTimeout(() => el.className = 'combo-popup', 900);
+}
+
+function spawnParticles() {
+  const emojis = ['✨','⭐','💫','🌟','✦'];
+  for (let i = 0; i < 8; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.textContent = emojis[i % emojis.length];
+    const angle = (Math.PI * 2 * i) / 8;
+    const dist = 70 + Math.random() * 60;
+    p.style.cssText = `left:50%;top:45%;--tx:${Math.cos(angle)*dist}px;--ty:${Math.sin(angle)*dist}px;`;
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 900);
+  }
+}
+
+// ===== RESULT =====
+function showResult() {
+  showScreen('result');
+  const acc = Math.round((correctCount / TOTAL) * 100);
+
+  document.getElementById('resultScore').textContent = score.toLocaleString();
+  document.getElementById('statCorrect').textContent = `${correctCount}/${TOTAL}`;
+  document.getElementById('statAccuracy').textContent = `${acc}%`;
+  document.getElementById('statCombo').textContent = maxCombo;
+
+  const rank = getRank(acc);
+  document.getElementById('resultTitle').textContent = rank.title;
+  document.getElementById('resultSubtitle').textContent = rank.sub;
+  document.getElementById('rankName').textContent = rank.name;
+
+  const sec = document.getElementById('missedSection');
+  if (missedCards.length > 0) {
+    sec.style.display = 'block';
+    const container = document.getElementById('missedCards');
+    container.innerHTML = '';
+    missedCards.forEach(c => {
+      const tag = document.createElement('div');
+      tag.className = 'missed-tag';
+      tag.innerHTML = `<span>${c.emoji}</span><span>${c.nameJp}</span>`;
+      container.appendChild(tag);
+    });
+  } else {
+    sec.style.display = 'none';
+  }
+}
+
+function getRank(acc) {
+  if (acc === 100) return { title:'🌟 パーフェクト！', sub:'すべて正解！タロットマスターです！', name:'✦ 大アルカナの賢者 ✦' };
+  if (acc >= 90)  return { title:'⭐ 素晴らしい！',   sub:'タロットの深い知識が身についている！', name:'星の占い師' };
+  if (acc >= 70)  return { title:'🌙 よくできました', sub:'もう少しで達人レベル！引き続き学ぼう', name:'月光の学徒' };
+  if (acc >= 50)  return { title:'✨ なかなか！',     sub:'半分以上わかった！練習を続けよう',    name:'見習い占い師' };
+  return            { title:'🃏 これからだね',       sub:'タロットカードをもっと学んでいこう！', name:'占いの入門者' };
+}
+
+// ===== SCREEN =====
+function showScreen(name) {
+  document.getElementById('introScreen').style.display = 'none';
+  document.getElementById('gameScreen').style.display = 'none';
+  document.getElementById('resultScreen').style.display = 'none';
+  if (name === 'intro') document.getElementById('introScreen').style.display = 'flex';
+  if (name === 'game')  document.getElementById('gameScreen').style.display  = 'block';
+  if (name === 'result') {
+    const el = document.getElementById('resultScreen');
+    el.style.display = 'flex';
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+showScreen('intro');
+</script>
+</body>
+</html>
