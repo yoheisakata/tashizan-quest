@@ -401,10 +401,13 @@ function makeMoonTex(){
 // ════════════════
 //  EARTH MESH
 // ════════════════
+// earthMoonGroup lets us tilt the whole Earth+Moon system for a top-down view
+const earthMoonGroup=new THREE.Object3D();
+scene.add(earthMoonGroup);
+
 const earthMat=new THREE.MeshPhongMaterial({map:makeEarthTex(),specular:new THREE.Color(0x334455),shininess:12});
 const earthMesh=new THREE.Mesh(new THREE.SphereGeometry(2,64,64),earthMat);
-scene.add(earthMesh);
-// Try to load a high-quality photo texture; canvas texture is used immediately as fallback
+earthMoonGroup.add(earthMesh);
 new THREE.TextureLoader().load(
   'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/textures/planets/earth_atmos_2048.jpg',
   tex=>{earthMat.map=tex;earthMat.needsUpdate=true;}
@@ -415,13 +418,13 @@ const earthAtmos=new THREE.Mesh(
   new THREE.SphereGeometry(2.09,48,48),
   new THREE.MeshPhongMaterial({color:0x4488ff,transparent:true,opacity:0.07,side:THREE.FrontSide})
 );
-scene.add(earthAtmos);
+earthMoonGroup.add(earthAtmos);
 
 // ════════════════
 //  MOON
 // ════════════════
 const moonPivot = new THREE.Object3D();
-scene.add(moonPivot);
+earthMoonGroup.add(moonPivot);
 
 const moonMat=new THREE.MeshPhongMaterial({map:makeMoonTex(),specular:new THREE.Color(0x111111),shininess:2});
 const moonMesh=new THREE.Mesh(new THREE.SphereGeometry(0.55,48,48),moonMat);
@@ -629,7 +632,7 @@ let velY=0.001,velX=0;
 let isDragging=false,lastX=0,lastY=0;
 let autoRotating=false;
 let moonAngle=0;
-let cameraTargetZ=6,cameraTargetY=0;
+let cameraTargetZ=6,cameraTargetY=0,earthMoonTilt=0;
 let solarRotY=0.3,solarRotX=0.58,solarVelY=0,solarVelX=0;
 let galaxyT=0;
 const tmpV=new THREE.Vector3();
@@ -712,6 +715,7 @@ function setMode(m){
 
   if(cfg.initRotY!==null){rotY=cfg.initRotY;velY=0;}
   if(m==='moon'){rotX=0;velX=0;autoRotating=false;document.getElementById('play-btn').textContent='▶';}
+  earthMoonTilt=(m==='moon')?-0.52:0;
 
   const inSolar=(m==='solar');
   earthMesh.visible=!inSolar;
@@ -822,10 +826,12 @@ function animate(){
   requestAnimationFrame(animate);
   const dt=clock.getDelta();
 
-  // Camera smooth interpolation — move toward target position then face origin
+  // Camera smooth interpolation
   camera.position.z+=(cameraTargetZ-camera.position.z)*0.04;
   camera.position.y+=(cameraTargetY-camera.position.y)*0.04;
-  camera.lookAt(0,0,0);
+  if(camera.position.y!==0)camera.lookAt(0,0,0);
+  // Smoothly tilt the Earth+Moon group for the top-down moon view
+  earthMoonGroup.rotation.x+=(earthMoonTilt-earthMoonGroup.rotation.x)*0.05;
 
   if(mode==='solar'){
     // Solar system: drag tilts view, planets orbit around sun
