@@ -93,6 +93,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Hi
 }
 #play-btn.show{display:flex;}
 #play-btn:active{transform:translateY(-50%) scale(0.9);}
+#play-btn.moon-center{
+  right:auto;left:50%;top:auto;bottom:152px;
+  transform:translateX(-50%);
+}
+#play-btn.moon-center:active{transform:translateX(-50%) scale(0.9);}
 
 /* ── FACT TOGGLE ── */
 #fact-toggle{
@@ -109,9 +114,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Hi
 
 /* ── MOON DAY COUNTER ── */
 #moon-day-panel{
-  position:fixed;right:14px;top:80px;z-index:10;pointer-events:none;
+  position:fixed;left:50%;transform:translateX(-50%);bottom:218px;
+  z-index:10;pointer-events:none;
   background:rgba(0,5,30,0.88);border:1px solid rgba(255,255,255,0.15);
-  border-radius:16px;padding:12px 16px;display:none;min-width:118px;
+  border-radius:16px;padding:12px 20px;display:none;min-width:160px;text-align:center;
 }
 #moon-day-num{
   font-size:1.35rem;font-weight:900;color:#fffde7;
@@ -120,6 +126,25 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Hi
 #moon-day-sub{font-size:0.58rem;color:rgba(180,220,255,0.7);margin-bottom:8px;}
 #moon-day-bar{height:5px;border-radius:3px;background:rgba(255,255,255,0.1);overflow:hidden;}
 #moon-day-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#ffaa00,#ffee88);width:0%;}
+
+/* ── SPEED BUTTON ── */
+#speed-btn{
+  position:fixed;left:calc(50% + 44px);bottom:163px;
+  z-index:10;display:none;
+  background:rgba(0,5,30,0.82);
+  border:2px solid rgba(180,220,255,0.3);
+  border-radius:20px;padding:4px 12px;
+  font-size:0.75rem;font-weight:900;cursor:pointer;
+  color:rgba(180,220,255,0.7);
+  transition:all 0.2s;font-family:inherit;
+}
+#speed-btn.show{display:block;}
+#speed-btn.active{
+  background:rgba(255,200,50,0.2);
+  border-color:rgba(255,200,50,0.7);
+  color:#ffd700;
+}
+#speed-btn:active{opacity:0.7;}
 
 /* ── MOON LABEL ── */
 #moon-label{
@@ -157,6 +182,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Hi
   <div id="moon-day-sub">27日で ちきゅうを 1しゅう</div>
   <div id="moon-day-bar"><div id="moon-day-fill"></div></div>
 </div>
+<button id="speed-btn" onclick="toggleSpeed()">1.5x</button>
 
 <div id="dn-panel">
   <div class="dn-card">
@@ -492,7 +518,7 @@ const orbitPts=[];
 for(let i=0;i<96;i++){const a=i/96*Math.PI*2;orbitPts.push(new THREE.Vector3(Math.cos(a)*9,0.5,Math.sin(a)*9));}
 const orbitCurve=new THREE.CatmullRomCurve3(orbitPts,true);
 const orbitRing=new THREE.Mesh(
-  new THREE.TubeGeometry(orbitCurve,128,0.035,6,true),
+  new THREE.TubeGeometry(orbitCurve,128,0.018,5,true),
   new THREE.MeshBasicMaterial({color:0x66aadd,transparent:true,opacity:0.7})
 );
 moonPivot.add(orbitRing);
@@ -664,6 +690,7 @@ let rotY=0.3,rotX=0;
 let velY=0.001,velX=0;
 let isDragging=false,lastX=0,lastY=0;
 let autoRotating=false;
+let moonSpeedMult=1;
 let moonAngle=0;
 let cameraTargetZ=6,cameraTargetY=0,earthMoonTilt=0,moonDayOffset=0;
 let solarRotY=0.3,solarRotX=0.58,solarVelY=0,solarVelX=0;
@@ -747,6 +774,7 @@ function setMode(m){
   cameraTargetY=cfg.camY;
 
   if(cfg.initRotY!==null){rotY=cfg.initRotY;velY=0;}
+  document.getElementById('play-btn').classList.toggle('moon-center',m==='moon');
   if(m==='moon'){
     rotX=0;velX=0;autoRotating=false;
     document.getElementById('play-btn').textContent='▶';
@@ -771,6 +799,10 @@ function setMode(m){
   pb.classList.toggle('show',cfg.showPlay&&!inSolar);
   if(!cfg.showPlay){autoRotating=false;pb.textContent='▶';velY=0.001;}
 
+  const sb=document.getElementById('speed-btn');
+  sb.classList.toggle('show',m==='moon');
+  if(m!=='moon'){moonSpeedMult=1;sb.classList.remove('active');sb.textContent='1.5x';}
+
   sunVisual.visible=cfg.sun;
   sunGlow.visible=cfg.sun;
   if(!inSolar){
@@ -790,6 +822,13 @@ function togglePlay(){
   autoRotating=!autoRotating;
   document.getElementById('play-btn').textContent=autoRotating?'⏸':'▶';
   if(autoRotating)velY=0;
+}
+
+function toggleSpeed(){
+  moonSpeedMult=(moonSpeedMult===1)?1.5:1;
+  const btn=document.getElementById('speed-btn');
+  btn.classList.toggle('active',moonSpeedMult===1.5);
+  btn.textContent=moonSpeedMult===1.5?'1.5x ✓':'1.5x';
 }
 
 let factVisible=true;
@@ -923,7 +962,7 @@ function animate(){
     // Earth rotation
     if(!isDragging){
       if(autoRotating){
-        rotY+=0.0035;
+        rotY+=0.0035*(mode==='moon'?moonSpeedMult:1);
       } else {
         velY*=0.97; velX*=0.97;
         rotY+=(mode==='free'?velY+0.0008:velY);
