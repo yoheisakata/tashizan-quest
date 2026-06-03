@@ -151,6 +151,32 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Hi
 #moon-day-bar{height:5px;border-radius:3px;background:rgba(255,255,255,0.1);overflow:hidden;}
 #moon-day-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#ffaa00,#ffee88);width:0%;}
 
+/* ── SOLAR TIME PANEL ── */
+#solar-time-panel{
+  position:fixed;left:50%;transform:translateX(-50%);
+  bottom:calc(var(--bar-h) + 14px + var(--sab));
+  z-index:10;pointer-events:none;
+  background:rgba(0,5,30,0.88);border:1px solid rgba(255,200,80,0.25);
+  border-radius:16px;padding:12px 20px;display:none;min-width:170px;text-align:center;
+}
+#solar-year{
+  font-size:1.35rem;font-weight:900;color:#fff8e1;
+  text-shadow:0 0 14px rgba(255,200,80,0.7);margin-bottom:2px;
+}
+#solar-sub{font-size:0.58rem;color:rgba(255,220,120,0.7);margin-bottom:8px;}
+#solar-bar{height:5px;border-radius:3px;background:rgba(255,255,255,0.1);overflow:hidden;}
+#solar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#ff8800,#ffee44);width:0%;}
+@media (orientation:landscape) and (max-height:500px){
+  #solar-time-panel{padding:8px 16px;min-width:148px;}
+  #solar-year{font-size:1.1rem;}
+  #solar-sub{font-size:0.52rem;}
+}
+@media (min-width:768px){
+  #solar-time-panel{min-width:210px;padding:14px 28px;}
+  #solar-year{font-size:1.5rem;}
+  #solar-sub{font-size:0.65rem;}
+}
+
 /* ── SPEED BUTTON ── */
 #speed-btn{
   position:fixed;
@@ -246,6 +272,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Hi
   <div id="moon-day-num">1日め</div>
   <div id="moon-day-sub">27日で ちきゅうを 1しゅう</div>
   <div id="moon-day-bar"><div id="moon-day-fill"></div></div>
+</div>
+<div id="solar-time-panel">
+  <div id="solar-year">0ねん 0にち</div>
+  <div id="solar-sub">ちきゅうの こうてん</div>
+  <div id="solar-bar"><div id="solar-fill"></div></div>
 </div>
 <button id="speed-btn" onclick="toggleSpeed()">1x</button>
 
@@ -760,6 +791,7 @@ let moonAngle=0;
 let cameraTargetZ=6,cameraTargetY=0,earthMoonTilt=0,moonDayOffset=0;
 let solarRotY=0.3,solarRotX=0.58,solarVelY=0,solarVelX=0;
 let galaxyT=0;
+let solarTimeYears=0;
 const tmpV=new THREE.Vector3();
 
 // ════════════════════
@@ -847,6 +879,8 @@ function setMode(m){
   }
   earthMoonTilt=(m==='moon')?0.38:0;
   document.getElementById('moon-day-panel').style.display=(m==='moon')?'block':'none';
+  document.getElementById('solar-time-panel').style.display=(m==='solar')?'block':'none';
+  if(m==='solar'){solarTimeYears=0;}
 
   const inSolar=(m==='solar');
   earthMesh.visible=!inSolar;
@@ -998,6 +1032,14 @@ function animate(){
       solarAngles[i]+=dt*0.4/pd.p;
       planetPivots[i].rotation.y=solarAngles[i];
     });
+
+    // Solar time counter (Earth's orbital speed = dt*0.4 rad/s, 2π = 1 year)
+    solarTimeYears+=dt*0.4/(Math.PI*2);
+    const solarY=Math.floor(solarTimeYears);
+    const solarD=Math.floor((solarTimeYears%1)*365);
+    const earthPct=(solarTimeYears%1);
+    document.getElementById('solar-year').textContent=solarY+'ねん '+solarD+'にち';
+    document.getElementById('solar-fill').style.width=(earthPct*100).toFixed(1)+'%';
 
     // Galaxy motion: slowly rotate the star field so stars drift past,
     // giving the sense that the whole solar system is flying through the galaxy.
