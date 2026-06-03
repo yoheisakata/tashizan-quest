@@ -211,6 +211,18 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .shop-price.owned-label{color:var(--green);font-size:0.75rem;}
 .back-btn{background:rgba(255,255,255,0.08);border:none;border-radius:100px;color:var(--text);font-family:'Nunito',sans-serif;font-size:0.85rem;font-weight:700;padding:9px 22px;cursor:pointer;margin-top:14px;}
 .shop-scroll{overflow-y:auto;width:100%;max-width:360px;display:flex;flex-direction:column;align-items:center;padding-bottom:20px;}
+
+/* ── CHARACTER VIEWER ── */
+.char-viewer{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:90;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
+.char-viewer.show{display:flex;animation:fadeIn 0.2s ease;}
+.cv-box{background:var(--card);border:2px solid var(--gold);border-radius:22px;padding:24px 28px;max-width:300px;width:100%;text-align:center;}
+.cv-name{font-size:1.1rem;font-weight:900;color:var(--gold);margin-bottom:14px;}
+.cv-stats{display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap;}
+.cv-stat{background:rgba(255,255,255,0.06);border-radius:9px;padding:6px 12px;font-size:0.78rem;}
+.cv-stat b{color:var(--gold);display:block;font-size:1rem;}
+.cv-equip{font-size:0.72rem;color:var(--muted);margin-top:10px;line-height:2;}
+.char-avatar{cursor:pointer;transition:transform 0.1s;}
+.char-avatar:active{transform:scale(0.88);}
 </style>
 </head>
 <body>
@@ -233,6 +245,17 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   <div style="color:var(--muted);font-size:0.8rem;margin-bottom:8px;">どのゆうしゃになる？</div>
   <div class="char-grid" id="charGrid"></div>
   <button class="big-btn" id="startBtn" onclick="startGame()" style="opacity:0.4;pointer-events:none;">このキャラではじめる！</button>
+</div>
+
+<!-- ══ CHARACTER VIEWER ══ -->
+<div class="char-viewer" id="charViewer" onclick="closeCharViewer()">
+  <div class="cv-box" onclick="event.stopPropagation()">
+    <div class="cv-name" id="cvName"></div>
+    <div id="cvBody"></div>
+    <div class="cv-stats" id="cvStats"></div>
+    <div class="cv-equip" id="cvEquip"></div>
+    <button class="back-btn" style="margin-top:14px;" onclick="closeCharViewer()">とじる</button>
+  </div>
 </div>
 
 <!-- ══ LEVEL UP OVERLAY ══ -->
@@ -304,7 +327,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   </div>
 
   <div class="char-panel">
-    <div class="char-avatar" id="charAvatar">⚔️</div>
+    <div class="char-avatar" id="charAvatar" onclick="showCharViewer()" title="タップでキャラ確認"></div>
     <div class="char-info">
       <div class="char-info-name" id="charInfoName">ゆうしゃ Lv.1</div>
       <div class="equipped-row" id="equippedRow"></div>
@@ -423,7 +446,7 @@ function startGame(){
 function heroTotalAtk(){return hero.atk+(WEAPONS.find(w=>w.id===hero.weapon).atk);}
 function heroTotalDef(){return hero.def+(ARMORS.find(a=>a.id===hero.armor).def);}
 function updateHeroUI(){
-  document.getElementById('charAvatar').textContent=hero.emoji;
+  document.getElementById('charAvatar').innerHTML=buildCharBody(hero,'sm');
   document.getElementById('charInfoName').textContent=`${hero.name}  Lv.${hero.lv}`;
   const wep=WEAPONS.find(w=>w.id===hero.weapon);
   const arm=ARMORS.find(a=>a.id===hero.armor);
@@ -545,7 +568,7 @@ function openBattle(){
   battleMonHp=battleMon.hp;
   battleTurn=0;
   battleRunning=true;
-  document.getElementById('heroSprite').textContent=hero.emoji;
+  document.getElementById('heroSprite').innerHTML=buildCharBody(hero,'md');
   document.getElementById('monsterSprite').textContent=battleMon.emoji;
   document.getElementById('monsterSprite').style.animation='';
   document.getElementById('heroSprite').style.animation='';
@@ -773,6 +796,44 @@ function showSaveToast(){const t=document.getElementById('saveToast');t.classLis
 let _saveCounter=0;
 function triggerAutoSave(){_saveCounter++;if(_saveCounter%5===0)saveGame();}
 window.addEventListener('load',()=>{renderSaveSlots();});
+
+// ── CHARACTER BODY BUILDER ──
+const ARMOR_HELM  = {rags:'',leather:'🪖',chain:'⛑️',plate:'🪖',dragon:'👑'};
+const ARMOR_BODY_VIS = {rags:'👕',leather:'🦺',chain:'🥋',plate:'🛡️',dragon:'🐲'};
+const CHAR_FEET   = {warrior:'🥾',mage:'✨',knight:'👢'};
+
+function buildCharBody(h, size) {
+  const helm    = ARMOR_HELM[h.armor] || '';
+  const bodyVis = ARMOR_BODY_VIS[h.armor] || '👕';
+  const wepEmoji= (WEAPONS.find(w=>w.id===h.weapon)||WEAPONS[0]).emoji;
+  const feet    = CHAR_FEET[h.charId] || '👟';
+  const s = {
+    sm:{h:'0.85em',f:'1.7em',t:'1.2em',ft:'0.75em',gap:'1px'},
+    md:{h:'1.3em', f:'3em',  t:'2em',  ft:'1.2em', gap:'2px'},
+    lg:{h:'1.8em', f:'5em',  t:'2.8em',ft:'1.6em', gap:'4px'},
+  }[size] || {h:'1.3em',f:'3em',t:'2em',ft:'1.2em',gap:'2px'};
+  return `<div style="display:flex;flex-direction:column;align-items:center;line-height:1;gap:${s.gap}">` +
+    `<div style="font-size:${s.h};min-height:${s.h}">${helm}</div>` +
+    `<div style="font-size:${s.f}">${h.emoji}</div>` +
+    `<div style="display:flex;gap:4px;font-size:${s.t};align-items:center"><span>${wepEmoji}</span><span>${bodyVis}</span></div>` +
+    `<div style="font-size:${s.ft}">${feet}</div></div>`;
+}
+
+function showCharViewer() {
+  const wep = WEAPONS.find(w=>w.id===hero.weapon)||WEAPONS[0];
+  const arm = ARMORS.find(a=>a.id===hero.armor)||ARMORS[0];
+  document.getElementById('cvName').textContent = `${hero.name}  Lv.${hero.lv}`;
+  document.getElementById('cvBody').innerHTML   = buildCharBody(hero,'lg');
+  document.getElementById('cvEquip').innerHTML  = `${wep.emoji} ${wep.name}　${arm.emoji} ${arm.name}`;
+  document.getElementById('cvStats').innerHTML  =
+    `<div class="cv-stat"><b>${heroTotalAtk()}</b>こうげき</div>` +
+    `<div class="cv-stat"><b>${heroTotalDef()}</b>ぼうぐ</div>` +
+    `<div class="cv-stat"><b>${hero.hp}/${hero.hpMax}</b>HP</div>`;
+  document.getElementById('charViewer').classList.add('show');
+}
+function closeCharViewer() {
+  document.getElementById('charViewer').classList.remove('show');
+}
 </script>
 </body>
 </html>
