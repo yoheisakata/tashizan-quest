@@ -281,17 +281,46 @@ body::before {
 }
 .card-front-bg {
   flex: 1;
-  display: flex;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(160deg, #12091f, #0a1428, #120923);
+}
+.card-rw-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+}
+.card-name-bar {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: linear-gradient(transparent, rgba(0,0,0,0.92));
+  padding: 14px 4px 4px;
+  text-align: center;
+  z-index: 2;
+}
+.card-fb-emoji {
+  display: none;
+  position: absolute;
+  inset: 0;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 10px;
-  background: linear-gradient(160deg, #12091f, #0a1428, #120923);
+  gap: 4px;
+  padding: 8px;
 }
-.card-emoji {
-  font-size: 2.8rem;
+.card-front-bg.img-err .card-rw-img { display: none; }
+.card-front-bg.img-err .card-fb-emoji { display: flex; }
+.card-front-bg.img-err .card-name-bar {
+  position: static;
+  background: transparent;
+  padding: 4px 4px 0;
+}
+.card-fb-emoji-icon {
+  font-size: 2.4rem;
   line-height: 1;
-  margin-bottom: 8px;
   filter: drop-shadow(0 0 8px rgba(212,168,67,0.4));
 }
 .card-name-en {
@@ -300,14 +329,14 @@ body::before {
   color: var(--gold);
   letter-spacing: 0.08em;
   text-align: center;
-  opacity: 0.8;
+  opacity: 0.9;
   line-height: 1.3;
 }
 .card-name-jp {
   font-size: 0.62rem;
-  color: var(--text-dim);
+  color: rgba(232,220,200,0.8);
   text-align: center;
-  margin-top: 2px;
+  margin-top: 1px;
   line-height: 1.3;
 }
 .card-reversed-badge {
@@ -507,6 +536,31 @@ body::before {
 </a>
 
 <script>
+const RW_IMGS = [
+  'https://commons.wikimedia.org/wiki/Special:FilePath/RWS_Tarot_00_Fool.jpg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/RWS_Tarot_01_Magician.jpg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/RWS_Tarot_02_High_Priestess.jpg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/RWS_Tarot_03_Empress.jpg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/RWS_Tarot_04_Emperor.jpg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/RWS_Tarot_05_Hierophant.jpg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/RWS_Tarot_06_Lovers.jpg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/RWS_Tarot_07_Chariot.jpg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/RWS_Tarot_08_Strength.jpg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/RWS_Tarot_09_Hermit.jpg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/RWS_Tarot_10_Wheel_of_Fortune.jpg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/RWS_Tarot_11_Justice.jpg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/RWS_Tarot_12_Hanged_Man.jpg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/RWS_Tarot_13_Death.jpg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/RWS_Tarot_14_Temperance.jpg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/RWS_Tarot_15_Devil.jpg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/RWS_Tarot_16_Tower.jpg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/RWS_Tarot_17_Star.jpg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/RWS_Tarot_18_Moon.jpg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/RWS_Tarot_19_Sun.jpg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/RWS_Tarot_20_Judgement.jpg',
+  'https://commons.wikimedia.org/wiki/Special:FilePath/RWS_Tarot_21_World.jpg',
+];
+
 // --- Tarot Card Data (Major Arcana 22 cards) ---
 const CARDS = [
   {
@@ -743,9 +797,17 @@ function renderCards() {
     front.className = 'card-face card-front';
     front.innerHTML = `
       <div class="card-front-bg">
-        <div class="card-emoji">${card.emoji}</div>
-        <div class="card-name-en">${card.nameEn}</div>
-        <div class="card-name-jp">${card.nameJp}</div>
+        <img class="card-rw-img" src="${RW_IMGS[card.id]}" alt="${card.nameJp}"
+             onerror="this.parentNode.classList.add('img-err')">
+        <div class="card-fb-emoji">
+          <span class="card-fb-emoji-icon">${card.emoji}</span>
+          <div class="card-name-en">${card.nameEn}</div>
+          <div class="card-name-jp">${card.nameJp}</div>
+        </div>
+        <div class="card-name-bar">
+          <div class="card-name-en">${card.nameEn}</div>
+          <div class="card-name-jp">${card.nameJp}</div>
+        </div>
       </div>
       ${card.reversed ? '<div class="card-reversed-badge">逆位置</div>' : ''}
     `;
