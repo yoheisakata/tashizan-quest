@@ -491,58 +491,66 @@ function drawCharBody(){
   cx.beginPath();cx.moveTo(t2x,t2y);cx.lineTo(t2x+Math.cos(ta-.4)*10,t2y+Math.sin(ta-.4)*10);cx.stroke();
   if(g>.3){cx.save();cx.shadowColor='#4ade80';cx.shadowBlur=12;cx.font='16px sans-serif';cx.textAlign='center';cx.fillText('✨',(t1x+t2x)/2,(t1y+t2y)/2-6);cx.restore();}
 
-  // ── HEAD (faces walk direction via headTurn) ──
-  const headX=W/2+sw*.2+headTurn*10;
+  // ── HEAD — 後頭部ビュー（一人称：自分の背中側を見下ろす）
+  //   前進中 → 後頭部（髪の毛）が見える
+  //   旋回中 → 旋回方向と反対側の横顔が少し見える
+  const headX=W/2+sw*.2;
   const headY=H-242+vb;
   cx.save();
   cx.translate(headX,headY);
-  // Squish head horizontally to show turning
-  cx.scale(1-Math.abs(headTurn)*.18, 1);
 
-  // Neck
+  // Neck (後ろから見た首)
   cx.fillStyle='#fcd8b0';
-  cx.fillRect(-10,12,20,18);
+  cx.fillRect(-9,16,18,20);
 
-  // Head circle
+  // 頭の肌ベース
   cx.fillStyle='#fcd8b0';
   cx.beginPath();cx.arc(0,0,26,0,Math.PI*2);cx.fill();
-  // Ear (left)
-  cx.beginPath();cx.ellipse(-24,2,7,9,-.2,0,Math.PI*2);cx.fill();
-  // Ear (right) — hidden when turning left
-  if(headTurn>-.5){cx.beginPath();cx.ellipse(24,2,7,9,.2,0,Math.PI*2);cx.fill();}
 
-  // Hair (simple, dark brown)
+  // 耳（両サイド）
+  cx.fillStyle='#e8b99a';
+  cx.beginPath();cx.ellipse(-24,1,7,9,-.15,0,Math.PI*2);cx.fill();
+  cx.beginPath();cx.ellipse(24,1,7,9,.15,0,Math.PI*2);cx.fill();
+
+  // 髪の毛が後頭部全体を覆う（デフォルト：後ろ向き）
   cx.fillStyle='#3d1c02';
-  cx.beginPath();cx.ellipse(0,-22,26,10,0,0,Math.PI*2);cx.fill();
-  cx.beginPath();cx.ellipse(-22,-14,8,12,-.3,0,Math.PI*2);cx.fill();
-  cx.beginPath();cx.ellipse(22,-14,8,12,.3,0,Math.PI*2);cx.fill();
+  // 後頭部の丸い塊
+  cx.beginPath();cx.arc(0,0,26,0,Math.PI*2);cx.fill();
+  // 髪の毛の質感
+  cx.fillStyle='#2a1200';
+  cx.beginPath();cx.arc(0,-4,20,0,Math.PI*2);cx.fill();
+  // 後頭部の髪ハイライト
+  cx.fillStyle='rgba(120,60,10,.35)';
+  cx.beginPath();cx.ellipse(-6,-8,10,7,-.4,0,Math.PI*2);cx.fill();
 
-  // Face features — shift eyes/mouth with headTurn
-  const eyeShift=headTurn*8;
-  // Eyes (simple dots with whites — NOT uncanny)
-  cx.fillStyle='#fff';
-  cx.beginPath();cx.ellipse(-8+eyeShift,-3,7,8,0,0,Math.PI*2);cx.fill();
-  cx.beginPath();cx.ellipse(8+eyeShift,-3,7,8,0,0,Math.PI*2);cx.fill();
-  // Iris
-  cx.fillStyle='#2d4a8e';
-  cx.beginPath();cx.arc(-8+eyeShift,-3,4.5,0,Math.PI*2);cx.fill();
-  cx.beginPath();cx.arc(8+eyeShift,-3,4.5,0,Math.PI*2);cx.fill();
-  // Pupil
-  cx.fillStyle='#111';
-  cx.beginPath();cx.arc(-8+eyeShift,-3,2.5,0,Math.PI*2);cx.fill();
-  cx.beginPath();cx.arc(8+eyeShift,-3,2.5,0,Math.PI*2);cx.fill();
-  // Highlight
-  cx.fillStyle='rgba(255,255,255,.85)';
-  cx.beginPath();cx.arc(-6+eyeShift,-5,1.2,0,Math.PI*2);cx.fill();
-  cx.beginPath();cx.arc(10+eyeShift,-5,1.2,0,Math.PI*2);cx.fill();
-
-  // Nose (simple, not creepy)
-  cx.strokeStyle='rgba(160,80,40,.5)';cx.lineWidth=1.5;cx.lineCap='round';
-  cx.beginPath();cx.arc(eyeShift*.4,6,3,.2,Math.PI-.2);cx.stroke();
-
-  // Mouth — friendly smile
-  cx.strokeStyle='#7c2d12';cx.lineWidth=2;
-  cx.beginPath();cx.arc(eyeShift*.3,10,8,.15,Math.PI-.15);cx.stroke();
+  // 旋回時：横顔が見え始める
+  const tAbs=Math.abs(headTurn);
+  if(tAbs>0.18){
+    const t=Math.min(1,(tAbs-.18)/.7);
+    // headTurn>0=右旋回 → 左の横顔が見える (screen左側)
+    // headTurn<0=左旋回 → 右の横顔が見える (screen右側)
+    const side=headTurn>0?-1:1; // 見える側(画面内の向き)
+    cx.globalAlpha=t;
+    // 頬の肌
+    cx.fillStyle='#fcd8b0';
+    cx.beginPath();cx.ellipse(side*17,1,12,20,.15*side,0,Math.PI*2);cx.fill();
+    // 目（横顔の片目）
+    cx.fillStyle='#fff';
+    cx.beginPath();cx.ellipse(side*14,-3,6,7,0,0,Math.PI*2);cx.fill();
+    cx.fillStyle='#2d4a8e';
+    cx.beginPath();cx.arc(side*14,-3,4,0,Math.PI*2);cx.fill();
+    cx.fillStyle='#111';
+    cx.beginPath();cx.arc(side*14,-3,2.2,0,Math.PI*2);cx.fill();
+    cx.fillStyle='rgba(255,255,255,.8)';
+    cx.beginPath();cx.arc(side*13-side,-5,1,0,Math.PI*2);cx.fill();
+    // 鼻（横顔）
+    cx.strokeStyle='rgba(160,80,40,.55)';cx.lineWidth=1.5;cx.lineCap='round';
+    cx.beginPath();cx.moveTo(side*18,5);cx.quadraticCurveTo(side*22,10,side*19,14);cx.stroke();
+    // 口（横顔）
+    cx.strokeStyle='#a05030';cx.lineWidth=1.8;
+    cx.beginPath();cx.arc(side*14,12,5,.2,Math.PI-.2);cx.stroke();
+    cx.globalAlpha=1;
+  }
 
   cx.restore();
 }
