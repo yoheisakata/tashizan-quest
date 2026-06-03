@@ -167,8 +167,11 @@ camera.position.set(0,0,6);
 // ═══════════════
 //  STARS (3D)
 // ═══════════════
+// All stars live inside starsGroup so we can rotate the group
+// in solar mode to simulate the solar system flying through the galaxy.
+const starsGroup=new THREE.Object3D();
+scene.add(starsGroup);
 (function(){
-  // Main field: sphere surface distribution with star-color variation
   const n=8000, pos=new Float32Array(n*3), col=new Float32Array(n*3);
   for(let i=0;i<n;i++){
     const u=Math.random(), v=Math.random();
@@ -178,17 +181,16 @@ camera.position.set(0,0,6);
     pos[i*3+1]=r*Math.cos(phi);
     pos[i*3+2]=r*Math.sin(phi)*Math.sin(theta);
     const t=Math.random();
-    if(t<0.52){col[i*3]=1;col[i*3+1]=1;col[i*3+2]=1;}          // white
-    else if(t<0.68){col[i*3]=0.74;col[i*3+1]=0.85;col[i*3+2]=1;} // blue-white
-    else if(t<0.84){col[i*3]=1;col[i*3+1]=0.92;col[i*3+2]=0.6;}  // yellow
-    else{col[i*3]=1;col[i*3+1]=0.5;col[i*3+2]=0.4;}              // orange-red
+    if(t<0.52){col[i*3]=1;col[i*3+1]=1;col[i*3+2]=1;}
+    else if(t<0.68){col[i*3]=0.74;col[i*3+1]=0.85;col[i*3+2]=1;}
+    else if(t<0.84){col[i*3]=1;col[i*3+1]=0.92;col[i*3+2]=0.6;}
+    else{col[i*3]=1;col[i*3+1]=0.5;col[i*3+2]=0.4;}
   }
   const geo=new THREE.BufferGeometry();
   geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
   geo.setAttribute('color',new THREE.BufferAttribute(col,3));
-  scene.add(new THREE.Points(geo,new THREE.PointsMaterial({vertexColors:true,size:0.55,sizeAttenuation:true})));
+  starsGroup.add(new THREE.Points(geo,new THREE.PointsMaterial({vertexColors:true,size:0.55,sizeAttenuation:true})));
 
-  // Bright standout stars (sparse, larger)
   const nb=120, bpos=new Float32Array(nb*3);
   for(let i=0;i<nb;i++){
     const theta=2*Math.PI*Math.random(), phi=Math.acos(2*Math.random()-1), r=400;
@@ -198,7 +200,7 @@ camera.position.set(0,0,6);
   }
   const bgeo=new THREE.BufferGeometry();
   bgeo.setAttribute('position',new THREE.BufferAttribute(bpos,3));
-  scene.add(new THREE.Points(bgeo,new THREE.PointsMaterial({color:0xffffff,size:2.0,sizeAttenuation:true,transparent:true,opacity:0.85})));
+  starsGroup.add(new THREE.Points(bgeo,new THREE.PointsMaterial({color:0xffffff,size:2.0,sizeAttenuation:true,transparent:true,opacity:0.85})));
 })();
 
 // ═══════════════════
@@ -573,6 +575,29 @@ PLANETS.forEach((pd,i)=>{
   planetLabelEls.push(el);
 });
 
+// ══════════════════════════════
+//  GALAXY CENTER (distant glow)
+// ══════════════════════════════
+// Represents the Milky Way core ~26,000 light-years away.
+// Visible only in solar mode, positioned far off in one direction.
+const galaxyCenter=new THREE.Object3D();
+galaxyCenter.position.set(180,30,-700);
+galaxyCenter.visible=false;
+scene.add(galaxyCenter);
+// Layered halos from dim outer to bright core
+[[380,0.025,0xff7733],[240,0.05,0xff9944],[130,0.1,0xffbb66],[55,0.22,0xffdd99],[15,0.7,0xfff0cc]].forEach(([r,op,col])=>{
+  galaxyCenter.add(new THREE.Mesh(
+    new THREE.SphereGeometry(r,16,16),
+    new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:op})
+  ));
+});
+// HTML label for galaxy center
+const galaxyLabel=document.createElement('div');
+galaxyLabel.id='galaxy-label';
+galaxyLabel.style.cssText='position:fixed;z-index:10;pointer-events:none;font-size:0.68rem;font-weight:900;color:rgba(255,200,120,0.9);text-shadow:0 0 10px rgba(255,150,50,0.8),0 0 4px #000;white-space:nowrap;display:none;font-family:inherit;';
+galaxyLabel.textContent='🌌 ぎんがのちゅうしん';
+document.body.appendChild(galaxyLabel);
+
 // ════════════════════════
 //  COUNTRY MARKERS (3D)
 // ════════════════════════
@@ -606,6 +631,7 @@ let autoRotating=false;
 let moonAngle=0;
 let cameraTargetZ=6;
 let solarRotY=0.3,solarRotX=0.58,solarVelY=0,solarVelX=0;
+let galaxyT=0;
 const tmpV=new THREE.Vector3();
 
 // ════════════════════
@@ -692,6 +718,7 @@ function setMode(m){
   solarGroup.visible=inSolar;
   solarLight.visible=inSolar;
   sunLight.visible=!inSolar;
+  galaxyCenter.visible=inSolar;
 
   document.getElementById('japan-label').style.display=(!inSolar&&cfg.markers)?'':'none';
   document.getElementById('america-label').style.display=(!inSolar&&cfg.markers)?'':'none';
@@ -805,14 +832,39 @@ function animate(){
     }
     solarGroup.rotation.y=solarRotY;
     solarGroup.rotation.x=solarRotX;
+
+    // Planet orbits
     PLANETS.forEach((pd,i)=>{
       solarAngles[i]+=dt*0.4/pd.p;
       planetPivots[i].rotation.y=solarAngles[i];
     });
+
+    // Galaxy motion: slowly rotate the star field so stars drift past,
+    // giving the sense that the whole solar system is flying through the galaxy.
+    // Also add a gentle vertical oscillation (the solar system bobs above/below
+    // the galactic plane about every 33 million years — sped up here for effect).
+    galaxyT+=dt;
+    starsGroup.rotation.y=galaxyT*0.00055;
+    starsGroup.rotation.x=Math.sin(galaxyT*0.018)*0.04;
+
+    // Project galaxy center label
+    tmpV.setFromMatrixPosition(galaxyCenter.matrixWorld);
+    const gp=tmpV.project(camera);
+    if(gp.z<1&&gp.x>-1&&gp.x<1&&gp.y>-1&&gp.y<1){
+      galaxyLabel.style.display='block';
+      galaxyLabel.style.left=((gp.x+1)/2*innerWidth+12)+'px';
+      galaxyLabel.style.top=((-gp.y+1)/2*innerHeight-12)+'px';
+    } else {
+      galaxyLabel.style.display='none';
+    }
+
     projectPlanetLabels();
   } else {
-    // Hide planet labels when not in solar mode
+    galaxyLabel.style.display='none';
     planetLabelEls.forEach(el=>{el.style.display='none';});
+    // Smoothly return star field to neutral rotation when not in solar mode
+    starsGroup.rotation.y*=0.95;
+    starsGroup.rotation.x*=0.95;
 
     // Earth rotation
     if(!isDragging){
