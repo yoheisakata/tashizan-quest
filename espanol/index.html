@@ -213,8 +213,8 @@ document.getElementById('setup-btn').addEventListener('click', async () => {
     localStorage.setItem('espanol_api_key', key);
     apiKey = key;
     showHome();
-  } catch {
-    showError('APIキーが無効です。確認してください。');
+  } catch(e) {
+    showError('エラー: ' + (e.message || '不明なエラー'));
     document.getElementById('setup-btn').disabled = false;
     document.getElementById('setup-btn').textContent = '保存して始める';
   }
