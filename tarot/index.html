@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔮</text></svg>">
+<title>タロット占い 🔮</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&family=Cinzel:wght@400;700&display=swap');
+
+*{box-sizing:border-box;margin:0;padding:0;}
+
+:root {
+  --gold: #d4a843;
+  --purple: #7c3aed;
+  --purple-light: #a855f7;
+  --bg: #08080f;
+  --card-bg: #0f0f1e;
+  --text: #e8dcc8;
+  --text-dim: #8a7a66;
+}
+
+body {
+  font-family: 'Noto Serif JP', serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 10%, rgba(124,58,237,0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 90%, rgba(212,168,67,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(124,58,237,0.05) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Stars */
+.stars {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: #fff;
+  border-radius: 50%;
+  animation: twinkle var(--d, 3s) var(--delay, 0s) infinite alternate;
+}
+@keyframes twinkle {
+  0% { opacity: 0.1; transform: scale(0.8); }
+  100% { opacity: 0.9; transform: scale(1.2); }
+}
+
+.container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 600px;
+  padding: 24px 20px 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Header */
+.header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+.header h1 {
+  font-family: 'Cinzel', serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 30px rgba(212,168,67,0.4);
+  margin-bottom: 6px;
+}
+.header .subtitle {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+}
+.back-link {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.2s;
+}
+.back-link:hover { color: var(--gold); }
+
+/* Spread selector */
+.spread-selector {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.spread-btn {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(212,168,67,0.25);
+  border-radius: 100px;
+  color: var(--text-dim);
+  font-family: 'Noto Serif JP', serif;
+  font-size: 0.78rem;
+  padding: 7px 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.spread-btn:hover { border-color: rgba(212,168,67,0.6); color: var(--gold); }
+.spread-btn.active {
+  background: rgba(212,168,67,0.12);
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+/* Question input */
+.question-area {
+  width: 100%;
+  margin-bottom: 24px;
+  position: relative;
+}
+.question-area label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+}
+.question-input {
+  width: 100%;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(212,168,67,0.2);
+  border-radius: 12px;
+  color: var(--text);
+  font-family: 'Noto Serif JP', serif;
+  font-size: 0.9rem;
+  padding: 12px 16px;
+  resize: none;
+  outline: none;
+  transition: border-color 0.2s;
+  height: 60px;
+}
+.question-input:focus { border-color: rgba(212,168,67,0.5); }
+.question-input::placeholder { color: var(--text-dim); }
+
+/* Draw button */
+.draw-btn {
+  background: linear-gradient(135deg, rgba(212,168,67,0.2), rgba(124,58,237,0.2));
+  border: 1px solid rgba(212,168,67,0.5);
+  border-radius: 100px;
+  color: var(--gold);
+  font-family: 'Cinzel', serif;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 14px 40px;
+  cursor: pointer;
+  transition: all 0.3s;
+  letter-spacing: 0.1em;
+  margin-bottom: 40px;
+  position: relative;
+  overflow: hidden;
+}
+.draw-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(212,168,67,0.1), rgba(124,58,237,0.1));
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.draw-btn:hover::before { opacity: 1; }
+.draw-btn:hover {
+  border-color: var(--gold);
+  box-shadow: 0 0 30px rgba(212,168,67,0.25), 0 0 60px rgba(124,58,237,0.15);
+  transform: translateY(-1px);
+}
+.draw-btn:active { transform: translateY(0); }
+.draw-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+/* Cards layout */
+.cards-area {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  margin-bottom: 40px;
+}
+
+/* Card */
+.card-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.card-position-label {
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+  text-align: center;
+}
+
+.card-wrapper {
+  width: 110px;
+  height: 190px;
+  perspective: 1000px;
+}
+.card-inner {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.card-inner.flipped {
+  transform: rotateY(180deg);
+}
+.card-inner.reversed-flip {
+  transform: rotateY(180deg) rotateZ(180deg);
+}
+
+.card-face {
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.card-back {
+  background: linear-gradient(135deg, #1a0a2e, #0d1b3e);
+  border: 2px solid rgba(212,168,67,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  cursor: pointer;
+  transition: border-color 0.3s, box-shadow 0.3s;
+  overflow: hidden;
+}
+.card-back::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border: 1px solid rgba(212,168,67,0.15);
+  border-radius: 8px;
+}
+.card-back:hover {
+  border-color: rgba(212,168,67,0.7);
+  box-shadow: 0 0 20px rgba(212,168,67,0.2), 0 0 40px rgba(124,58,237,0.15);
+}
+
+.card-front {
+  transform: rotateY(180deg);
+  border: 2px solid rgba(212,168,67,0.4);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.card-front-bg {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  background: linear-gradient(160deg, #12091f, #0a1428, #120923);
+}
+.card-emoji {
+  font-size: 2.8rem;
+  line-height: 1;
+  margin-bottom: 8px;
+  filter: drop-shadow(0 0 8px rgba(212,168,67,0.4));
+}
+.card-name-en {
+  font-family: 'Cinzel', serif;
+  font-size: 0.5rem;
+  color: var(--gold);
+  letter-spacing: 0.08em;
+  text-align: center;
+  opacity: 0.8;
+  line-height: 1.3;
+}
+.card-name-jp {
+  font-size: 0.62rem;
+  color: var(--text-dim);
+  text-align: center;
+  margin-top: 2px;
+  line-height: 1.3;
+}
+.card-reversed-badge {
+  font-size: 0.5rem;
+  color: #f87171;
+  text-align: center;
+  padding: 3px 8px;
+  background: rgba(248,113,113,0.1);
+  border-top: 1px solid rgba(248,113,113,0.2);
+}
+
+/* Reading result */
+.reading-result {
+  width: 100%;
+  display: none;
+  flex-direction: column;
+  gap: 20px;
+}
+.reading-result.visible { display: flex; }
+
+.card-reading {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(212,168,67,0.15);
+  border-radius: 16px;
+  padding: 20px;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.5s, transform 0.5s;
+}
+.card-reading.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+.reading-position {
+  font-size: 0.68rem;
+  color: var(--purple-light);
+  letter-spacing: 0.1em;
+  margin-bottom: 6px;
+}
+.reading-card-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--gold);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.reversed-tag {
+  font-size: 0.6rem;
+  color: #f87171;
+  background: rgba(248,113,113,0.1);
+  border: 1px solid rgba(248,113,113,0.3);
+  border-radius: 100px;
+  padding: 2px 8px;
+}
+.reading-meaning {
+  font-size: 0.82rem;
+  color: var(--text);
+  line-height: 1.8;
+  margin-bottom: 10px;
+}
+.reading-advice {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  line-height: 1.7;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+/* Overall message */
+.overall-message {
+  background: linear-gradient(135deg, rgba(124,58,237,0.08), rgba(212,168,67,0.06));
+  border: 1px solid rgba(212,168,67,0.25);
+  border-radius: 16px;
+  padding: 22px;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.5s, transform 0.5s;
+}
+.overall-message.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+.overall-message h3 {
+  font-family: 'Cinzel', serif;
+  font-size: 0.8rem;
+  color: var(--gold);
+  letter-spacing: 0.12em;
+  margin-bottom: 12px;
+  text-align: center;
+}
+.overall-message p {
+  font-size: 0.85rem;
+  color: var(--text);
+  line-height: 1.9;
+  text-align: center;
+}
+
+/* Reset */
+.reset-btn {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 100px;
+  color: var(--text-dim);
+  font-family: 'Noto Serif JP', serif;
+  font-size: 0.8rem;
+  padding: 10px 28px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 10px;
+}
+.reset-btn:hover { border-color: rgba(255,255,255,0.3); color: var(--text); }
+
+/* Shimmer animation for cards being revealed */
+@keyframes shimmer {
+  0% { opacity: 0.4; }
+  50% { opacity: 1; }
+  100% { opacity: 0.4; }
+}
+.card-back.waiting {
+  animation: shimmer 2s infinite;
+}
+
+/* Divider */
+.divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(212,168,67,0.3), transparent);
+  margin: 8px 0 32px;
+}
+
+/* Responsive */
+@media (max-width: 400px) {
+  .header h1 { font-size: 1.6rem; }
+  .card-wrapper { width: 90px; height: 155px; }
+  .card-emoji { font-size: 2.2rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+
+<div class="container">
+  <a class="back-link" href="../">← もどる</a>
+
+  <div class="header">
+    <h1>🔮 TAROT</h1>
+    <div class="subtitle">タロット占い ・ 星の導きを受け取る</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Spread selector -->
+  <div class="spread-selector">
+    <button class="spread-btn active" data-spread="1">ワンオラクル<br><span style="font-size:0.65em;opacity:0.7">今の答え</span></button>
+    <button class="spread-btn" data-spread="3">スリーカード<br><span style="font-size:0.65em;opacity:0.7">過去・現在・未来</span></button>
+    <button class="spread-btn" data-spread="5">ファイブカード<br><span style="font-size:0.65em;opacity:0.7">詳しく見る</span></button>
+  </div>
+
+  <!-- Question input -->
+  <div class="question-area">
+    <label>✦ 心の中に質問を思い浮かべてください（任意）</label>
+    <textarea class="question-input" id="questionInput" placeholder="例：仕事の転機について…　恋愛の行方について…"></textarea>
+  </div>
+
+  <!-- Draw button -->
+  <button class="draw-btn" id="drawBtn">✦ カードを引く ✦</button>
+
+  <!-- Cards display -->
+  <div class="cards-area" id="cardsArea"></div>
+
+  <!-- Reading results -->
+  <div class="reading-result" id="readingResult"></div>
+
+  <!-- Reset button -->
+  <button class="reset-btn" id="resetBtn" style="display:none">もう一度占う</button>
+</div>
+
+<script>
+// --- Tarot Card Data (Major Arcana 22 cards) ---
+const CARDS = [
+  {
+    id: 0, emoji: '🌟', nameEn: 'THE FOOL', nameJp: '愚者',
+    upright: { meaning: '新たな始まり、純粋な可能性に満ちた出発点。恐れを手放し、直感のままに踏み出す時。予期せぬ出会いや転機が訪れるでしょう。', advice: '今は計画よりも行動を。リスクを恐れず、好奇心に従って新しい扉を開けてみてください。' },
+    reversed: { meaning: '軽率な行動、準備不足、または慎重になりすぎている状態。衝動的な決断が裏目に出る可能性があります。', advice: '少し立ち止まって状況を整理しましょう。無謀な行動は避け、基盤を固めることを優先して。' }
+  },
+  {
+    id: 1, emoji: '🪄', nameEn: 'THE MAGICIAN', nameJp: '魔術師',
+    upright: { meaning: '意志の力と創造力が最高潮。持てるすべての能力とリソースを駆使して夢を現実に変えられる時期。自信を持って行動すれば成功が待っています。', advice: '自分の能力を信じてください。今必要なものはすべて手元にあります。集中して目標に向かいましょう。' },
+    reversed: { meaning: '才能を活かせていない、欺瞞、または自信過剰。エネルギーが分散して成果が出にくい状態。', advice: 'まず自己を見つめ直し、本当の意図を明確にしましょう。力の使い方を誤らないように。' }
+  },
+  {
+    id: 2, emoji: '🌙', nameEn: 'THE HIGH PRIESTESS', nameJp: '女教皇',
+    upright: { meaning: '内なる知恵と直感の時。見えない真実が徐々に明らかになりつつあります。静かに観察することで、隠れた本質が見えてくるでしょう。', advice: '答えはすでにあなたの中にあります。急がず、内なる声に耳を傾ける静けさの時間を持って。' },
+    reversed: { meaning: '直感を無視している、または秘密・誤解が生じている状態。表面だけで判断せず、本質を見極めることが必要。', advice: '感情や直感をもっと信頼してみて。知識だけでなく、内なる感覚にも目を向けましょう。' }
+  },
+  {
+    id: 3, emoji: '👑', nameEn: 'THE EMPRESS', nameJp: '女帝',
+    upright: { meaning: '豊穣、創造性、愛情に満ちた時期。物事が実を結び、豊かさと繁栄がやってきます。自然の流れに身を委ねることで、望むものが育まれるでしょう。', advice: '自分と周りを愛することを大切に。豊かさを受け取る準備ができています。焦らず育む姿勢で。' },
+    reversed: { meaning: '依存や過保護、または創造的なブロックがある状態。豊かさを拒んだり、自己犠牲が過ぎたりしていないか振り返って。', advice: '自分自身を大切にすることから始めましょう。まず自分のコップを満たすことが他者への愛につながります。' }
+  },
+  {
+    id: 4, emoji: '⚔️', nameEn: 'THE EMPEROR', nameJp: '皇帝',
+    upright: { meaning: '安定、秩序、リーダーシップの時。計画を立て、構造を作ることで確実な前進が可能です。責任を持って物事をコントロールする力があります。', advice: '明確なビジョンと規律を持って行動しましょう。権威をもって決断を下す時です。' },
+    reversed: { meaning: '支配欲、硬直した思考、または権威への反発。過度のコントロールが関係や状況を悪化させています。', advice: '柔軟性を持つことを心がけて。すべてをコントロールしようとせず、流れに委ねる部分も必要です。' }
+  },
+  {
+    id: 5, emoji: '🏛️', nameEn: 'THE HIEROPHANT', nameJp: '法王',
+    upright: { meaning: '伝統、精神的な指導、社会的な規範の中に知恵があります。師との出会いや、確立されたシステムの中での学びが鍵となるでしょう。', advice: '信頼できるアドバイスや伝統的な知恵を求めてみて。慣習の中にも価値があります。' },
+    reversed: { meaning: '因習へのとらわれ、または既存のルールへの反抗。柔軟さが欠けているか、逆に破壊的な反骨精神が出ているかも。', advice: '本当に信じていることを大切に。形式よりも本質を問い直す時かもしれません。' }
+  },
+  {
+    id: 6, emoji: '💕', nameEn: 'THE LOVERS', nameJp: '恋人',
+    upright: { meaning: '大切な選択の時、または調和のとれた関係の訪れ。価値観の一致と相互尊重が深い絆を生みます。心が求めるものに正直になることが大切です。', advice: '心の声に従って選択をしてください。本当に大切なものを優先する決断の時です。' },
+    reversed: { meaning: 'ミスコミュニケーション、価値観のズレ、または自分との向き合いが必要な状態。外ではなく内に問いを向けて。', advice: 'まず自分が何を求めているかを明確に。他者に求める前に、自分自身との関係を整えましょう。' }
+  },
+  {
+    id: 7, emoji: '🏆', nameEn: 'THE CHARIOT', nameJp: '戦車',
+    upright: { meaning: '意志と制御によって障害を乗り越える時。目標に向かって強く推し進める力があります。集中力と決意があれば必ず前進できるでしょう。', advice: '目標をしっかり定め、ぶれずに進みましょう。意志の力が最大の武器です。' },
+    reversed: { meaning: '方向性の喪失、コントロールの欠如、または攻撃性。エネルギーが分散して空回りしていることがあります。', advice: 'まず立ち止まって方向を確認して。焦りから来る強引な行動は避けましょう。' }
+  },
+  {
+    id: 8, emoji: '🦁', nameEn: 'STRENGTH', nameJp: '力',
+    upright: { meaning: '内なる強さと慈悲の力。勇気や意志ではなく、忍耐と優しさで困難を乗り越えられます。自分の感情と上手に付き合うことが鍵です。', advice: '力づくではなく、愛と理解で物事に向き合って。内なる勇気を信じてください。' },
+    reversed: { meaning: '自信の欠如、感情のコントロール不足、または内なる恐れ。自分を過小評価していないか確認して。', advice: '弱さを認めることも強さのひとつ。サポートを求めることを恐れないで。' }
+  },
+  {
+    id: 9, emoji: '🏮', nameEn: 'THE HERMIT', nameJp: '隠者',
+    upright: { meaning: '内省と孤独の中に真実がある時。外の騒音から離れ、自分の内なる光を頼りに進む時期。静かな知恵が道を照らします。', advice: 'ひとりの時間を大切に。内なる声に従い、自分の価値観と向き合ってみてください。' },
+    reversed: { meaning: '孤立しすぎ、または孤独を拒んでいる状態。外向きすぎて本質を見失っているかも。', advice: '適度な孤独と社会性のバランスを取りましょう。内省の時間も、人とのつながりも、どちらも必要です。' }
+  },
+  {
+    id: 10, emoji: '☸️', nameEn: 'WHEEL OF FORTUNE', nameJp: '運命の輪',
+    upright: { meaning: '大きな転換点。人生の流れが変わり、チャンスが訪れます。宇宙の流れに乗ることで、予想以上の幸運が巡ってくるでしょう。', advice: '変化を受け入れ、流れに乗りましょう。今は宇宙があなたを後押ししています。' },
+    reversed: { meaning: '悪い流れや不運が続く時期。変化に抵抗しているか、コントロール欲が強すぎているかもしれません。', advice: '流れに逆らわず、現状を受け入れることから始めて。嵐の後には必ず晴れ間が来ます。' }
+  },
+  {
+    id: 11, emoji: '⚖️', nameEn: 'JUSTICE', nameJp: '正義',
+    upright: { meaning: '公平な判断と因果応報の時。誠実な行動が正しい結果をもたらします。法的なことや契約、重要な決断において真実が明らかになるでしょう。', advice: '誠実であることを最優先に。公平な視点で状況を見極め、道理に従って行動してください。' },
+    reversed: { meaning: '不公平、または自己正当化が過ぎる状態。自分の判断が偏っていないか、今一度見直して。', advice: '別の視点から状況を見てみましょう。誰かが声をあげられずにいる可能性があります。' }
+  },
+  {
+    id: 12, emoji: '🙃', nameEn: 'THE HANGED MAN', nameJp: '吊られた男',
+    upright: { meaning: '自発的な停止と視点の転換。一時的な犠牲や待機が、長期的な成長につながります。今は動かずに、新しい角度から見ることが大切です。', advice: '焦らず待つことが賢明です。今の停滞は成長のための準備期間。新しい視点を得るチャンスです。' },
+    reversed: { meaning: '必要な犠牲を避けている、または無駄な犠牲を払っている状態。何かを手放す時かもしれません。', advice: '本当に必要な変化から逃げていないか問いかけてみて。手放すことが前進につながることもあります。' }
+  },
+  {
+    id: 13, emoji: '💀', nameEn: 'DEATH', nameJp: '死神',
+    upright: { meaning: '終わりと新たな始まりの象徴。古いものが終わりを迎え、変容と再生が始まります。恐れることなく、自然な移行を受け入れましょう。', advice: '古いものを手放すことを恐れないで。終わりはいつも次のステージへの扉です。' },
+    reversed: { meaning: '変化への抵抗、過去への執着、または行き詰まり。必要な変容を拒むことで状況が悪化しています。', advice: '過去に縛られていませんか？手放す勇気を持つことで、新しい可能性が開けます。' }
+  },
+  {
+    id: 14, emoji: '✨', nameEn: 'TEMPERANCE', nameJp: '節制',
+    upright: { meaning: 'バランスと調和、忍耐の時。極端を避け、穏やかに物事を統合していくことで、美しい結果が生まれます。焦らず時間をかけて。', advice: '急がば回れ。バランスを大切にして、少しずつ着実に進んでいきましょう。' },
+    reversed: { meaning: '過剰、アンバランス、または極端な行動。何かが多すぎる、または足りなすぎる状態です。', advice: '何が崩れているかを冷静に見て。生活のリズムや優先順位を見直す時かもしれません。' }
+  },
+  {
+    id: 15, emoji: '😈', nameEn: 'THE DEVIL', nameJp: '悪魔',
+    upright: { meaning: '束縛、執着、または依存の状態。誘惑に負けていたり、恐れから抜け出せずにいるかもしれません。しかし、その鎖は自分で外せます。', advice: '何かに縛られていると感じるなら、それは幻想かもしれません。自分の力で自由になれます。' },
+    reversed: { meaning: '束縛からの解放、悪習慣からの脱却の始まり。自分を縛っていたものに気づき、変化が始まっています。', advice: '解放への一歩を踏み出す勇気があります。本当の自由に向けて歩き始めましょう。' }
+  },
+  {
+    id: 16, emoji: '⚡', nameEn: 'THE TOWER', nameJp: '塔',
+    upright: { meaning: '突然の変化と崩壊。しかしそれは偽りの構造が壊れ、真実が現れる瞬間。混乱の後に、より強固な土台が生まれます。', advice: '今の激変は必要なプロセスです。何かが壊れることで、より本物のものが見えてきます。' },
+    reversed: { meaning: '破壊を避けているが内部崩壊が進んでいる、または激変が遅れている状態。先延ばしがさらなる問題を招くことも。', advice: '直面を避けている問題がありませんか？早めに向き合うことで被害を最小限にできます。' }
+  },
+  {
+    id: 17, emoji: '⭐', nameEn: 'THE STAR', nameJp: '星',
+    upright: { meaning: '希望と癒しの時。嵐の後の静けさの中で、純粋な希望の光が差し込んでいます。自分の夢と可能性を信じて、前を向いて歩みましょう。', advice: '希望を失わないでください。あなたの夢は叶えられます。宇宙があなたを導いています。' },
+    reversed: { meaning: '絶望感、方向性の喪失、または自信の欠如。希望を見失いかけているかもしれません。', advice: '小さな光を見つけてください。内側から湧き出る希望はまだそこにあります。焦らずに。' }
+  },
+  {
+    id: 18, emoji: '🌕', nameEn: 'THE MOON', nameJp: '月',
+    upright: { meaning: '幻想、不安、潜在意識からのメッセージ。見えないものへの恐れや混乱があるかもしれませんが、それは内なる成長のサインです。', advice: '夢や直感に注目して。すべてが明確でなくても大丈夫。安全に自分のペースで進んでください。' },
+    reversed: { meaning: '混乱からの脱出、幻想の解消。ようやく真実が見えてきます。恐れや不安が薄れ始めています。', advice: '霧が晴れてきました。自分の直感を信じて、本当のことを直視する準備をしましょう。' }
+  },
+  {
+    id: 19, emoji: '☀️', nameEn: 'THE SUN', nameJp: '太陽',
+    upright: { meaning: '喜び、成功、活力に満ちた最高の時。明るいエネルギーがすべてを照らし、本来の自分を輝かせる時期。夢が現実になっていきます。', advice: '自信を持って輝いてください。今のあなたには最高のエネルギーがあります。喜びを表現して！' },
+    reversed: { meaning: '一時的な曇り、過度な楽観、または自己表現の抑制。内側の輝きを外に出せていないかもしれません。', advice: '喜びを感じることを自分に許してください。小さなことでも幸せを見つける練習をしてみて。' }
+  },
+  {
+    id: 20, emoji: '📯', nameEn: 'JUDGEMENT', nameJp: '審判',
+    upright: { meaning: '覚醒と再生の時。過去を手放し、より高い自己へと生まれ変わる瞬間。内なる呼びかけに応え、使命に目覚めましょう。', advice: '大きな転換点が来ています。過去の自分を赦し、新しい自分として立ち上がる時です。' },
+    reversed: { meaning: '自己批判、後悔、または変化への恐れ。自分を裁きすぎて前に進めていないかもしれません。', advice: '自分を赦すことから始めましょう。過去の失敗はあなたではありません。今こそ前を向いて。' }
+  },
+  {
+    id: 21, emoji: '🌍', nameEn: 'THE WORLD', nameJp: '世界',
+    upright: { meaning: '達成、完成、統合の時。一つのサイクルが美しく完結し、成功と充実感をもたらします。世界はあなたに扉を開いています。', advice: '今、あなたは一つの到達点にいます。この完成を祝い、次の大きな旅への準備を始めましょう。' },
+    reversed: { meaning: '完成目前での停滞、または達成感の欠如。ゴールが見えているのに最後の一歩が踏み出せていない状態。', advice: 'もう少しで完成です。焦りや完璧主義を手放して、最後の仕上げに集中しましょう。' }
+  }
+];
+
+// Spread configurations
+const SPREADS = {
+  1: [
+    { name: '現在の状況・メッセージ' }
+  ],
+  3: [
+    { name: '過去' },
+    { name: '現在' },
+    { name: '未来' }
+  ],
+  5: [
+    { name: '現状' },
+    { name: '障害・課題' },
+    { name: '深層心理' },
+    { name: 'アドバイス' },
+    { name: '結果・可能性' }
+  ]
+};
+
+// Overall messages by spread
+const OVERALL_MESSAGES = {
+  1: (cards) => {
+    const c = cards[0];
+    const type = c.reversed ? '逆位置' : '正位置';
+    return `「${c.nameJp}」の${type}が、今のあなたに語りかけています。${c.reversed ? c.upright.advice.replace(/。.*/, '。') : c.reversed ? c.upright.advice : c.upright.advice} 宇宙からのメッセージを受け取り、今日を大切に過ごしてください。`;
+  },
+  3: (cards) => {
+    return `過去・現在・未来の3枚が、あなたの物語を紡いでいます。過去の「${cards[0].nameJp}」が土台となり、現在「${cards[1].nameJp}」の時を過ごし、未来には「${cards[2].nameJp}」の可能性が広がっています。流れを信じて、一歩一歩進んでください。`;
+  },
+  5: (cards) => {
+    return `5枚のカードが、あなたの状況を多角的に照らし出しています。「${cards[3].nameJp}」のアドバイスを胸に刻み、「${cards[4].nameJp}」が示す可能性に向かって歩みを進めてください。星があなたを導いています。`;
+  }
+};
+
+// State
+let currentSpread = 1;
+let drawnCards = [];
+let revealedCount = 0;
+let isReading = false;
+
+// Init stars
+function initStars() {
+  const starsEl = document.getElementById('stars');
+  for (let i = 0; i < 80; i++) {
+    const star = document.createElement('div');
+    star.className = 'star';
+    star.style.cssText = `
+      left: ${Math.random() * 100}%;
+      top: ${Math.random() * 100}%;
+      --d: ${2 + Math.random() * 4}s;
+      --delay: ${Math.random() * 4}s;
+      width: ${Math.random() > 0.8 ? 3 : 2}px;
+      height: ${Math.random() > 0.8 ? 3 : 2}px;
+      opacity: ${0.2 + Math.random() * 0.5};
+    `;
+    starsEl.appendChild(star);
+  }
+}
+
+// Spread selector
+document.querySelectorAll('.spread-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (isReading) return;
+    document.querySelectorAll('.spread-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentSpread = parseInt(btn.dataset.spread);
+  });
+});
+
+// Draw button
+document.getElementById('drawBtn').addEventListener('click', startReading);
+document.getElementById('resetBtn').addEventListener('click', resetReading);
+
+function startReading() {
+  if (isReading) return;
+  isReading = true;
+  revealedCount = 0;
+
+  const btn = document.getElementById('drawBtn');
+  btn.disabled = true;
+
+  // Shuffle and pick cards
+  const shuffled = [...CARDS].sort(() => Math.random() - 0.5);
+  drawnCards = shuffled.slice(0, currentSpread).map(card => ({
+    ...card,
+    reversed: Math.random() < 0.35
+  }));
+
+  renderCards();
+}
+
+function renderCards() {
+  const area = document.getElementById('cardsArea');
+  area.innerHTML = '';
+
+  const positions = SPREADS[currentSpread];
+
+  drawnCards.forEach((card, i) => {
+    const slot = document.createElement('div');
+    slot.className = 'card-slot';
+
+    const label = document.createElement('div');
+    label.className = 'card-position-label';
+    label.textContent = positions[i].name;
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'card-wrapper';
+
+    const inner = document.createElement('div');
+    inner.className = 'card-inner';
+
+    // Back
+    const back = document.createElement('div');
+    back.className = 'card-face card-back waiting';
+    back.innerHTML = '🔮';
+    back.addEventListener('click', () => revealCard(i, inner, card));
+
+    // Front
+    const front = document.createElement('div');
+    front.className = 'card-face card-front';
+    front.innerHTML = `
+      <div class="card-front-bg">
+        <div class="card-emoji">${card.emoji}</div>
+        <div class="card-name-en">${card.nameEn}</div>
+        <div class="card-name-jp">${card.nameJp}</div>
+      </div>
+      ${card.reversed ? '<div class="card-reversed-badge">逆位置</div>' : ''}
+    `;
+
+    inner.appendChild(back);
+    inner.appendChild(front);
+    wrapper.appendChild(inner);
+    slot.appendChild(label);
+    slot.appendChild(wrapper);
+    area.appendChild(slot);
+
+    // Auto-reveal with delay
+    setTimeout(() => {
+      back.classList.remove('waiting');
+      revealCard(i, inner, card);
+    }, 600 + i * 700);
+  });
+}
+
+function revealCard(index, inner, card) {
+  if (inner.classList.contains('flipped') || inner.classList.contains('reversed-flip')) return;
+
+  if (card.reversed) {
+    inner.classList.add('reversed-flip');
+  } else {
+    inner.classList.add('flipped');
+  }
+
+  revealedCount++;
+  if (revealedCount === currentSpread) {
+    setTimeout(showReadings, 600);
+  }
+}
+
+function showReadings() {
+  const resultEl = document.getElementById('readingResult');
+  resultEl.innerHTML = '';
+  resultEl.classList.add('visible');
+
+  const positions = SPREADS[currentSpread];
+
+  drawnCards.forEach((card, i) => {
+    const reading = document.createElement('div');
+    reading.className = 'card-reading';
+
+    const meaning = card.reversed ? card.reversed : card.upright;
+    const posLabel = positions[i].name;
+
+    reading.innerHTML = `
+      <div class="reading-position">✦ ${posLabel}</div>
+      <div class="reading-card-name">
+        ${card.emoji} ${card.nameJp}（${card.nameEn}）
+        ${card.reversed ? '<span class="reversed-tag">逆位置</span>' : ''}
+      </div>
+      <div class="reading-meaning">${meaning.meaning}</div>
+      <div class="reading-advice">💫 ${meaning.advice}</div>
+    `;
+
+    resultEl.appendChild(reading);
+
+    setTimeout(() => {
+      reading.classList.add('show');
+    }, 100 + i * 200);
+  });
+
+  // Overall message
+  const overallEl = document.createElement('div');
+  overallEl.className = 'overall-message';
+  const msgFn = OVERALL_MESSAGES[currentSpread];
+  const msg = msgFn ? msgFn(drawnCards) : '';
+  overallEl.innerHTML = `
+    <h3>✦ 総合メッセージ ✦</h3>
+    <p>${msg}</p>
+  `;
+  resultEl.appendChild(overallEl);
+
+  setTimeout(() => {
+    overallEl.classList.add('show');
+    document.getElementById('resetBtn').style.display = 'block';
+    overallEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 400 + drawnCards.length * 200);
+}
+
+function resetReading() {
+  isReading = false;
+  drawnCards = [];
+  revealedCount = 0;
+
+  document.getElementById('cardsArea').innerHTML = '';
+  document.getElementById('readingResult').innerHTML = '';
+  document.getElementById('readingResult').classList.remove('visible');
+  document.getElementById('resetBtn').style.display = 'none';
+  document.getElementById('drawBtn').disabled = false;
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+initStars();
+</script>
+</body>
+</html>
