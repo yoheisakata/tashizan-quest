@@ -225,27 +225,27 @@ function rotate(a){
 
 // ── Update ──────────────────────────────────────────────
 const MS=0.055,TS=0.038;
-let tick=0,respT=0;
+let tick=0,respT=0,walkPhase=0,walkBob=0,isMoving=false;
 function update(){
   tick++;
-  // Keyboard move
   let fwd=0,turn=0;
   if(keys['ArrowUp']  ||keys['w']||keys['W'])fwd+=1;
   if(keys['ArrowDown']||keys['s']||keys['S'])fwd-=1;
   if(keys['ArrowLeft']||keys['a']||keys['A'])turn-=1;
   if(keys['ArrowRight']||keys['d']||keys['D'])turn+=1;
-  // Left joy: forward/back
   if(jL.on){fwd-=jL.sy/jL.R;turn+=jL.sx/jL.R*0.5;}
-  // Right joy: turn/look
   if(jR.on){turn+=jR.sx/jR.R;}
-
-  if(Math.abs(fwd)>.05){
+  isMoving=Math.abs(fwd)>.05;
+  if(isMoving){
     const nx=pl.x+pl.dx*fwd*MS, ny=pl.y+pl.dy*fwd*MS;
     if(!WMAP[Math.floor(pl.y)]?.[Math.floor(nx)])pl.x=nx;
     if(!WMAP[Math.floor(ny)]?.[Math.floor(pl.x)])pl.y=ny;
+    walkPhase+=0.12;
   }
   if(Math.abs(turn)>.05)rotate(turn*TS);
-
+  // Walk bob (camera up/down sway)
+  const targetBob=isMoving?Math.sin(walkPhase)*4:0;
+  walkBob+=(targetBob-walkBob)*0.15;
   if(aCD>0)aCD--;
   if(grabAnim>0)grabAnim--;
   if(toastT>0&&--toastT===0)document.getElementById('toast').classList.remove('show');
@@ -255,14 +255,13 @@ function update(){
 
 // ── Render: sky & floor ──────────────────────────────────
 function drawSkyFloor(){
-  // Sky gradient
-  const g=ctx.createLinearGradient(0,0,0,VH/2);
+  const hor=Math.floor(VH/2+walkBob);
+  const g=ctx.createLinearGradient(0,0,0,hor);
   g.addColorStop(0,'#020408');g.addColorStop(1,'#08142c');
-  ctx.fillStyle=g;ctx.fillRect(0,0,VW,VH/2);
-  // Floor gradient
-  const g2=ctx.createLinearGradient(0,VH/2,0,VH);
-  g2.addColorStop(0,'#111118');g2.addColorStop(1,'#1a1a20');
-  ctx.fillStyle=g2;ctx.fillRect(0,VH/2,VW,VH/2);
+  ctx.fillStyle=g;ctx.fillRect(0,0,VW,hor);
+  const g2=ctx.createLinearGradient(0,hor,0,VH);
+  g2.addColorStop(0,'#111118');g2.addColorStop(1,'#1e1e28');
+  ctx.fillStyle=g2;ctx.fillRect(0,hor,VW,VH-hor);
 }
 
 // ── Render: raycasting walls ─────────────────────────────
@@ -288,8 +287,9 @@ function rayCast(){
     const dist=side===0?(sdx-ddx):(sdy-ddy);
     zbuf[col]=dist;
     const lineH=Math.floor(VH/Math.max(.01,dist));
-    const ds=Math.max(0,Math.floor((VH-lineH)/2));
-    const de=Math.min(VH,Math.floor((VH+lineH)/2));
+    const hor=Math.floor(VH/2+walkBob);
+    const ds=Math.max(0,hor-Math.floor(lineH/2));
+    const de=Math.min(VH,hor+Math.floor(lineH/2));
     let wx=side===0?(pl.y+dist*rdy):(pl.x+dist*rdx);
     wx-=Math.floor(wx);
     const bank=hit===10?Math.max(0,1-dist/5):0;
@@ -334,24 +334,29 @@ function drawSprites(){
   for(const sp of visible){
     const{tx,ty}=sp;
     const scx=Math.floor(VW/2*(1+tx/ty));
-    const sprH=Math.abs(Math.floor(VH/ty));
-    const sprW=Math.floor(sprH*.8);
-    const sxS=Math.max(0,scx-sprW/2), sxE=Math.min(VW-1,scx+sprW/2);
-    if(sxE<0||sxS>VW)continue;
+    if(scx<-60||scx>VW+60)continue;
     const midCol=Math.floor(scx/STRIP);
     if(midCol<0||midCol>=zbuf.length||zbuf[midCol]<ty)continue;
-    const sy=Math.floor(VH/2-sprH*.4);
-    const near=ty<1.2;
+    // Ground-level placement: bottom aligns with wall base at this distance
+    const lineH=Math.floor(VH/ty);
+    const hor=Math.floor(VH/2+walkBob);
+    const sprH=Math.max(6,Math.floor(lineH*.42));
+    const sprBottom=hor+Math.floor(lineH/2);
+    const sprTop=sprBottom-sprH;
+    const near=ty<1.3;
     ctx.save();
-    if(near){ctx.shadowColor='#4ade80';ctx.shadowBlur=22;}
-    const fs=Math.max(10,Math.min(52,sprH));
-    ctx.font=fs+'px sans-serif';
-    ctx.textAlign='center';
-    ctx.globalAlpha=Math.min(1,ty<8?1:Math.max(.3,1-(ty-8)/6));
-    ctx.fillText(sp.type,scx,sy+sprH*.5);
+    ctx.globalAlpha=Math.min(1,Math.max(.2,1-(ty-10)/5));
+    if(near){ctx.shadowColor='#4ade80';ctx.shadowBlur=16;}
+    // Ground shadow
+    ctx.fillStyle='rgba(0,0,0,.35)';
+    ctx.beginPath();ctx.ellipse(scx,sprBottom+2,sprH*.5,sprH*.1,0,0,Math.PI*2);ctx.fill();
+    // Emoji on ground
+    const fs=Math.max(8,Math.min(46,sprH));
+    ctx.font=fs+'px sans-serif';ctx.textAlign='center';
+    ctx.fillText(sp.type,scx,sprBottom);
     if(near){
-      ctx.font='bold 11px Helvetica';ctx.fillStyle='#fbbf24';ctx.shadowBlur=6;
-      ctx.fillText('¥'+sp.val,scx,sy+sprH*.5-fs-2);
+      ctx.shadowBlur=5;ctx.font='bold 11px Helvetica';ctx.fillStyle='#fbbf24';
+      ctx.fillText('¥'+sp.val,scx,sprTop-5);
     }
     ctx.restore();
   }
@@ -375,6 +380,107 @@ function drawBankMarker(){
   ctx.restore();
 }
 
+// ── Render: first-person character body ──────────────────
+function drawCharBody(){
+  const sway=Math.sin(walkPhase)*5;
+  const bob=isMoving?Math.abs(Math.sin(walkPhase))*6:0;
+  const grab=grabAnim/18; // 0..1
+
+  // ── RIGHT ARM (tongs) ──
+  const rx=VW-10+sway, ry=VH+10-bob;
+  ctx.save();
+  // Sleeve
+  const rg=ctx.createLinearGradient(rx-140,ry-320,rx+20,ry);
+  rg.addColorStop(0,'#3b82f6');rg.addColorStop(1,'#1d4ed8');
+  ctx.fillStyle=rg;
+  ctx.beginPath();
+  ctx.moveTo(rx-110,ry-320);
+  ctx.bezierCurveTo(rx-160,ry-180,rx-90,ry-80,rx-30,ry);
+  ctx.lineTo(rx+20,ry-20);
+  ctx.bezierCurveTo(rx+10,ry-100,rx-40,ry-180,rx+30,ry-320);
+  ctx.closePath();ctx.fill();
+  // Jacket cuff
+  ctx.fillStyle='#1e3a8a';
+  ctx.beginPath();
+  ctx.moveTo(rx-30,ry);ctx.lineTo(rx-90,ry-20);
+  ctx.lineTo(rx-80,ry-50);ctx.lineTo(rx+20,ry-30);
+  ctx.closePath();ctx.fill();
+  // Hand (skin)
+  ctx.fillStyle='#fde68a';
+  ctx.beginPath();
+  ctx.ellipse(rx-45,ry-28,28,18,-0.4,0,Math.PI*2);ctx.fill();
+  // Tongs
+  const ta=-Math.PI/2.5-grab*0.4;
+  const tlen=90+grab*50;
+  ctx.strokeStyle='#9ca3af';ctx.lineWidth=5;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(rx-45,ry-38);
+  ctx.lineTo(rx-45+Math.cos(ta)*tlen*.45,ry-38+Math.sin(ta)*tlen*.45);ctx.stroke();
+  const sp2=0.16+grab*.2;
+  ctx.lineWidth=3.5;
+  ctx.beginPath();ctx.moveTo(rx-45,ry-38);
+  ctx.lineTo(rx-45+Math.cos(ta-sp2)*tlen,ry-38+Math.sin(ta-sp2)*tlen);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(rx-45,ry-38);
+  ctx.lineTo(rx-45+Math.cos(ta+sp2)*tlen,ry-38+Math.sin(ta+sp2)*tlen);ctx.stroke();
+  // Tip clips
+  ctx.strokeStyle='#d1d5db';ctx.lineWidth=2.5;
+  const t1ex=rx-45+Math.cos(ta-sp2)*tlen, t1ey=ry-38+Math.sin(ta-sp2)*tlen;
+  const t2ex=rx-45+Math.cos(ta+sp2)*tlen, t2ey=ry-38+Math.sin(ta+sp2)*tlen;
+  ctx.beginPath();ctx.moveTo(t1ex,t1ey);ctx.lineTo(t1ex+Math.cos(ta+.4)*12,t1ey+Math.sin(ta+.4)*12);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(t2ex,t2ey);ctx.lineTo(t2ex+Math.cos(ta-.4)*12,t2ey+Math.sin(ta-.4)*12);ctx.stroke();
+  // Grab sparkle
+  if(grab>.3){
+    ctx.shadowColor='#4ade80';ctx.shadowBlur=14;
+    ctx.font='18px sans-serif';ctx.textAlign='center';
+    ctx.fillText('✨',t1ex+(t2ex-t1ex)*.5,t1ey+(t2ey-t1ey)*.5-8);
+  }
+  ctx.restore();
+
+  // ── LEFT ARM (basket side) ──
+  const lx=10-sway, ly=VH+10+bob;
+  ctx.save();
+  const lg=ctx.createLinearGradient(lx+140,ly-320,lx-20,ly);
+  lg.addColorStop(0,'#3b82f6');lg.addColorStop(1,'#1d4ed8');
+  ctx.fillStyle=lg;
+  ctx.beginPath();
+  ctx.moveTo(lx+110,ly-320);
+  ctx.bezierCurveTo(lx+160,ly-180,lx+90,ly-80,lx+30,ly);
+  ctx.lineTo(lx-20,ly-20);
+  ctx.bezierCurveTo(lx-10,ly-100,lx+40,ly-180,lx-30,ly-320);
+  ctx.closePath();ctx.fill();
+  ctx.fillStyle='#1e3a8a';
+  ctx.beginPath();
+  ctx.moveTo(lx+30,ly);ctx.lineTo(lx+90,ly-20);
+  ctx.lineTo(lx+80,ly-50);ctx.lineTo(lx-20,ly-30);
+  ctx.closePath();ctx.fill();
+  ctx.fillStyle='#fde68a';
+  ctx.beginPath();ctx.ellipse(lx+45,ly-28,28,18,.4,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+
+  // ── LEGS ──
+  const legBob1=isMoving?Math.sin(walkPhase)*12:0;
+  const legBob2=isMoving?-Math.sin(walkPhase)*12:0;
+  // Trousers
+  ctx.save();
+  ctx.fillStyle='#1e3a8a';
+  // Left trouser
+  ctx.beginPath();
+  ctx.moveTo(VW/2-55+sway*.5,VH-80+legBob1);
+  ctx.lineTo(VW/2-15+sway*.5,VH-80+legBob1);
+  ctx.lineTo(VW/2-10,VH+20);ctx.lineTo(VW/2-60,VH+20);
+  ctx.closePath();ctx.fill();
+  // Right trouser
+  ctx.beginPath();
+  ctx.moveTo(VW/2+15-sway*.5,VH-80+legBob2);
+  ctx.lineTo(VW/2+55-sway*.5,VH-80+legBob2);
+  ctx.lineTo(VW/2+60,VH+20);ctx.lineTo(VW/2+10,VH+20);
+  ctx.closePath();ctx.fill();
+  // Shoes
+  ctx.fillStyle='#111827';
+  ctx.beginPath();ctx.ellipse(VW/2-35+sway*.5,VH+8+legBob1*.3,30,10,.1,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(VW/2+35-sway*.5,VH+8+legBob2*.3,30,10,-.1,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+}
+
 // ── Render: HUD overlays ─────────────────────────────────
 function drawOverlay(){
   // Crosshair
@@ -383,14 +489,7 @@ function drawOverlay(){
   ctx.beginPath();ctx.moveTo(cx-10,cy);ctx.lineTo(cx+10,cy);ctx.stroke();
   ctx.beginPath();ctx.moveTo(cx,cy-10);ctx.lineTo(cx,cy+10);ctx.stroke();
 
-  // Tong grab animation
-  if(grabAnim>0){
-    const p=grabAnim/18;
-    const gy=VH-80-p*60;
-    ctx.save();ctx.globalAlpha=p;
-    ctx.font='36px sans-serif';ctx.textAlign='center';ctx.fillText('🦾',cx,gy);
-    ctx.restore();
-  }
+  drawCharBody();
 
   // Basket count (bottom center)
   const fill=basket/CAP;
