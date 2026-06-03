@@ -317,17 +317,47 @@ function makeEarthTex(){
 //  MOON TEXTURE
 // ═══════════════════
 function makeMoonTex(){
+  const W=512,H=256;
   const cv=document.createElement('canvas');
-  cv.width=256;cv.height=128;
+  cv.width=W;cv.height=H;
   const c=cv.getContext('2d');
-  c.fillStyle='#9e9e9e';c.fillRect(0,0,256,128);
-  [[60,40,18],[140,60,12],[200,30,15],[80,90,10],[170,90,8],[100,45,6],[220,70,9],[45,75,7]].forEach(([cx,cy,r])=>{
+
+  // Base: warm lunar gray with subtle latitude variation
+  const bg=c.createLinearGradient(0,0,0,H);
+  bg.addColorStop(0,'#7a7570');bg.addColorStop(0.5,'#a8a49e');bg.addColorStop(1,'#7a7570');
+  c.fillStyle=bg;c.fillRect(0,0,W,H);
+
+  // Large dark "maria" (lunar seas)
+  [[120,90,55],[280,110,40],[380,80,35],[180,160,28],[320,60,22],[60,130,20]].forEach(([cx,cy,r])=>{
     const g=c.createRadialGradient(cx,cy,0,cx,cy,r);
-    g.addColorStop(0,'rgba(70,70,70,0.65)');
-    g.addColorStop(0.7,'rgba(90,90,90,0.3)');
-    g.addColorStop(1,'rgba(160,160,160,0)');
+    g.addColorStop(0,'rgba(60,55,50,0.72)');g.addColorStop(0.6,'rgba(70,65,60,0.45)');g.addColorStop(1,'rgba(100,95,90,0)');
     c.fillStyle=g;c.beginPath();c.arc(cx,cy,r,0,Math.PI*2);c.fill();
   });
+
+  // Craters — varied sizes with rim highlight
+  [
+    [90,60,22],[200,40,14],[350,100,18],[130,150,12],[260,170,16],
+    [440,60,10],[70,180,9],[310,30,8],[160,90,7],[420,140,11],
+    [240,120,6],[480,100,7],[50,80,5],[380,170,8],[100,120,6],
+    [330,145,5],[210,200,7],[450,180,6]
+  ].forEach(([cx,cy,r])=>{
+    // Dark bowl
+    const g=c.createRadialGradient(cx,cy,0,cx,cy,r);
+    g.addColorStop(0,'rgba(50,46,42,0.8)');g.addColorStop(0.55,'rgba(68,64,60,0.5)');g.addColorStop(1,'rgba(140,135,130,0)');
+    c.fillStyle=g;c.beginPath();c.arc(cx,cy,r,0,Math.PI*2);c.fill();
+    // Bright ejecta rim
+    const rim=c.createRadialGradient(cx,cy,r*0.75,cx,cy,r*1.25);
+    rim.addColorStop(0,'rgba(200,195,188,0)');rim.addColorStop(0.5,'rgba(210,205,198,0.38)');rim.addColorStop(1,'rgba(200,195,188,0)');
+    c.fillStyle=rim;c.beginPath();c.arc(cx,cy,r*1.25,0,Math.PI*2);c.fill();
+  });
+
+  // Fine surface texture — tiny bright/dark specks
+  for(let i=0;i<320;i++){
+    const x=Math.random()*W,y=Math.random()*H,r=Math.random()*1.5+0.4;
+    c.fillStyle=`rgba(${Math.random()>0.5?210:50},${Math.random()>0.5?205:48},${Math.random()>0.5?198:44},0.18)`;
+    c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fill();
+  }
+
   return new THREE.CanvasTexture(cv);
 }
 
@@ -355,12 +385,15 @@ scene.add(new THREE.Mesh(
 const moonPivot = new THREE.Object3D();
 scene.add(moonPivot);
 
-const moonMesh = new THREE.Mesh(
-  new THREE.SphereGeometry(0.55,32,32),
-  new THREE.MeshPhongMaterial({map:makeMoonTex()})
-);
+const moonMat=new THREE.MeshPhongMaterial({map:makeMoonTex(),specular:new THREE.Color(0x111111),shininess:2});
+const moonMesh=new THREE.Mesh(new THREE.SphereGeometry(0.55,48,48),moonMat);
 moonMesh.position.set(9,0.5,0);
 moonPivot.add(moonMesh);
+// Load high-quality moon photo texture
+new THREE.TextureLoader().load(
+  'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/textures/planets/moon_1024.jpg',
+  tex=>{moonMat.map=tex;moonMat.needsUpdate=true;}
+);
 
 // Moon orbit ring
 const orbitPts=[];
