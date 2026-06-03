@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Español - スペイン語学習</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Arial,Helvetica,sans-serif;background:#fffbeb;color:#1f2937;min-height:100vh;}
+.screen{display:none;min-height:100vh;}
+.screen.active{display:flex;flex-direction:column;}
+
+/* ===== HOME ===== */
+#home{align-items:center;justify-content:center;padding:24px;}
+.home-inner{max-width:360px;width:100%;}
+.home-flag{font-size:64px;text-align:center;margin-bottom:12px;}
+.home-title{font-size:28px;font-weight:900;color:#92400e;text-align:center;}
+.home-sub{color:#6b7280;text-align:center;margin-bottom:36px;font-size:14px;}
+.card{background:#fff;border-radius:20px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.08);border:1px solid #fde68a;display:flex;align-items:center;gap:16px;margin-bottom:12px;cursor:pointer;transition:transform 0.1s,box-shadow 0.1s;text-decoration:none;color:inherit;}
+.card:active{transform:scale(0.97);}
+.card:hover{box-shadow:0 4px 16px rgba(0,0,0,0.12);border-color:#f59e0b;}
+.card-icon{font-size:40px;flex-shrink:0;}
+.card-title{font-size:18px;font-weight:700;}
+.card-desc{font-size:12px;color:#9ca3af;margin-top:2px;}
+.home-luck{text-align:center;font-size:12px;color:#d1d5db;margin-top:20px;}
+
+/* ===== HEADER ===== */
+header{display:flex;align-items:center;gap:12px;padding:16px;background:#fff;border-bottom:1px solid #fde68a;box-shadow:0 1px 4px rgba(0,0,0,0.06);}
+.back-btn{font-size:20px;font-weight:700;color:#b45309;background:none;border:none;cursor:pointer;padding:4px 8px;}
+.header-info h1{font-size:16px;font-weight:700;}
+.header-info p{font-size:11px;color:#9ca3af;}
+.score-badge{margin-left:auto;text-align:right;}
+.score-num{font-size:14px;font-weight:700;color:#b45309;}
+.score-label{font-size:10px;color:#9ca3af;}
+
+/* ===== CHAT ===== */
+#chat{flex:1;}
+#chat .body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;}
+.msg{display:flex;}
+.msg.user{justify-content:flex-end;}
+.bubble{max-width:80%;padding:12px 16px;border-radius:20px;font-size:14px;line-height:1.6;}
+.msg.ai .bubble{background:#fff;border:1px solid #e5e7eb;border-bottom-left-radius:4px;}
+.msg.user .bubble{background:#b45309;color:#fff;border-bottom-right-radius:4px;}
+.translation{color:#9ca3af;font-size:13px;}
+.speak-btn{font-size:11px;color:#b45309;background:none;border:none;cursor:pointer;margin-top:6px;padding:0;}
+.speak-btn:hover{color:#92400e;}
+.typing{color:#9ca3af;font-size:13px;font-style:italic;}
+.chat-footer{padding:12px 16px;background:#fff;border-top:1px solid #fde68a;}
+.chat-input-row{display:flex;gap:8px;}
+.chat-input{flex:1;border-radius:9999px;padding:12px 16px;border:1px solid #d1d5db;font-size:14px;outline:none;}
+.chat-input:focus{border-color:#f59e0b;}
+.send-btn{background:#b45309;color:#fff;border:none;border-radius:9999px;width:46px;height:46px;font-size:18px;cursor:pointer;flex-shrink:0;}
+.send-btn:disabled{opacity:0.4;}
+.chat-hint{font-size:11px;color:#9ca3af;text-align:center;margin-top:6px;}
+
+/* ===== LISTENING ===== */
+#listening{padding:16px;}
+#listening .listen-body{flex:1;display:flex;flex-direction:column;padding:16px;}
+.listen-card{background:#fff;border-radius:20px;padding:32px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.08);border:1px solid #fde68a;text-align:center;margin-bottom:20px;}
+.listen-hint{font-size:12px;color:#9ca3af;margin-bottom:16px;}
+.play-btn{background:#b45309;color:#fff;border:none;border-radius:9999px;width:88px;height:88px;font-size:36px;cursor:pointer;margin:0 auto;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(180,83,9,0.3);}
+.play-btn:active{transform:scale(0.95);}
+.play-hint{font-size:11px;color:#9ca3af;margin-top:8px;}
+.answer-reveal{margin-top:16px;padding-top:16px;border-top:1px solid #f3f4f6;}
+.answer-spanish{font-size:18px;font-weight:700;}
+.answer-jp{font-size:13px;color:#16a34a;margin-top:4px;}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.choice-btn{padding:16px 10px;border-radius:14px;border:1px solid #e5e7eb;background:#fff;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;}
+.choice-btn:active{transform:scale(0.97);}
+.choice-btn.correct{background:#dcfce7;border-color:#4ade80;color:#15803d;}
+.choice-btn.wrong{background:#fee2e2;border-color:#f87171;color:#b91c1c;}
+.choice-btn.faded{opacity:0.4;}
+.result-box{padding:16px;border-radius:14px;text-align:center;font-size:18px;font-weight:700;margin-bottom:12px;}
+.result-box.ok{background:#dcfce7;color:#16a34a;}
+.result-box.ng{background:#fee2e2;color:#dc2626;}
+.next-btn{width:100%;background:#b45309;color:#fff;border:none;border-radius:14px;padding:16px;font-size:16px;font-weight:700;cursor:pointer;}
+.next-btn:active{transform:scale(0.97);}
+.loading-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;}
+.loading-emoji{font-size:40px;animation:bounce 0.8s infinite alternate;}
+@keyframes bounce{from{transform:translateY(0);}to{transform:translateY(-10px);}}
+
+/* ===== API KEY SETUP ===== */
+#setup{align-items:center;justify-content:center;padding:24px;}
+.setup-inner{max-width:360px;width:100%;background:#fff;border-radius:24px;padding:32px 24px;box-shadow:0 4px 24px rgba(0,0,0,0.1);}
+.setup-icon{font-size:48px;text-align:center;margin-bottom:12px;}
+.setup-title{font-size:20px;font-weight:700;text-align:center;margin-bottom:8px;}
+.setup-desc{font-size:13px;color:#6b7280;text-align:center;margin-bottom:24px;line-height:1.6;}
+.setup-label{font-size:12px;font-weight:600;color:#374151;margin-bottom:6px;}
+.setup-input{width:100%;border:1px solid #d1d5db;border-radius:10px;padding:12px 14px;font-size:14px;font-family:monospace;outline:none;margin-bottom:16px;}
+.setup-input:focus{border-color:#f59e0b;}
+.setup-btn{width:100%;background:#b45309;color:#fff;border:none;border-radius:10px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;}
+.setup-btn:disabled{opacity:0.4;}
+.setup-note{font-size:11px;color:#9ca3af;text-align:center;margin-top:12px;}
+.error-msg{color:#dc2626;font-size:12px;margin-top:-10px;margin-bottom:10px;}
+</style>
+</head>
+<body>
+
+<!-- API KEY SETUP -->
+<div id="setup" class="screen active">
+  <div class="setup-inner">
+    <div class="setup-icon">🔑</div>
+    <div class="setup-title">APIキーを設定</div>
+    <div class="setup-desc">Anthropic の API キーを入力してください。<br>キーはこのデバイスのみに保存されます。</div>
+    <div class="setup-label">ANTHROPIC_API_KEY</div>
+    <input id="api-key-input" class="setup-input" type="password" placeholder="sk-ant-..." />
+    <div id="setup-error" class="error-msg" style="display:none"></div>
+    <button id="setup-btn" class="setup-btn">保存して始める</button>
+    <div class="setup-note">キーは localStorage に保存されます。他人と共有しないでください。</div>
+  </div>
+</div>
+
+<!-- HOME -->
+<div id="home" class="screen">
+  <div class="home-inner">
+    <div class="home-flag">🇪🇸</div>
+    <div class="home-title">Español</div>
+    <div class="home-sub">初心者向けスペイン語学習アプリ</div>
+    <div class="card" onclick="showChat()">
+      <span class="card-icon">💬</span>
+      <div>
+        <div class="card-title">AI会話練習</div>
+        <div class="card-desc">AIとスペイン語で会話しよう</div>
+      </div>
+    </div>
+    <div class="card" onclick="showListening()">
+      <span class="card-icon">👂</span>
+      <div>
+        <div class="card-title">聞き取り練習</div>
+        <div class="card-desc">スペイン語を聞いて意味を当てよう</div>
+      </div>
+    </div>
+    <div class="home-luck">¡Buena suerte! 頑張ってね！</div>
+  </div>
+</div>
+
+<!-- CHAT -->
+<div id="chat" class="screen">
+  <header>
+    <button class="back-btn" onclick="showHome()">←</button>
+    <div class="header-info">
+      <h1>AI会話練習</h1>
+      <p>スペイン語でAIと話してみよう</p>
+    </div>
+  </header>
+  <div class="body" id="chat-messages"></div>
+  <div class="chat-footer">
+    <div class="chat-input-row">
+      <input id="chat-input" class="chat-input" type="text" placeholder="日本語でもスペイン語でもOK" />
+      <button id="chat-send" class="send-btn" onclick="sendMessage()">➤</button>
+    </div>
+    <div class="chat-hint">日本語で入力するとスペイン語に変換してくれます</div>
+  </div>
+</div>
+
+<!-- LISTENING -->
+<div id="listening" class="screen">
+  <header>
+    <button class="back-btn" onclick="showHome()">←</button>
+    <div class="header-info">
+      <h1>聞き取り練習</h1>
+      <p>スペイン語を聞いて意味を当てよう</p>
+    </div>
+    <div class="score-badge">
+      <div class="score-num" id="score-display">0/0</div>
+      <div class="score-label">正解数</div>
+    </div>
+  </header>
+  <div class="listen-body" id="listen-body"></div>
+</div>
+
+<script>
+// ===== STATE =====
+let apiKey = localStorage.getItem('espanol_api_key') || '';
+let chatMessages = [];
+let listenScore = {correct: 0, total: 0};
+let currentQuestion = null;
+let listenSelected = null;
+let chatLoading = false;
+
+// ===== INIT =====
+if (apiKey) showHome();
+
+// ===== SETUP =====
+document.getElementById('setup-btn').addEventListener('click', async () => {
+  const key = document.getElementById('api-key-input').value.trim();
+  if (!key.startsWith('sk-')) {
+    showError('APIキーは sk- で始まる必要があります');
+    return;
+  }
+  document.getElementById('setup-btn').disabled = true;
+  document.getElementById('setup-btn').textContent = '確認中...';
+  try {
+    const ok = await testApiKey(key);
+    if (ok) {
+      localStorage.setItem('espanol_api_key', key);
+      apiKey = key;
+      showHome();
+    } else {
+      showError('APIキーが無効です。確認してください。');
+      document.getElementById('setup-btn').disabled = false;
+      document.getElementById('setup-btn').textContent = '保存して始める';
+    }
+  } catch {
+    showError('接続エラー。もう一度試してください。');
+    document.getElementById('setup-btn').disabled = false;
+    document.getElementById('setup-btn').textContent = '保存して始める';
+  }
+});
+
+function showError(msg) {
+  const el = document.getElementById('setup-error');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+async function testApiKey(key) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'content-type': 'application/json',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 10,
+      messages: [{role: 'user', content: 'hi'}]
+    })
+  });
+  return res.ok;
+}
+
+// ===== NAVIGATION =====
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function showHome() { show('home'); }
+
+function showChat() {
+  show('chat');
+  if (chatMessages.length === 0) {
+    chatMessages = [{role: 'assistant', content: '¡Hola! ¿Cómo estás? [こんにちは！お元気ですか？]'}];
+    renderChat();
+  }
+  setTimeout(() => scrollChatBottom(), 100);
+}
+
+function showListening() {
+  show('listening');
+  loadQuestion();
+}
+
+// ===== CHAT =====
+const CHAT_SYSTEM = `あなたは初心者向けのスペイン語会話練習AIです。
+ルール:
+- 必ずスペイン語で返答してください（シンプルな文章で）
+- 返答の後に必ず日本語の翻訳を[ ]内に添えてください
+- 例: "Hola, ¿cómo estás? [こんにちは、お元気ですか？]"
+- 初心者向けの易しい単語と文法を使ってください
+- 会話が続くように質問を添えてください
+- ユーザーが日本語で話しかけてきたら、スペイン語に直してから会話を続けてください`;
+
+function renderChat() {
+  const el = document.getElementById('chat-messages');
+  el.innerHTML = '';
+  chatMessages.forEach((msg, i) => {
+    const div = document.createElement('div');
+    div.className = `msg ${msg.role === 'user' ? 'user' : 'ai'}`;
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    bubble.innerHTML = formatMsg(msg.content);
+    if (msg.role === 'assistant' && msg.content) {
+      const btn = document.createElement('button');
+      btn.className = 'speak-btn';
+      btn.textContent = '🔊 読み上げ';
+      btn.onclick = () => speakSpanish(msg.content);
+      bubble.appendChild(btn);
+    }
+    div.appendChild(bubble);
+    el.appendChild(div);
+  });
+}
+
+function formatMsg(text) {
+  return text.replace(/\[([^\]]+)\]/g, '<span class="translation">[$1]</span>');
+}
+
+function scrollChatBottom() {
+  const el = document.getElementById('chat-messages');
+  el.scrollTop = el.scrollHeight;
+}
+
+document.getElementById('chat-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') sendMessage();
+});
+
+async function sendMessage() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text || chatLoading) return;
+
+  chatMessages.push({role: 'user', content: text});
+  input.value = '';
+  chatLoading = true;
+  document.getElementById('chat-send').disabled = true;
+  renderChat();
+
+  const typingDiv = document.createElement('div');
+  typingDiv.className = 'msg ai';
+  typingDiv.innerHTML = '<div class="bubble"><span class="typing">入力中...</span></div>';
+  document.getElementById('chat-messages').appendChild(typingDiv);
+  scrollChatBottom();
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 400,
+        system: CHAT_SYSTEM,
+        messages: chatMessages.filter(m => m.role === 'user' || m.role === 'assistant')
+          .map(m => ({role: m.role, content: m.content}))
+      })
+    });
+
+    const data = await res.json();
+    const reply = data.content?.[0]?.text || 'エラーが発生しました。';
+    chatMessages.push({role: 'assistant', content: reply});
+    renderChat();
+    scrollChatBottom();
+  } catch {
+    chatMessages.push({role: 'assistant', content: 'エラーが発生しました。もう一度試してください。'});
+    renderChat();
+  } finally {
+    chatLoading = false;
+    document.getElementById('chat-send').disabled = false;
+    scrollChatBottom();
+  }
+}
+
+function speakSpanish(text) {
+  const spanishOnly = text.replace(/\[.*?\]/g, '').trim();
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(spanishOnly);
+  u.lang = 'es-ES';
+  u.rate = 0.85;
+  window.speechSynthesis.speak(u);
+}
+
+// ===== LISTENING =====
+const LISTEN_SYSTEM = `あなたは初心者向けスペイン語の聞き取り問題を作成するAIです。
+以下のJSON形式で問題を1つ返してください:
+{"spanish":"スペイン語の文章（短くシンプルに）","answer":"日本語の正解の意味","choices":["選択肢A","選択肢B","選択肢C","選択肢D"],"correctIndex":0}
+ルール:
+- 初心者向けの簡単な単語・フレーズを使う
+- 選択肢は似た意味のものを混ぜて紛らわしくする
+- 正解はchoicesの中に必ず含める
+- correctIndexはchoicesの正解インデックス（0-3）
+- JSONのみ返す（説明文不要）`;
+
+async function loadQuestion() {
+  currentQuestion = null;
+  listenSelected = null;
+  renderListening('loading');
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 300,
+        system: LISTEN_SYSTEM,
+        messages: [{role: 'user', content: '問題を1つ作成してください'}]
+      })
+    });
+    const data = await res.json();
+    const text = data.content?.[0]?.text || '';
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('parse error');
+    currentQuestion = JSON.parse(match[0]);
+    renderListening('question');
+  } catch {
+    renderListening('error');
+  }
+}
+
+function renderListening(state) {
+  const body = document.getElementById('listen-body');
+  document.getElementById('score-display').textContent = `${listenScore.correct}/${listenScore.total}`;
+
+  if (state === 'loading') {
+    body.innerHTML = `<div class="loading-state"><div class="loading-emoji">🎧</div><p style="color:#9ca3af">問題を生成中...</p></div>`;
+    return;
+  }
+  if (state === 'error') {
+    body.innerHTML = `<div class="loading-state"><p style="color:#9ca3af">問題の取得に失敗しました</p><button class="next-btn" style="margin-top:16px;max-width:200px" onclick="loadQuestion()">再試行</button></div>`;
+    return;
+  }
+
+  const q = currentQuestion;
+  const answered = listenSelected !== null;
+
+  let answerHTML = '';
+  if (answered) {
+    answerHTML = `<div class="answer-reveal"><div class="answer-spanish">${q.spanish}</div><div class="answer-jp">正解: ${q.answer}</div></div>`;
+  }
+
+  const choicesHTML = q.choices.map((c, i) => {
+    let cls = 'choice-btn';
+    if (answered) {
+      if (i === q.correctIndex) cls += ' correct';
+      else if (i === listenSelected) cls += ' wrong';
+      else cls += ' faded';
+    }
+    return `<button class="${cls}" onclick="selectChoice(${i})" ${answered ? 'disabled' : ''}>${c}</button>`;
+  }).join('');
+
+  let resultHTML = '';
+  if (answered) {
+    const ok = listenSelected === q.correctIndex;
+    resultHTML = `
+      <div class="result-box ${ok ? 'ok' : 'ng'}">${ok ? '🎉 正解！' : '😢 不正解...'}</div>
+      <button class="next-btn" onclick="loadQuestion()">次の問題へ →</button>`;
+  }
+
+  body.innerHTML = `
+    <div class="listen-card">
+      <div class="listen-hint">スペイン語の音声を聞いて意味を選んでください</div>
+      <button class="play-btn" onclick="playQuestion()">🔊</button>
+      <div class="play-hint">${answered ? 'もう一度聞く' : 'タップして音声を再生'}</div>
+      ${answerHTML}
+    </div>
+    <div class="choices">${choicesHTML}</div>
+    ${resultHTML}`;
+}
+
+function playQuestion() {
+  if (!currentQuestion) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(currentQuestion.spanish);
+  u.lang = 'es-ES';
+  u.rate = 0.8;
+  window.speechSynthesis.speak(u);
+}
+
+function selectChoice(index) {
+  if (listenSelected !== null || !currentQuestion) return;
+  listenSelected = index;
+  listenScore.total++;
+  if (index === currentQuestion.correctIndex) listenScore.correct++;
+  renderListening('question');
+}
+</script>
+</body>
+</html>
