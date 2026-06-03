@@ -698,8 +698,9 @@ const SPREADS = {
 const OVERALL_MESSAGES = {
   1: (cards) => {
     const c = cards[0];
-    const type = c.reversed ? '逆位置' : '正位置';
-    return `「${c.nameJp}」の${type}が、今のあなたに語りかけています。${c.reversed ? c.upright.advice.replace(/。.*/, '。') : c.reversed ? c.upright.advice : c.upright.advice} 宇宙からのメッセージを受け取り、今日を大切に過ごしてください。`;
+    const type = c.isReversed ? '逆位置' : '正位置';
+    const msg = c.isReversed ? c.reversed.advice : c.upright.advice;
+    return `「${c.nameJp}」の${type}が、今のあなたに語りかけています。${msg} 宇宙からのメッセージを受け取り、今日を大切に過ごしてください。`;
   },
   3: (cards) => {
     return `過去・現在・未来の3枚が、あなたの物語を紡いでいます。過去の「${cards[0].nameJp}」が土台となり、現在「${cards[1].nameJp}」の時を過ごし、未来には「${cards[2].nameJp}」の可能性が広がっています。流れを信じて、一歩一歩進んでください。`;
@@ -760,7 +761,7 @@ function startReading() {
   const shuffled = [...CARDS].sort(() => Math.random() - 0.5);
   drawnCards = shuffled.slice(0, currentSpread).map(card => ({
     ...card,
-    reversed: Math.random() < 0.35
+    isReversed: Math.random() < 0.35
   }));
 
   renderCards();
@@ -809,7 +810,7 @@ function renderCards() {
           <div class="card-name-jp">${card.nameJp}</div>
         </div>
       </div>
-      ${card.reversed ? '<div class="card-reversed-badge">逆位置</div>' : ''}
+      ${card.isReversed ? '<div class="card-reversed-badge">逆位置</div>' : ''}
     `;
 
     inner.appendChild(back);
@@ -830,7 +831,7 @@ function renderCards() {
 function revealCard(index, inner, card) {
   if (inner.classList.contains('flipped') || inner.classList.contains('reversed-flip')) return;
 
-  if (card.reversed) {
+  if (card.isReversed) {
     inner.classList.add('reversed-flip');
   } else {
     inner.classList.add('flipped');
@@ -853,14 +854,14 @@ function showReadings() {
     const reading = document.createElement('div');
     reading.className = 'card-reading';
 
-    const meaning = card.reversed ? card.reversed : card.upright;
+    const meaning = card.isReversed ? card.reversed : card.upright;
     const posLabel = positions[i].name;
 
     reading.innerHTML = `
       <div class="reading-position">✦ ${posLabel}</div>
       <div class="reading-card-name">
         ${card.emoji} ${card.nameJp}（${card.nameEn}）
-        ${card.reversed ? '<span class="reversed-tag">逆位置</span>' : ''}
+        ${card.isReversed ? '<span class="reversed-tag">逆位置</span>' : ''}
       </div>
       <div class="reading-meaning">${meaning.meaning}</div>
       <div class="reading-advice">💫 ${meaning.advice}</div>
