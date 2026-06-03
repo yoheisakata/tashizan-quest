@@ -423,10 +423,11 @@ moonMesh.add(moonFaceGlow);
 
 // Moon orbit ring
 const orbitPts=[];
-for(let i=0;i<=96;i++){const a=i/96*Math.PI*2;orbitPts.push(new THREE.Vector3(Math.cos(a)*9,0.5*Math.sin(a)*0+0.5,Math.sin(a)*9));}
-const orbitRing=new THREE.Line(
-  new THREE.BufferGeometry().setFromPoints(orbitPts),
-  new THREE.LineBasicMaterial({color:0x223344,transparent:true,opacity:0.5})
+for(let i=0;i<96;i++){const a=i/96*Math.PI*2;orbitPts.push(new THREE.Vector3(Math.cos(a)*9,0.5,Math.sin(a)*9));}
+const orbitCurve=new THREE.CatmullRomCurve3(orbitPts,true);
+const orbitRing=new THREE.Mesh(
+  new THREE.TubeGeometry(orbitCurve,128,0.035,6,true),
+  new THREE.MeshBasicMaterial({color:0x66aadd,transparent:true,opacity:0.7})
 );
 moonPivot.add(orbitRing);
 orbitRing.visible=false;
