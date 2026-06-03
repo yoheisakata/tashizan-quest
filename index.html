@@ -27,6 +27,8 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .game-card.tarot:hover{border-color:rgba(168,85,247,0.8);}
 .game-card.quiz{border-color:rgba(124,58,237,0.35);}
 .game-card.quiz:hover{border-color:rgba(124,58,237,0.8);}
+.game-card.earth{border-color:rgba(100,180,255,0.4);}
+.game-card.earth:hover{border-color:rgba(100,180,255,0.8);}
 .game-icon{font-size:3rem;flex-shrink:0;}
 .game-icon.sm{font-size:2.2rem;}
 .game-info{flex:1;}
@@ -70,13 +72,21 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     </div>
   </a>
 
+  <a class="game-card earth" href="earth/">
+    <div class="game-icon">🌏</div>
+    <div class="game-info">
+      <div class="game-name" style="color:#64b4ff">ちきゅうをまなぼう <span class="new-badge">NEW</span></div>
+      <div class="game-desc">ちきゅうをさわってまわそう！<br>ひるとよる・つきとちきゅう・うちゅうへ</div>
+    </div>
+  </a>
+
   <!-- Tarot section -->
   <div class="section-label">🔮 タロット</div>
 
   <a class="game-card tarot" href="tarot/">
     <div class="game-icon">🔮</div>
     <div class="game-info">
-      <div class="game-name" style="color:#a855f7">タロット占い <span class="new-badge">NEW</span></div>
+      <div class="game-name" style="color:#a855f7">タロット占い</div>
       <div class="game-desc">タロットカードで今日の運勢を占おう！<br>ワンオラクル・スリーカードにも対応</div>
     </div>
   </a>
@@ -84,7 +94,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   <a class="game-card quiz" href="tarot/quiz.html">
     <div class="game-icon">🃏</div>
     <div class="game-info">
-      <div class="game-name" style="color:#7c3aed">タロットクイズ <span class="new-badge">NEW</span></div>
+      <div class="game-name" style="color:#7c3aed">タロットクイズ</div>
       <div class="game-desc">カードの意味を当てるクイズゲーム！<br>22枚の大アルカナをマスターしよう</div>
     </div>
   </a>

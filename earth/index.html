@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌏</text></svg>">
+<title>ちきゅうをまなぼう 🌏</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Hiragino Kaku Gothic Pro','Yu Gothic',sans-serif;}
+#c{position:fixed;inset:0;display:block;}
+
+/* ── TOP INFO ── */
+#info{
+  position:fixed;top:0;left:0;right:0;z-index:10;
+  background:linear-gradient(180deg,rgba(0,5,25,0.92) 70%,transparent);
+  padding:16px 16px 28px;text-align:center;pointer-events:none;
+}
+#mode-title{font-size:1.25rem;font-weight:900;color:#fff;text-shadow:0 0 20px rgba(100,200,255,0.7);margin-bottom:5px;}
+#mode-desc{font-size:0.8rem;color:rgba(180,220,255,0.85);}
+
+/* ── BOTTOM MODES ── */
+#modes{
+  position:fixed;bottom:0;left:0;right:0;z-index:10;
+  background:linear-gradient(0deg,rgba(0,5,25,0.95) 70%,transparent);
+  padding:10px 12px 18px;display:flex;gap:8px;justify-content:center;
+}
+.mode-btn{
+  background:rgba(255,255,255,0.07);
+  border:2px solid rgba(255,255,255,0.15);
+  border-radius:14px;color:#ccc;
+  font-family:inherit;font-size:0.78rem;font-weight:700;
+  padding:9px 14px;cursor:pointer;text-align:center;
+  line-height:1.45;transition:all 0.2s;min-width:76px;
+}
+.mode-btn:active{transform:scale(0.93);}
+.mode-btn.active{
+  background:rgba(80,160,255,0.22);
+  border-color:rgba(100,180,255,0.7);
+  color:#88ddff;
+  box-shadow:0 0 14px rgba(80,160,255,0.25);
+}
+
+/* ── COUNTRY LABELS ── */
+.clabel{
+  position:fixed;z-index:10;pointer-events:none;
+  font-size:0.85rem;font-weight:900;color:#fff;
+  text-shadow:0 0 8px #000,0 0 16px #000;
+  white-space:nowrap;display:flex;align-items:center;gap:5px;
+  transition:opacity 0.25s;
+}
+.cdot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+
+/* ── DAY / NIGHT CARDS ── */
+#dn-panel{
+  position:fixed;left:50%;bottom:92px;transform:translateX(-50%);
+  z-index:10;display:none;gap:14px;pointer-events:none;
+}
+#dn-panel.show{display:flex;}
+.dn-card{
+  background:rgba(0,5,30,0.88);
+  border:1px solid rgba(255,255,255,0.18);
+  border-radius:14px;padding:10px 14px;
+  text-align:center;min-width:108px;
+}
+.dn-flag{font-size:1.8rem;margin-bottom:3px;}
+.dn-name{font-size:0.65rem;color:rgba(180,220,255,0.75);margin-bottom:5px;}
+.dn-status{font-size:1rem;font-weight:900;}
+.dn-status.day{color:#FFD700;}
+.dn-status.night{color:#89CFF0;}
+
+/* ── FACT BUBBLE ── */
+#fact{
+  position:fixed;bottom:96px;left:50%;transform:translateX(-50%);
+  z-index:10;max-width:340px;width:92%;
+  background:rgba(0,8,40,0.88);
+  border:1px solid rgba(100,180,255,0.35);
+  border-radius:14px;padding:10px 14px;
+  text-align:center;font-size:0.82rem;color:rgba(200,230,255,0.9);
+  line-height:1.55;pointer-events:none;
+}
+
+/* ── PLAY BUTTON ── */
+#play-btn{
+  position:fixed;right:14px;top:50%;transform:translateY(-50%);
+  z-index:10;
+  background:rgba(255,210,50,0.18);
+  border:2px solid rgba(255,210,50,0.55);
+  border-radius:50%;width:54px;height:54px;
+  font-size:1.4rem;cursor:pointer;
+  display:none;align-items:center;justify-content:center;
+  color:#ffd700;transition:all 0.2s;
+}
+#play-btn.show{display:flex;}
+#play-btn:active{transform:translateY(-50%) scale(0.9);}
+
+/* ── MOON LABEL ── */
+#moon-label{
+  position:fixed;z-index:10;pointer-events:none;
+  font-size:0.8rem;font-weight:700;color:rgba(210,240,255,0.85);
+  text-shadow:0 0 8px #000;white-space:nowrap;display:none;
+}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="info">
+  <div id="mode-title">🌏 ちきゅうをまわそう</div>
+  <div id="mode-desc">ゆびでさわって ちきゅうをまわしてみよう！</div>
+</div>
+
+<div id="japan-label" class="clabel" style="display:none">
+  <div class="cdot" style="background:#ff6b6b;box-shadow:0 0 7px #ff6b6b"></div>🇯🇵 にほん
+</div>
+<div id="america-label" class="clabel" style="display:none">
+  <div class="cdot" style="background:#6b9eff;box-shadow:0 0 7px #6b9eff"></div>🇺🇸 アメリカ
+</div>
+<div id="moon-label">🌕 つき</div>
+
+<div id="dn-panel">
+  <div class="dn-card">
+    <div class="dn-flag">🇯🇵</div>
+    <div class="dn-name">にほん（とうきょう）</div>
+    <div class="dn-status day" id="dn-jp">☀️ ひる</div>
+  </div>
+  <div class="dn-card">
+    <div class="dn-flag">🇺🇸</div>
+    <div class="dn-name">アメリカ（ニューヨーク）</div>
+    <div class="dn-status night" id="dn-us">🌙 よる</div>
+  </div>
+</div>
+
+<button id="play-btn" onclick="togglePlay()">▶</button>
+
+<div id="fact">👆 ゆびでさわって ちきゅうをまわしてみよう！</div>
+
+<div id="modes">
+  <button class="mode-btn active" id="btn-free"    onclick="setMode('free')">🌏<br>まわそう</button>
+  <button class="mode-btn"        id="btn-daynight" onclick="setMode('daynight')">🌅<br>ひるとよる</button>
+  <button class="mode-btn"        id="btn-moon"     onclick="setMode('moon')">🌕<br>つきと<br>ちきゅう</button>
+  <button class="mode-btn"        id="btn-space"    onclick="setMode('space')">🚀<br>うちゅうへ</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ═══════════════════════════
+//  RENDERER / SCENE / CAMERA
+// ═══════════════════════════
+const renderer = new THREE.WebGLRenderer({canvas:document.getElementById('c'),antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth,innerHeight);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, 0.1, 2000);
+camera.position.set(0,0,6);
+
+// ═══════════════
+//  STARS
+// ═══════════════
+(function(){
+  const n=2500, pos=new Float32Array(n*3);
+  for(let i=0;i<n*3;i++) pos[i]=(Math.random()-0.5)*800;
+  const geo=new THREE.BufferGeometry();
+  geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  scene.add(new THREE.Points(geo, new THREE.PointsMaterial({color:0xffffff,size:0.5,sizeAttenuation:true})));
+})();
+
+// ═══════════════════
+//  EARTH TEXTURE
+// ═══════════════════
+function makeEarthTex(){
+  const W=1024,H=512;
+  const cv=document.createElement('canvas');
+  cv.width=W;cv.height=H;
+  const c=cv.getContext('2d');
+
+  // Ocean
+  const og=c.createLinearGradient(0,0,0,H);
+  og.addColorStop(0,'#0d2b52');og.addColorStop(0.5,'#1565C0');og.addColorStop(1,'#0d2b52');
+  c.fillStyle=og;c.fillRect(0,0,W,H);
+
+  function ll(lon,lat){return[(lon+180)/360*W,(90-lat)/180*H];}
+  function poly(pts,col){
+    c.fillStyle=col;c.beginPath();
+    pts.forEach(([lon,lat],i)=>{const[x,y]=ll(lon,lat);i?c.lineTo(x,y):c.moveTo(x,y);});
+    c.closePath();c.fill();
+  }
+  const L='#2e7d32',D='#8d6e63',I='#dceefa',T='#558b2f';
+
+  // North America
+  poly([[-168,72],[-140,73],[-125,70],[-120,58],[-130,55],[-125,48],[-124,37],[-117,32],[-96,25],[-88,15],[-83,9],[-77,8],[-75,11],[-82,23],[-90,22],[-98,20],[-110,20],[-117,27],[-122,35],[-130,42],[-140,52],[-152,60],[-162,66],[-168,72]],L);
+  poly([[-168,72],[-130,72],[-120,68],[-100,68],[-80,66],[-65,48],[-64,45],[-70,40],[-82,42],[-95,50],[-100,55],[-110,58],[-130,60],[-148,62],[-165,66],[-168,72]],L);
+  // Greenland
+  poly([[-73,83],[-40,83],[-18,76],[-18,68],[-28,63],[-44,60],[-57,62],[-68,67],[-73,78],[-73,83]],I);
+  // South America
+  poly([[-82,12],[-77,8],[-70,12],[-62,10],[-50,0],[-38,-5],[-35,-10],[-38,-18],[-43,-23],[-44,-30],[-50,-34],[-55,-40],[-63,-50],[-68,-55],[-73,-50],[-75,-40],[-73,-32],[-70,-18],[-76,-8],[-80,0],[-80,8],[-82,12]],L);
+  // Europe
+  poly([[-10,36],[5,36],[15,38],[28,41],[35,46],[32,52],[28,55],[25,60],[30,65],[28,70],[20,72],[15,70],[10,64],[5,58],[0,52],[-5,46],[-10,44],[-10,36]],L);
+  // UK
+  poly([[-3,58],[2,52],[0,50],[-5,50],[-6,54],[-3,58]],L);
+  // Iceland
+  poly([[-24,66],[-13,66],[-13,63],[-24,63],[-24,66]],I);
+  // Africa
+  poly([[-18,37],[10,37],[22,36],[32,30],[40,22],[44,12],[45,5],[42,0],[38,-5],[35,-12],[30,-20],[28,-28],[25,-34],[18,-34],[14,-22],[10,-10],[8,5],[5,12],[0,15],[-8,14],[-15,10],[-18,15],[-18,37]],L);
+  // Sahara
+  poly([[-18,30],[37,30],[37,17],[0,15],[-8,14],[-15,16],[-18,20]],D);
+  // Arabia
+  poly([[37,30],[57,22],[58,12],[44,12],[40,22],[37,30]],D);
+  // Asia main
+  poly([[26,42],[35,46],[42,42],[50,38],[58,38],[62,46],[72,48],[82,48],[92,52],[100,50],[110,48],[122,44],[132,40],[142,46],[146,52],[148,60],[140,68],[130,72],[118,72],[100,72],[80,72],[60,70],[50,66],[40,62],[30,62],[25,56],[28,50],[26,42]],L);
+  // Siberia tundra tint
+  poly([[60,60],[130,60],[140,68],[120,72],[80,72],[60,70],[50,66],[60,60]],T);
+  // India
+  poly([[68,38],[78,32],[88,22],[80,8],[76,8],[72,22],[66,22],[62,30],[68,38]],L);
+  // SE Asia
+  poly([[98,28],[110,20],[118,8],[110,2],[104,2],[100,12],[95,18],[98,28]],L);
+  // Japan (bright green to be visible)
+  poly([[130,44],[134,40],[139,36],[138,33],[130,33],[128,36],[130,40],[130,44]],'#43a047');
+  // Korean peninsula
+  poly([[125,38],[130,34],[126,34],[124,36],[125,38]],L);
+  // Australia
+  poly([[114,-22],[122,-18],[130,-13],[138,-12],[142,-14],[148,-18],[152,-24],[154,-30],[152,-35],[140,-38],[130,-34],[122,-32],[116,-30],[114,-25],[114,-22]],L);
+  // Interior desert
+  poly([[120,-20],[138,-20],[138,-32],[122,-32],[120,-20]],D);
+  // New Zealand
+  poly([[172,-40],[175,-35],[174,-38],[171,-42],[172,-40]],L);
+  // Antarctica
+  poly([[-180,-68],[180,-68],[180,-90],[-180,-90]],I);
+  // N pole ice
+  poly([[-180,82],[180,82],[180,90],[-180,90]],I);
+
+  // Atmosphere edge gradient
+  const ag=c.createLinearGradient(0,0,0,H);
+  ag.addColorStop(0,'rgba(80,130,255,0.25)');
+  ag.addColorStop(0.1,'rgba(0,0,0,0)');
+  ag.addColorStop(0.9,'rgba(0,0,0,0)');
+  ag.addColorStop(1,'rgba(80,130,255,0.25)');
+  c.fillStyle=ag;c.fillRect(0,0,W,H);
+
+  return new THREE.CanvasTexture(cv);
+}
+
+// ═══════════════════
+//  MOON TEXTURE
+// ═══════════════════
+function makeMoonTex(){
+  const cv=document.createElement('canvas');
+  cv.width=256;cv.height=128;
+  const c=cv.getContext('2d');
+  c.fillStyle='#9e9e9e';c.fillRect(0,0,256,128);
+  [[60,40,18],[140,60,12],[200,30,15],[80,90,10],[170,90,8],[100,45,6],[220,70,9],[45,75,7]].forEach(([cx,cy,r])=>{
+    const g=c.createRadialGradient(cx,cy,0,cx,cy,r);
+    g.addColorStop(0,'rgba(70,70,70,0.65)');
+    g.addColorStop(0.7,'rgba(90,90,90,0.3)');
+    g.addColorStop(1,'rgba(160,160,160,0)');
+    c.fillStyle=g;c.beginPath();c.arc(cx,cy,r,0,Math.PI*2);c.fill();
+  });
+  return new THREE.CanvasTexture(cv);
+}
+
+// ════════════════
+//  EARTH MESH
+// ════════════════
+const earthMesh = new THREE.Mesh(
+  new THREE.SphereGeometry(2,64,64),
+  new THREE.MeshPhongMaterial({map:makeEarthTex(),specular:new THREE.Color(0x224466),shininess:8})
+);
+scene.add(earthMesh);
+
+// Atmosphere
+scene.add(new THREE.Mesh(
+  new THREE.SphereGeometry(2.09,48,48),
+  new THREE.MeshPhongMaterial({color:0x4488ff,transparent:true,opacity:0.07,side:THREE.FrontSide})
+));
+
+// ════════════════
+//  MOON
+// ════════════════
+const moonPivot = new THREE.Object3D();
+scene.add(moonPivot);
+
+const moonMesh = new THREE.Mesh(
+  new THREE.SphereGeometry(0.55,32,32),
+  new THREE.MeshPhongMaterial({map:makeMoonTex()})
+);
+moonMesh.position.set(9,0.5,0);
+moonPivot.add(moonMesh);
+
+// Moon orbit ring
+const orbitPts=[];
+for(let i=0;i<=96;i++){const a=i/96*Math.PI*2;orbitPts.push(new THREE.Vector3(Math.cos(a)*9,0.5*Math.sin(a)*0+0.5,Math.sin(a)*9));}
+const orbitRing=new THREE.Line(
+  new THREE.BufferGeometry().setFromPoints(orbitPts),
+  new THREE.LineBasicMaterial({color:0x223344,transparent:true,opacity:0.5})
+);
+moonPivot.add(orbitRing);
+orbitRing.visible=false;
+
+// ════════════════
+//  LIGHTING
+// ════════════════
+scene.add(new THREE.AmbientLight(0x112233,1.2));
+const sunLight=new THREE.DirectionalLight(0xfff5dd,2.2);
+sunLight.position.set(8,2,4);
+scene.add(sunLight);
+
+// Sun visual sphere
+const sunVisual=new THREE.Mesh(
+  new THREE.SphereGeometry(0.55,16,16),
+  new THREE.MeshBasicMaterial({color:0xffee44})
+);
+sunVisual.position.set(14,3.5,7);
+sunVisual.visible=false;
+scene.add(sunVisual);
+
+// Sun glow (halo)
+const sunGlow=new THREE.Mesh(
+  new THREE.SphereGeometry(0.9,16,16),
+  new THREE.MeshBasicMaterial({color:0xffee44,transparent:true,opacity:0.15})
+);
+sunGlow.position.copy(sunVisual.position);
+sunGlow.visible=false;
+scene.add(sunGlow);
+
+// ════════════════════════
+//  COUNTRY MARKERS (3D)
+// ════════════════════════
+function latLonTo3D(lat,lon,r){
+  const theta=(90-lat)*Math.PI/180;
+  const phi=(lon+180)*Math.PI/180;
+  return new THREE.Vector3(
+    -r*Math.cos(phi)*Math.sin(theta),
+    r*Math.cos(theta),
+    r*Math.sin(phi)*Math.sin(theta)
+  );
+}
+function makeMarker(col){
+  const m=new THREE.Mesh(
+    new THREE.SphereGeometry(0.07,8,8),
+    new THREE.MeshBasicMaterial({color:col})
+  );
+  return m;
+}
+const jpMarker=makeMarker(0xff5555); jpMarker.position.copy(latLonTo3D(35,139,2.07)); earthMesh.add(jpMarker);
+const usMarker=makeMarker(0x5599ff); usMarker.position.copy(latLonTo3D(40,-74,2.07)); earthMesh.add(usMarker);
+
+// ════════════════
+//  STATE
+// ════════════════
+let mode='free';
+let rotY=0.3,rotX=0;
+let velY=0.001,velX=0;
+let isDragging=false,lastX=0,lastY=0;
+let autoRotating=false;
+let moonAngle=0;
+let cameraTargetZ=6;
+const tmpV=new THREE.Vector3();
+
+// ════════════════════
+//  TOUCH / MOUSE
+// ════════════════════
+function getXY(e){return e.touches?[e.touches[0].clientX,e.touches[0].clientY]:[e.clientX,e.clientY];}
+
+const C=document.getElementById('c');
+C.addEventListener('mousedown',e=>{isDragging=true;[lastX,lastY]=getXY(e);});
+C.addEventListener('touchstart',e=>{e.preventDefault();isDragging=true;[lastX,lastY]=getXY(e);},{passive:false});
+C.addEventListener('mousemove',onMove);
+C.addEventListener('touchmove',e=>{e.preventDefault();onMove(e);},{passive:false});
+C.addEventListener('mouseup',()=>{isDragging=false;});
+C.addEventListener('touchend',()=>{isDragging=false;});
+
+function onMove(e){
+  if(!isDragging)return;
+  const[x,y]=getXY(e);
+  const dx=x-lastX, dy=y-lastY;
+  velY=dx*0.005; velX=dy*0.004;
+  rotY+=velY;
+  rotX=Math.max(-Math.PI/2.4,Math.min(Math.PI/2.4,rotX+velX));
+  earthMesh.rotation.set(rotX,rotY,0);
+  lastX=x;lastY=y;
+}
+
+// ════════════════
+//  MODE CONFIG
+// ════════════════
+const MCFG={
+  free:{
+    title:'🌏 ちきゅうをまわそう',
+    desc:'ゆびでさわって ちきゅうをまわしてみよう！',
+    fact:'⭐ ちきゅうはまあるい！まわりの長さは 約40,000km。\nとうきょうからニューヨークまで 約10,800km もあるよ！',
+    camZ:6,markers:true,showMoon:false,showDN:false,showPlay:false,sun:false,initRotY:null
+  },
+  daynight:{
+    title:'🌅 ひるとよる',
+    desc:'▶をおして じてんをみてみよう！',
+    fact:'☀️ ちきゅうはこまのように くるくるまわっているよ！\nにほんが ひるのとき、アメリカは よるなんだ。',
+    camZ:7,markers:true,showMoon:false,showDN:true,showPlay:true,sun:true,initRotY:Math.PI
+  },
+  moon:{
+    title:'🌕 つきとちきゅう',
+    desc:'つきはちきゅうのまわりを ゆっくりまわっているよ！',
+    fact:'🌕 つきとちきゅうのきょりは 約384,400km！\nロケットで 約3日かかるよ！',
+    camZ:18,markers:false,showMoon:true,showDN:false,showPlay:false,sun:false,initRotY:null
+  },
+  space:{
+    title:'🚀 うちゅうからみると…',
+    desc:'うちゅうからちきゅうをながめてみよう！',
+    fact:'🌍 うちゅうからみると、ちきゅうはきれいなあおいまる！\n「アオイホシ」ともよばれているよ。',
+    camZ:28,markers:false,showMoon:true,showDN:false,showPlay:false,sun:false,initRotY:null
+  },
+};
+
+function setMode(m){
+  mode=m;
+  const cfg=MCFG[m];
+  document.getElementById('mode-title').textContent=cfg.title;
+  document.getElementById('mode-desc').textContent=cfg.desc;
+  document.getElementById('fact').textContent=cfg.fact;
+  cameraTargetZ=cfg.camZ;
+
+  if(cfg.initRotY!==null){rotY=cfg.initRotY;velY=0;}
+
+  document.getElementById('japan-label').style.display=cfg.markers?'':'none';
+  document.getElementById('america-label').style.display=cfg.markers?'':'none';
+  document.getElementById('dn-panel').classList.toggle('show',cfg.showDN);
+
+  const pb=document.getElementById('play-btn');
+  pb.classList.toggle('show',cfg.showPlay);
+  if(!cfg.showPlay){autoRotating=false;pb.textContent='▶';velY=0.001;}
+
+  sunVisual.visible=cfg.sun;
+  sunGlow.visible=cfg.sun;
+  orbitRing.visible=cfg.showMoon;
+
+  document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('btn-'+m).classList.add('active');
+}
+
+function togglePlay(){
+  autoRotating=!autoRotating;
+  document.getElementById('play-btn').textContent=autoRotating?'⏸':'▶';
+  if(autoRotating)velY=0;
+}
+
+// ════════════════════
+//  DAY / NIGHT UPDATE
+// ════════════════════
+const sunDir=sunLight.position.clone().normalize();
+function updateDayNight(){
+  if(mode!=='daynight')return;
+  [jpMarker,usMarker].forEach((mk,i)=>{
+    mk.getWorldPosition(tmpV);
+    const inDay=tmpV.normalize().dot(sunDir)>0;
+    const el=document.getElementById(i===0?'dn-jp':'dn-us');
+    el.textContent=inDay?'☀️ ひる':'🌙 よる';
+    el.className='dn-status '+(inDay?'day':'night');
+  });
+}
+
+// ════════════════════
+//  LABEL PROJECTION
+// ════════════════════
+function projectLabel(marker,labelId){
+  const el=document.getElementById(labelId);
+  marker.getWorldPosition(tmpV);
+  const toMarker=tmpV.clone().normalize();
+  const toCamera=camera.position.clone().normalize();
+  if(toMarker.dot(toCamera)<0.12){el.style.opacity='0';return;}
+  el.style.opacity='1';
+  const p=tmpV.project(camera);
+  el.style.left=((p.x+1)/2*innerWidth+12)+'px';
+  el.style.top=((-p.y+1)/2*innerHeight-8)+'px';
+}
+
+function projectMoonLabel(){
+  const el=document.getElementById('moon-label');
+  if(mode!=='moon'&&mode!=='space'){el.style.display='none';return;}
+  moonMesh.getWorldPosition(tmpV);
+  const p=tmpV.project(camera);
+  if(p.z>1){el.style.display='none';return;}
+  el.style.display='block';
+  el.style.left=((p.x+1)/2*innerWidth+10)+'px';
+  el.style.top=((-p.y+1)/2*innerHeight+30)+'px';
+}
+
+// ════════════════
+//  ANIMATION LOOP
+// ════════════════
+const clock=new THREE.Clock();
+function animate(){
+  requestAnimationFrame(animate);
+  const dt=clock.getDelta();
+
+  // Camera smooth interpolation
+  camera.position.z+=(cameraTargetZ-camera.position.z)*0.04;
+
+  // Earth rotation
+  if(!isDragging){
+    if(autoRotating){
+      rotY+=0.0035;
+    } else {
+      velY*=0.97;
+      velX*=0.97;
+      rotY+=(mode==='free'?velY+0.0008:velY);
+      rotX=Math.max(-Math.PI/2.4,Math.min(Math.PI/2.4,rotX+velX));
+    }
+    earthMesh.rotation.set(rotX,rotY,0);
+  }
+
+  // Moon orbit
+  moonAngle+=dt*(mode==='space'?0.15:0.25);
+  moonPivot.rotation.y=moonAngle;
+
+  // Labels
+  const cfg=MCFG[mode];
+  if(cfg.markers){
+    projectLabel(jpMarker,'japan-label');
+    projectLabel(usMarker,'america-label');
+  }
+  projectMoonLabel();
+  updateDayNight();
+
+  renderer.render(scene,camera);
+}
+animate();
+
+// ════════════════
+//  RESIZE
+// ════════════════
+window.addEventListener('resize',()=>{
+  camera.aspect=innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);
+});
+
+// Start
+setMode('free');
+</script>
+</body>
+</html>
