@@ -182,7 +182,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Hi
   <div id="moon-day-sub">27日で ちきゅうを 1しゅう</div>
   <div id="moon-day-bar"><div id="moon-day-fill"></div></div>
 </div>
-<button id="speed-btn" onclick="toggleSpeed()">1.5x</button>
+<button id="speed-btn" onclick="toggleSpeed()">1x</button>
 
 <div id="dn-panel">
   <div class="dn-card">
@@ -801,7 +801,7 @@ function setMode(m){
 
   const sb=document.getElementById('speed-btn');
   sb.classList.toggle('show',m==='moon');
-  if(m!=='moon'){moonSpeedMult=1;sb.classList.remove('active');sb.textContent='1.5x';}
+  if(m!=='moon'){moonSpeedMult=1;sb.classList.remove('active');sb.textContent='1x';}
 
   sunVisual.visible=cfg.sun;
   sunGlow.visible=cfg.sun;
@@ -824,11 +824,13 @@ function togglePlay(){
   if(autoRotating)velY=0;
 }
 
+const SPEED_STEPS=[1,2,3,5];
 function toggleSpeed(){
-  moonSpeedMult=(moonSpeedMult===1)?1.5:1;
+  const idx=SPEED_STEPS.indexOf(moonSpeedMult);
+  moonSpeedMult=SPEED_STEPS[(idx+1)%SPEED_STEPS.length];
   const btn=document.getElementById('speed-btn');
-  btn.classList.toggle('active',moonSpeedMult===1.5);
-  btn.textContent=moonSpeedMult===1.5?'1.5x ✓':'1.5x';
+  btn.classList.toggle('active',moonSpeedMult>1);
+  btn.textContent=moonSpeedMult+'x';
 }
 
 let factVisible=true;
