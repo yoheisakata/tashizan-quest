@@ -100,6 +100,13 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Hi
   font-size:0.8rem;font-weight:700;color:rgba(210,240,255,0.85);
   text-shadow:0 0 8px #000;white-space:nowrap;display:none;
 }
+/* ── MOON FACE LABEL ── */
+#moon-face-label{
+  position:fixed;z-index:10;pointer-events:none;
+  font-size:0.75rem;font-weight:900;color:#ffe047;
+  text-shadow:0 0 10px rgba(255,220,0,0.9),0 0 4px #000;
+  white-space:nowrap;display:none;
+}
 </style>
 </head>
 <body>
@@ -117,6 +124,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Hi
   <div class="cdot" style="background:#6b9eff;box-shadow:0 0 7px #6b9eff"></div>🇺🇸 アメリカ
 </div>
 <div id="moon-label">🌕 つき</div>
+<div id="moon-face-label">★ おもてめん（ちきゅうがわ）</div>
 
 <div id="dn-panel">
   <div class="dn-card">
@@ -395,6 +403,24 @@ new THREE.TextureLoader().load(
   tex=>{moonMat.map=tex;moonMat.needsUpdate=true;}
 );
 
+// Near-side marker: yellow dot on the face that always points toward Earth
+// Position (-0.57,0,0) in moonMesh local space = the Earth-facing hemisphere
+const moonFaceMarker=new THREE.Mesh(
+  new THREE.SphereGeometry(0.07,8,8),
+  new THREE.MeshBasicMaterial({color:0xffe047})
+);
+moonFaceMarker.position.set(-0.57,0,0);
+moonFaceMarker.visible=false;
+moonMesh.add(moonFaceMarker);
+// Soft glow around marker
+const moonFaceGlow=new THREE.Mesh(
+  new THREE.SphereGeometry(0.13,8,8),
+  new THREE.MeshBasicMaterial({color:0xffe047,transparent:true,opacity:0.25})
+);
+moonFaceGlow.position.copy(moonFaceMarker.position);
+moonFaceGlow.visible=false;
+moonMesh.add(moonFaceGlow);
+
 // Moon orbit ring
 const orbitPts=[];
 for(let i=0;i<=96;i++){const a=i/96*Math.PI*2;orbitPts.push(new THREE.Vector3(Math.cos(a)*9,0.5*Math.sin(a)*0+0.5,Math.sin(a)*9));}
@@ -509,8 +535,8 @@ const MCFG={
   },
   moon:{
     title:'🌕 つきとちきゅう',
-    desc:'つきはちきゅうのまわりを ゆっくりまわっているよ！',
-    fact:'🌕 つきとちきゅうのきょりは 約384,400km！\nロケットで 約3日かかるよ！',
+    desc:'ちきゅうをぐりぐりして！ ★マークがいつも ちきゅうをむいているよ！',
+    fact:'🌕 つきはいつも おなじめんを ちきゅうにむけているよ！\nうらがわはずっとかくれていて「うらがわ」とよばれているんだ！',
     camZ:18,markers:false,showMoon:true,showDN:false,showPlay:false,sun:false,initRotY:null
   },
   space:{
@@ -545,6 +571,8 @@ function setMode(m){
   sunGlow.visible=cfg.sun;
   orbitRing.visible=cfg.showMoon;
   moonPivot.visible=cfg.showMoon;
+  moonFaceMarker.visible=(m==='moon');
+  moonFaceGlow.visible=(m==='moon');
 
   document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('btn-'+m).classList.add('active');
@@ -597,6 +625,17 @@ function projectMoonLabel(){
   el.style.top=((-p.y+1)/2*innerHeight+30)+'px';
 }
 
+function projectMoonFaceLabel(){
+  const el=document.getElementById('moon-face-label');
+  if(mode!=='moon'){el.style.display='none';return;}
+  moonFaceMarker.getWorldPosition(tmpV);
+  const p=tmpV.project(camera);
+  if(p.z>1){el.style.display='none';return;}
+  el.style.display='block';
+  el.style.left=((p.x+1)/2*innerWidth+10)+'px';
+  el.style.top=((-p.y+1)/2*innerHeight-20)+'px';
+}
+
 // ════════════════
 //  ANIMATION LOOP
 // ════════════════
@@ -637,6 +676,7 @@ function animate(){
     projectLabel(usMarker,'america-label');
   }
   projectMoonLabel();
+  projectMoonFaceLabel();
   updateDayNight();
 
   renderer.render(scene,camera);
