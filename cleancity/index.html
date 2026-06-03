@@ -247,7 +247,7 @@ function update(){
   curTurn=turn; // track current turn direction for head rotation
   isMoving=Math.abs(fwd)>.05;
   if(isMoving){
-    walkPh+=.11;
+    walkPh+=.16; // faster, smoother walk cycle
     const nx=pl.x+pl.dx*fwd*MS, ny=pl.y+pl.dy*fwd*MS;
     if(open(nx-.18,pl.y)&&open(nx+.18,pl.y))pl.x=nx;
     if(open(pl.x,ny-.18)&&open(pl.x,ny+.18))pl.y=ny;
@@ -267,7 +267,7 @@ function update(){
 // ═══════════════════════════════════════════
 //  RENDER
 // ═══════════════════════════════════════════
-const ST=2; // strip width
+const ST=1; // strip width (1=pixel perfect, smoother)
 
 // Horizon shifts slightly with camera bob
 function getHor(){return (H/2+bob)|0;}
@@ -409,149 +409,130 @@ function drawDisneyEye(ex,ey,r){  // kept for compat but simplified
   cx.beginPath();cx.ellipse(ex,ey,r*1.06,r*1.42,0,Math.PI,0);cx.stroke();
 }
 
-// ── Simple clean character body ───────────
+// ── Character body (compact, natural) ────
 function drawCharBody(){
-  const sw=isMoving?Math.sin(walkPh)*6:0;
-  const vb=isMoving?Math.abs(Math.sin(walkPh))*5:0;
+  const sw=isMoving?Math.sin(walkPh)*4:0;
+  const vb=isMoving?Math.abs(Math.sin(walkPh))*3:0;
   const g=grabT/22;
-  const lStep=isMoving?Math.sin(walkPh)*16:0;
+  const lStep=isMoving?Math.sin(walkPh)*12:0;
 
-  // ── BASKET (left shoulder, behind head) ──
-  const baskX=W/2-58+sw*.2, baskY=H-230+vb;
-  drawBasket2(baskX,baskY);
+  // 基準Y（画面下端から少し上）
+  const baseY=H-10;
+  // キャラ全体スケール（小さめ）
+  const S=0.62;
 
-  // ── LEGS ──
-  const lLX=W/2-50+sw*.5, rLX=W/2+50-sw*.5;
-  const lLY=H+18+lStep*.3, rLY=H+18-lStep*.3;
-  // Left trouser
+  // ── かご（左肩後ろ）──
+  drawBasket2(W/2-42*S+sw*.2, baseY-165*S+vb);
+
+  // ── 足（コンパクト）──
+  const lLX=W/2-32*S+sw*.4, rLX=W/2+32*S-sw*.4;
+  const lLY=baseY+lStep*.25, rLY=baseY-lStep*.25;
   cx.fillStyle='#1d4ed8';
   cx.beginPath();
-  cx.moveTo(W/2-78+sw*.3,H-155+vb); cx.lineTo(W/2-28+sw*.3,H-155+vb);
-  cx.lineTo(lLX+20,lLY); cx.lineTo(lLX-20,lLY); cx.closePath(); cx.fill();
-  // Right trouser
+  cx.moveTo(W/2-55*S+sw*.2,baseY-110*S+vb); cx.lineTo(W/2-15*S+sw*.2,baseY-110*S+vb);
+  cx.lineTo(lLX+15*S,lLY); cx.lineTo(lLX-15*S,lLY); cx.closePath(); cx.fill();
   cx.fillStyle='#2563eb';
   cx.beginPath();
-  cx.moveTo(W/2+28-sw*.3,H-155+vb); cx.lineTo(W/2+78-sw*.3,H-155+vb);
-  cx.lineTo(rLX+20,rLY); cx.lineTo(rLX-20,rLY); cx.closePath(); cx.fill();
-  // Shoes (simple, clean)
-  for(const[sx2,sy2,flip] of [[lLX,lLY,.1],[rLX,rLY,-.1]]){
+  cx.moveTo(W/2+15*S-sw*.2,baseY-110*S+vb); cx.lineTo(W/2+55*S-sw*.2,baseY-110*S+vb);
+  cx.lineTo(rLX+15*S,rLY); cx.lineTo(rLX-15*S,rLY); cx.closePath(); cx.fill();
+  // 靴
+  for(const[sx2,sy2,fl] of [[lLX,lLY,.08],[rLX,rLY,-.08]]){
     cx.fillStyle='#e2e8f0';
-    cx.save();cx.translate(sx2,sy2+8);cx.scale(1,.42);
-    cx.beginPath();cx.ellipse(0,0,32,20,flip,0,Math.PI*2);cx.fill();
-    cx.strokeStyle='#94a3b8';cx.lineWidth=1.5;cx.stroke();
+    cx.save();cx.translate(sx2,sy2+6*S);cx.scale(1,.4);
+    cx.beginPath();cx.ellipse(0,0,22*S,14*S,fl,0,Math.PI*2);cx.fill();
+    cx.strokeStyle='#94a3b8';cx.lineWidth=1.2;cx.stroke();
     cx.restore();
   }
 
-  // ── BODY (torso, clean blue jacket) ──
-  const bY=H-158+vb, bX=W/2+sw*.2;
+  // ── 胴体 ──
   cx.fillStyle='#2563eb';
-  cx.beginPath();cx.ellipse(bX,bY,78,62,0,0,Math.PI*2);cx.fill();
-  // Simple jacket detail
-  cx.strokeStyle='rgba(255,255,255,.18)';cx.lineWidth=1.5;
-  cx.beginPath();cx.moveTo(bX,bY-55);cx.lineTo(bX,bY+28);cx.stroke();
-  cx.strokeStyle='rgba(255,255,255,.12)';cx.lineWidth=1;
-  cx.beginPath();cx.moveTo(bX-70,bY+20);cx.quadraticCurveTo(bX,bY+32,bX+70,bY+20);cx.stroke();
+  cx.beginPath();cx.ellipse(W/2+sw*.15,baseY-108*S+vb,52*S,44*S,0,0,Math.PI*2);cx.fill();
+  cx.strokeStyle='rgba(255,255,255,.16)';cx.lineWidth=1.2;
+  cx.beginPath();cx.moveTo(W/2+sw*.15,baseY-148*S+vb);cx.lineTo(W/2+sw*.15,baseY-70*S+vb);cx.stroke();
 
-  // ── LEFT ARM ──
-  const laX=W/2-108-sw, laY=H-168+vb-lStep*.35;
-  cx.fillStyle='#2563eb';
-  cx.beginPath();cx.moveTo(laX+45,laY-70);
-  cx.bezierCurveTo(laX+68,laY-20,laX+42,laY+15,laX+18,laY+42);
-  cx.lineTo(laX-12,laY+32);
-  cx.bezierCurveTo(laX-18,laY-5,laX+8,laY-25,laX-5,laY-70);
-  cx.closePath();cx.fill();
-  // Hand (simple oval)
+  // ── 左腕（自然に下げる）──
+  // 肩から肘、肘から手首と自然な曲がり
+  const laShX=W/2-50*S-sw, laShY=baseY-138*S+vb;
+  const laElX=W/2-62*S-sw*1.2, laElY=baseY-100*S+vb-lStep*.2;
+  const laHaX=W/2-58*S-sw*1.4, laHaY=baseY-74*S+vb;
+  cx.strokeStyle='#2563eb';cx.lineWidth=16*S;cx.lineCap='round';cx.lineJoin='round';
+  cx.beginPath();cx.moveTo(laShX,laShY);cx.quadraticCurveTo(laElX,laElY,laHaX,laHaY);cx.stroke();
   cx.fillStyle='#fcd8b0';
-  cx.beginPath();cx.ellipse(laX+8,laY+50,16,14,-.2,0,Math.PI*2);cx.fill();
+  cx.beginPath();cx.arc(laHaX,laHaY,10*S,0,Math.PI*2);cx.fill();
 
-  // ── RIGHT ARM + TONGS ──
-  const raX=W/2+108+sw, raY=H-168+vb+lStep*.35;
-  cx.fillStyle='#2563eb';
-  cx.beginPath();cx.moveTo(raX-45,raY-70);
-  cx.bezierCurveTo(raX-68,raY-20,raX-42,raY+15,raX-18,raY+42);
-  cx.lineTo(raX+12,raY+32);
-  cx.bezierCurveTo(raX+18,raY-5,raX-8,raY-25,raX+5,raY-70);
-  cx.closePath();cx.fill();
+  // ── 右腕 + トング（自然に前に伸ばす）──
+  const raShX=W/2+50*S+sw, raShY=baseY-138*S+vb;
+  const raElX=W/2+60*S+sw*1.2, raElY=baseY-105*S+vb+lStep*.2;
+  const raHaX=W/2+55*S+sw, raHaY=baseY-80*S+vb;
+  cx.strokeStyle='#2563eb';cx.lineWidth=16*S;cx.lineCap='round';cx.lineJoin='round';
+  cx.beginPath();cx.moveTo(raShX,raShY);cx.quadraticCurveTo(raElX,raElY,raHaX,raHaY);cx.stroke();
   cx.fillStyle='#fcd8b0';
-  cx.beginPath();cx.ellipse(raX-8,raY+50,16,14,.2,0,Math.PI*2);cx.fill();
-  // Tongs
-  const hx=raX-8, hy=raY+38;
-  const ta=-Math.PI/2.5-g*.5;
-  const tl=80+g*52;
-  cx.strokeStyle='#64748b';cx.lineWidth=4.5;cx.lineCap='round';
+  cx.beginPath();cx.arc(raHaX,raHaY,10*S,0,Math.PI*2);cx.fill();
+  // トング（前方に自然に向く角度）
+  const ta=-Math.PI/3-g*.5;
+  const tl=55*S+g*40;
+  const hx=raHaX,hy=raHaY-8*S;
+  cx.strokeStyle='#64748b';cx.lineWidth=3.5*S;cx.lineCap='round';
   cx.beginPath();cx.moveTo(hx,hy);cx.lineTo(hx+Math.cos(ta)*tl*.45,hy+Math.sin(ta)*tl*.45);cx.stroke();
-  const sp=.15+g*.22;
-  const t1x=hx+Math.cos(ta-sp)*tl,t1y=hy+Math.sin(ta-sp)*tl;
-  const t2x=hx+Math.cos(ta+sp)*tl,t2y=hy+Math.sin(ta+sp)*tl;
-  cx.strokeStyle='#94a3b8';cx.lineWidth=3;
+  const sp2=.14+g*.2;
+  const t1x=hx+Math.cos(ta-sp2)*tl,t1y=hy+Math.sin(ta-sp2)*tl;
+  const t2x=hx+Math.cos(ta+sp2)*tl,t2y=hy+Math.sin(ta+sp2)*tl;
+  cx.strokeStyle='#94a3b8';cx.lineWidth=2.5*S;
   cx.beginPath();cx.moveTo(hx,hy);cx.lineTo(t1x,t1y);cx.stroke();
   cx.beginPath();cx.moveTo(hx,hy);cx.lineTo(t2x,t2y);cx.stroke();
-  cx.strokeStyle='#cbd5e1';cx.lineWidth=2.2;
-  cx.beginPath();cx.moveTo(t1x,t1y);cx.lineTo(t1x+Math.cos(ta+.4)*10,t1y+Math.sin(ta+.4)*10);cx.stroke();
-  cx.beginPath();cx.moveTo(t2x,t2y);cx.lineTo(t2x+Math.cos(ta-.4)*10,t2y+Math.sin(ta-.4)*10);cx.stroke();
-  if(g>.3){cx.save();cx.shadowColor='#4ade80';cx.shadowBlur=12;cx.font='16px sans-serif';cx.textAlign='center';cx.fillText('✨',(t1x+t2x)/2,(t1y+t2y)/2-6);cx.restore();}
+  cx.strokeStyle='#cbd5e1';cx.lineWidth=2*S;
+  cx.beginPath();cx.moveTo(t1x,t1y);cx.lineTo(t1x+Math.cos(ta+.4)*8*S,t1y+Math.sin(ta+.4)*8*S);cx.stroke();
+  cx.beginPath();cx.moveTo(t2x,t2y);cx.lineTo(t2x+Math.cos(ta-.4)*8*S,t2y+Math.sin(ta-.4)*8*S);cx.stroke();
+  if(g>.3){cx.save();cx.shadowColor='#4ade80';cx.shadowBlur=10;cx.font='14px sans-serif';cx.textAlign='center';cx.fillText('✨',(t1x+t2x)/2,(t1y+t2y)/2-5);cx.restore();}
 
-  // ── HEAD — 後頭部ビュー（一人称：自分の背中側を見下ろす）
-  //   前進中 → 後頭部（髪の毛）が見える
-  //   旋回中 → 旋回方向と反対側の横顔が少し見える
-  const headX=W/2+sw*.2;
-  const headY=H-242+vb;
+  // ── HEAD (小さめ、後頭部ビュー) ──
+  const headX=W/2+sw*.15;
+  const headY=baseY-185*S+vb;
   cx.save();
   cx.translate(headX,headY);
+  const HS=S*1.1; // head scale
 
-  // Neck (後ろから見た首)
+  // 首
   cx.fillStyle='#fcd8b0';
-  cx.fillRect(-9,16,18,20);
+  cx.fillRect(-7*HS,12*HS,14*HS,14*HS);
 
-  // 頭の肌ベース
+  // 頭（肌ベース）
   cx.fillStyle='#fcd8b0';
-  cx.beginPath();cx.arc(0,0,26,0,Math.PI*2);cx.fill();
-
-  // 耳（両サイド）
+  cx.beginPath();cx.arc(0,0,20*HS,0,Math.PI*2);cx.fill();
+  // 耳
   cx.fillStyle='#e8b99a';
-  cx.beginPath();cx.ellipse(-24,1,7,9,-.15,0,Math.PI*2);cx.fill();
-  cx.beginPath();cx.ellipse(24,1,7,9,.15,0,Math.PI*2);cx.fill();
-
-  // 髪の毛が後頭部全体を覆う（デフォルト：後ろ向き）
+  cx.beginPath();cx.ellipse(-18*HS,1*HS,5*HS,7*HS,-.15,0,Math.PI*2);cx.fill();
+  cx.beginPath();cx.ellipse(18*HS,1*HS,5*HS,7*HS,.15,0,Math.PI*2);cx.fill();
+  // 後頭部を髪で覆う
   cx.fillStyle='#3d1c02';
-  // 後頭部の丸い塊
-  cx.beginPath();cx.arc(0,0,26,0,Math.PI*2);cx.fill();
-  // 髪の毛の質感
+  cx.beginPath();cx.arc(0,0,20*HS,0,Math.PI*2);cx.fill();
   cx.fillStyle='#2a1200';
-  cx.beginPath();cx.arc(0,-4,20,0,Math.PI*2);cx.fill();
-  // 後頭部の髪ハイライト
-  cx.fillStyle='rgba(120,60,10,.35)';
-  cx.beginPath();cx.ellipse(-6,-8,10,7,-.4,0,Math.PI*2);cx.fill();
+  cx.beginPath();cx.arc(0,-3*HS,15*HS,0,Math.PI*2);cx.fill();
+  cx.fillStyle='rgba(100,50,8,.3)';
+  cx.beginPath();cx.ellipse(-5*HS,-7*HS,8*HS,5*HS,-.4,0,Math.PI*2);cx.fill();
 
-  // 旋回時：横顔が見え始める
+  // 旋回時：横顔フェードイン
   const tAbs=Math.abs(headTurn);
   if(tAbs>0.18){
     const t=Math.min(1,(tAbs-.18)/.7);
-    // headTurn>0=右旋回 → 左の横顔が見える (screen左側)
-    // headTurn<0=左旋回 → 右の横顔が見える (screen右側)
-    const side=headTurn>0?-1:1; // 見える側(画面内の向き)
+    const side=headTurn>0?-1:1;
     cx.globalAlpha=t;
-    // 頬の肌
     cx.fillStyle='#fcd8b0';
-    cx.beginPath();cx.ellipse(side*17,1,12,20,.15*side,0,Math.PI*2);cx.fill();
-    // 目（横顔の片目）
+    cx.beginPath();cx.ellipse(side*14*HS,0,10*HS,16*HS,.12*side,0,Math.PI*2);cx.fill();
     cx.fillStyle='#fff';
-    cx.beginPath();cx.ellipse(side*14,-3,6,7,0,0,Math.PI*2);cx.fill();
+    cx.beginPath();cx.ellipse(side*11*HS,-2*HS,5*HS,6*HS,0,0,Math.PI*2);cx.fill();
     cx.fillStyle='#2d4a8e';
-    cx.beginPath();cx.arc(side*14,-3,4,0,Math.PI*2);cx.fill();
+    cx.beginPath();cx.arc(side*11*HS,-2*HS,3*HS,0,Math.PI*2);cx.fill();
     cx.fillStyle='#111';
-    cx.beginPath();cx.arc(side*14,-3,2.2,0,Math.PI*2);cx.fill();
+    cx.beginPath();cx.arc(side*11*HS,-2*HS,1.6*HS,0,Math.PI*2);cx.fill();
     cx.fillStyle='rgba(255,255,255,.8)';
-    cx.beginPath();cx.arc(side*13-side,-5,1,0,Math.PI*2);cx.fill();
-    // 鼻（横顔）
-    cx.strokeStyle='rgba(160,80,40,.55)';cx.lineWidth=1.5;cx.lineCap='round';
-    cx.beginPath();cx.moveTo(side*18,5);cx.quadraticCurveTo(side*22,10,side*19,14);cx.stroke();
-    // 口（横顔）
-    cx.strokeStyle='#a05030';cx.lineWidth=1.8;
-    cx.beginPath();cx.arc(side*14,12,5,.2,Math.PI-.2);cx.stroke();
+    cx.beginPath();cx.arc(side*10*HS,-4*HS,.8*HS,0,Math.PI*2);cx.fill();
+    cx.strokeStyle='rgba(160,80,40,.5)';cx.lineWidth=1.2;cx.lineCap='round';
+    cx.beginPath();cx.moveTo(side*14*HS,4*HS);cx.quadraticCurveTo(side*17*HS,7*HS,side*15*HS,10*HS);cx.stroke();
+    cx.strokeStyle='#a05030';cx.lineWidth=1.5;
+    cx.beginPath();cx.arc(side*11*HS,9*HS,4*HS,.2,Math.PI-.2);cx.stroke();
     cx.globalAlpha=1;
   }
-
   cx.restore();
 }
 
@@ -629,15 +610,10 @@ function drawJoy(J){
 //  MAIN LOOP
 // ═══════════════════════════════════════════
 function render(){
-  // 1. Sky + floor
   drawSkyFloor();
-  // 2. Walls (raycasting)
-  rayCast();
-  // 3. Trash sprites
+  rayCast();        // walls only (no 3D building overlays)
   drawSprites();
-  // 4. Bank label
   drawBankLabel();
-  // 5. Disney character body (full, first-person)
   drawCharBody();
   // 6. UI overlays
   drawCross();
