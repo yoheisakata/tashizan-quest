@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
+<title>うちゅうせんだっしゅつ 🚀</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap');
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: #050a1a;
+  color: #fff;
+  min-height: 100vh;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* ── Stars ── */
+#stars-bg { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+.star {
+  position: absolute; border-radius: 50%; background: #fff;
+  animation: twinkle var(--dur, 2s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+@keyframes twinkle {
+  0%, 100% { opacity: var(--min, 0.2); }
+  50% { opacity: 1; }
+}
+
+/* ── Screens ── */
+.screen {
+  position: fixed; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 24px 20px;
+  z-index: 1;
+  transition: opacity 0.35s ease;
+}
+.screen.hidden { opacity: 0; pointer-events: none; }
+
+/* ── Progress dots ── */
+#progress {
+  position: fixed; top: 18px; left: 50%;
+  transform: translateX(-50%);
+  display: none; gap: 12px; z-index: 10;
+}
+.dot {
+  width: 13px; height: 13px; border-radius: 50%;
+  background: rgba(255,255,255,0.18);
+  transition: background 0.3s, box-shadow 0.3s;
+}
+.dot.done { background: #ffd32a; box-shadow: 0 0 8px #ffd32a; }
+.dot.active { background: #fff; box-shadow: 0 0 10px rgba(255,255,255,0.8); }
+
+/* ── Title Screen ── */
+.title-ship {
+  font-size: 5.5rem;
+  animation: float 3s ease-in-out infinite;
+  margin-bottom: 16px;
+  filter: drop-shadow(0 0 24px rgba(96,197,255,0.6));
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-18px); }
+}
+.title-text {
+  font-size: 2.3rem; font-weight: 900; text-align: center;
+  background: linear-gradient(135deg, #60c5ff, #c77dff);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  line-height: 1.25; margin-bottom: 14px;
+}
+.title-sub {
+  font-size: 1rem; color: rgba(255,255,255,0.7);
+  text-align: center; line-height: 1.7; margin-bottom: 44px;
+}
+.btn-start {
+  background: linear-gradient(135deg, #60c5ff, #c77dff);
+  border: none; border-radius: 50px;
+  color: #fff; font-family: 'Nunito', sans-serif;
+  font-size: 1.5rem; font-weight: 900;
+  padding: 20px 64px; cursor: pointer;
+  box-shadow: 0 8px 32px rgba(96,197,255,0.45);
+  transition: transform 0.15s cubic-bezier(.34,1.56,.64,1), box-shadow 0.15s;
+}
+.btn-start:active { transform: scale(0.91); box-shadow: 0 4px 16px rgba(96,197,255,0.3); }
+
+/* ── Stage header ── */
+.stage-title {
+  font-size: 1.55rem; font-weight: 900;
+  text-align: center; margin-bottom: 8px;
+}
+.stage-inst {
+  font-size: 0.92rem; color: rgba(255,255,255,0.72);
+  text-align: center; margin-bottom: 34px; line-height: 1.6;
+}
+
+/* ── Stage 1: Color Matching ── */
+.orbs-area, .slots-area { display: flex; gap: 22px; }
+.orbs-area { margin-bottom: 36px; }
+
+.orb {
+  width: 82px; height: 82px; border-radius: 50%;
+  cursor: pointer; position: relative;
+  box-shadow: 0 6px 24px var(--shadow, rgba(0,0,0,0.4));
+  transition: transform 0.2s cubic-bezier(.34,1.56,.64,1), box-shadow 0.2s, opacity 0.2s;
+}
+.orb::after {
+  content: ''; position: absolute;
+  top: 12px; left: 16px;
+  width: 22px; height: 12px;
+  background: rgba(255,255,255,0.38);
+  border-radius: 50%; transform: rotate(-30deg);
+}
+.orb.selected {
+  transform: scale(1.18) translateY(-10px);
+  box-shadow: 0 16px 36px rgba(255,255,255,0.45);
+}
+.orb.placed { opacity: 0.35; pointer-events: none; transform: scale(0.9); }
+
+.slot {
+  width: 82px; height: 82px; border-radius: 50%;
+  border: 4px dashed rgba(255,255,255,0.35);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color 0.2s, transform 0.15s;
+  background: rgba(255,255,255,0.04);
+}
+.slot.filled { border-style: solid; pointer-events: none; }
+.slot:not(.filled):active { transform: scale(0.92); }
+
+/* ── Stage 2: Shape Matching ── */
+.shapes-row, .shape-slots {
+  display: flex; gap: 18px;
+  flex-wrap: wrap; justify-content: center;
+}
+.shapes-row { margin-bottom: 32px; }
+
+.shape-btn {
+  width: 82px; height: 82px;
+  background: rgba(255,255,255,0.08);
+  border: 3px solid rgba(255,255,255,0.25);
+  border-radius: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.6rem;
+  transition: transform 0.2s cubic-bezier(.34,1.56,.64,1), background 0.15s, opacity 0.2s;
+}
+.shape-btn.selected {
+  background: rgba(255,255,255,0.22);
+  transform: scale(1.14) translateY(-8px);
+  border-color: rgba(255,255,255,0.9);
+}
+.shape-btn.placed { opacity: 0.3; pointer-events: none; }
+
+.shape-slot {
+  width: 82px; height: 82px;
+  border: 4px dashed rgba(255,255,255,0.3);
+  border-radius: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.6rem;
+  filter: grayscale(1) brightness(0.35);
+  transition: filter 0.25s, border-color 0.2s;
+}
+.shape-slot.filled { border-style: solid; border-color: rgba(255,255,255,0.55); filter: none; pointer-events: none; }
+
+/* ── Stage 3: Counting ── */
+.stars-display {
+  min-height: 150px;
+  display: flex; flex-wrap: wrap; gap: 10px;
+  align-items: center; justify-content: center;
+  margin-bottom: 36px; max-width: 300px;
+}
+.count-star {
+  font-size: 3.4rem;
+  animation: pop-in 0.3s cubic-bezier(.34,1.56,.64,1) backwards;
+}
+@keyframes pop-in {
+  from { transform: scale(0) rotate(-20deg); opacity: 0; }
+  to   { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.number-btns { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+.num-btn {
+  width: 72px; height: 72px; border-radius: 50%;
+  border: 3px solid rgba(255,255,255,0.28);
+  background: rgba(255,255,255,0.07);
+  color: #fff; font-family: 'Nunito', sans-serif;
+  font-size: 1.9rem; font-weight: 900;
+  cursor: pointer;
+  transition: transform 0.15s cubic-bezier(.34,1.56,.64,1), background 0.15s, border-color 0.15s;
+}
+.num-btn:active { transform: scale(0.87); }
+
+/* ── Stage 4: Size Order ── */
+.planets-area {
+  display: flex; gap: 20px;
+  align-items: center; justify-content: center;
+  min-height: 170px; margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+.planet {
+  border-radius: 50%; cursor: pointer; position: relative;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  transition: transform 0.2s cubic-bezier(.34,1.56,.64,1), opacity 0.3s;
+  display: flex; align-items: center; justify-content: center;
+}
+.planet:active { transform: scale(0.88) !important; }
+.planet.done { opacity: 0.38; pointer-events: none; }
+.order-num {
+  position: absolute; top: 2px; right: 2px;
+  width: 26px; height: 26px;
+  background: rgba(0,0,0,0.55);
+  border-radius: 50%;
+  font-size: 0.85rem; font-weight: 900;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ── Stage Clear Overlay ── */
+.clear-overlay {
+  position: fixed; inset: 0;
+  background: rgba(5,10,26,0.82);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  z-index: 100;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s;
+}
+.clear-overlay.show { opacity: 1; pointer-events: all; }
+.clear-emoji { font-size: 5rem; animation: float 1s ease-in-out infinite; }
+.clear-msg { font-size: 2.2rem; font-weight: 900; margin-top: 16px; }
+
+/* ── Ending ── */
+.ending-rocket {
+  font-size: 6rem;
+  animation: launch 2.2s ease-in forwards;
+  filter: drop-shadow(0 0 32px rgba(255,211,42,0.7));
+}
+@keyframes launch {
+  0%   { transform: translateY(0) scale(1); opacity: 1; }
+  80%  { opacity: 1; }
+  100% { transform: translateY(-240px) scale(0.6); opacity: 0; }
+}
+.ending-title {
+  font-size: 2.6rem; font-weight: 900;
+  background: linear-gradient(135deg, #ffd32a, #ff6b81);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  text-align: center; margin-bottom: 10px;
+}
+.ending-sub {
+  font-size: 1.05rem; color: rgba(255,255,255,0.78);
+  text-align: center; line-height: 1.7; margin-bottom: 44px;
+}
+.btn-retry {
+  background: linear-gradient(135deg, #ffd32a, #ff8c00);
+  border: none; border-radius: 50px;
+  color: #fff; font-family: 'Nunito', sans-serif;
+  font-size: 1.15rem; font-weight: 900;
+  padding: 16px 44px; cursor: pointer;
+  box-shadow: 0 6px 24px rgba(255,211,42,0.4);
+  transition: transform 0.15s cubic-bezier(.34,1.56,.64,1);
+}
+.btn-retry:active { transform: scale(0.92); }
+
+/* ── Shared animations ── */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-10px); }
+  40% { transform: translateX(10px); }
+  60% { transform: translateX(-7px); }
+  80% { transform: translateX(7px); }
+}
+.shake { animation: shake 0.38s ease; }
+
+/* ── Confetti particles ── */
+.particle {
+  position: fixed; border-radius: 3px;
+  pointer-events: none; z-index: 99;
+  animation: fall var(--dur) ease-in forwards;
+}
+@keyframes fall {
+  0%   { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); }
+  100% { opacity: 0; transform: translateY(90vh) rotate(720deg) scale(0.5); }
+}
+</style>
+</head>
+<body>
+
+<div id="stars-bg"></div>
+
+<!-- Progress dots -->
+<div id="progress">
+  <div class="dot" id="dot1"></div>
+  <div class="dot" id="dot2"></div>
+  <div class="dot" id="dot3"></div>
+  <div class="dot" id="dot4"></div>
+</div>
+
+<!-- ── Title ── -->
+<div class="screen" id="screen-title">
+  <div class="title-ship">🚀</div>
+  <div class="title-text">うちゅうせん<br>だっしゅつ！</div>
+  <div class="title-sub">うちゅうせんがこわれちゃった！<br>パズルをといて<br>にげよう！</div>
+  <button class="btn-start" onclick="startGame()">はじめる！</button>
+</div>
+
+<!-- ── Stage 1: Color Matching ── -->
+<div class="screen hidden" id="screen-stage1">
+  <div class="stage-title">⚡ いろをあわせよう！</div>
+  <div class="stage-inst">エネルギーをおなじいろの<br>ばしょにいれてね！</div>
+  <div class="orbs-area" id="orbs-area"></div>
+  <div class="slots-area" id="slots-area"></div>
+</div>
+
+<!-- ── Stage 2: Shape Matching ── -->
+<div class="screen hidden" id="screen-stage2">
+  <div class="stage-title">🔧 かたちをあわせよう！</div>
+  <div class="stage-inst">おなじかたちの<br>あなにはめてね！</div>
+  <div class="shapes-row" id="shapes-row"></div>
+  <div class="shape-slots" id="shape-slots"></div>
+</div>
+
+<!-- ── Stage 3: Counting ── -->
+<div class="screen hidden" id="screen-stage3">
+  <div class="stage-title">⭐ ほしをかぞえよう！</div>
+  <div class="stage-inst">ほしはいくつあるかな？<br>かずをタップしてね！</div>
+  <div class="stars-display" id="stars-display"></div>
+  <div class="number-btns" id="number-btns"></div>
+</div>
+
+<!-- ── Stage 4: Size Order ── -->
+<div class="screen hidden" id="screen-stage4">
+  <div class="stage-title">🪐 ちいさいじゅんにタップ！</div>
+  <div class="stage-inst">いちばんちいさいものから<br>じゅんばんにタップしてね！</div>
+  <div class="planets-area" id="planets-area"></div>
+</div>
+
+<!-- ── Ending ── -->
+<div class="screen hidden" id="screen-ending">
+  <div class="ending-rocket" id="ending-rocket">🚀</div>
+  <div class="ending-title">だっしゅつせいこう！</div>
+  <div class="ending-sub">うちゅうせんがなおったよ！<br>やったね！🎉✨</div>
+  <button class="btn-retry" onclick="restartGame()">もういちど！</button>
+</div>
+
+<!-- Stage clear overlay -->
+<div class="clear-overlay" id="clear-overlay">
+  <div class="clear-emoji" id="clear-emoji">✨</div>
+  <div class="clear-msg" id="clear-msg">せいかい！</div>
+</div>
+
+<script>
+// ── Audio ──────────────────────────────────────────────
+let audioCtx = null;
+function ac() {
+  if (!audioCtx) try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){}
+  return audioCtx;
+}
+function beep(freq, dur, type = 'sine', vol = 0.22) {
+  try {
+    const ctx = ac(); if (!ctx) return;
+    const osc = ctx.createOscillator(), g = ctx.createGain();
+    osc.connect(g); g.connect(ctx.destination);
+    osc.type = type; osc.frequency.value = freq;
+    g.gain.setValueAtTime(vol, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + dur);
+  } catch(e) {}
+}
+function sndClick()  { beep(440, 0.06); }
+function sndWrong()  { beep(160, 0.32, 'sawtooth', 0.13); }
+function sndPop()    { beep(640, 0.09); setTimeout(() => beep(880, 0.07), 60); }
+function sndClear()  { [523,659,784,1047].forEach((f,i) => setTimeout(() => beep(f, 0.18), i*100)); }
+function sndWin()    { [523,659,784,1047,1319,1047,1319,1568].forEach((f,i) => setTimeout(() => beep(f,0.15), i*75)); }
+
+// ── Stars ─────────────────────────────────────────────
+function makeStars() {
+  const bg = document.getElementById('stars-bg');
+  for (let i = 0; i < 110; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const sz = Math.random() * 2.4 + 0.4;
+    s.style.cssText = `width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--dur:${1.5+Math.random()*3}s;--min:${0.1+Math.random()*0.3};--delay:${Math.random()*3}s;`;
+    bg.appendChild(s);
+  }
+}
+
+// ── Screen helpers ─────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+}
+function setProgress(stage) {
+  const prog = document.getElementById('progress');
+  prog.style.display = stage > 0 ? 'flex' : 'none';
+  for (let i = 1; i <= 4; i++) {
+    const d = document.getElementById(`dot${i}`);
+    d.className = 'dot' + (i < stage ? ' done' : i === stage ? ' active' : '');
+  }
+}
+
+// ── Clear overlay ──────────────────────────────────────
+function showClear(emoji, cb) {
+  document.getElementById('clear-emoji').textContent = emoji;
+  const ov = document.getElementById('clear-overlay');
+  ov.classList.add('show');
+  spawnConfetti();
+  setTimeout(() => { ov.classList.remove('show'); cb(); }, 1700);
+}
+
+// ── Confetti ───────────────────────────────────────────
+function spawnConfetti(n = 38) {
+  const colors = ['#ff4757','#ffd32a','#2ed573','#1e90ff','#c77dff','#ff6b81','#00cec9'];
+  for (let i = 0; i < n; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const sz = 7 + Math.random() * 11;
+    p.style.cssText = `left:${5+Math.random()*90}%;top:${-5+Math.random()*20}%;width:${sz}px;height:${sz}px;background:${colors[i%colors.length]};--dur:${1+Math.random()*1.4}s;animation-delay:${Math.random()*0.25}s;`;
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 3000);
+  }
+}
+
+// ── Game flow ──────────────────────────────────────────
+function startGame() {
+  sndClick();
+  setProgress(1);
+  setupStage1();
+  showScreen('screen-stage1');
+}
+function restartGame() {
+  sndClick();
+  setProgress(0);
+  showScreen('screen-title');
+}
+
+// ── STAGE 1: Color Matching ────────────────────────────
+const COLORS = [
+  { id:'red',    bg:'#ff4757', shadow:'rgba(255,71,87,0.55)'  },
+  { id:'blue',   bg:'#1e90ff', shadow:'rgba(30,144,255,0.55)' },
+  { id:'yellow', bg:'#ffd32a', shadow:'rgba(255,211,42,0.55)' },
+];
+let s1sel = null, s1placed = 0;
+
+function setupStage1() {
+  s1sel = null; s1placed = 0;
+  const sh = [...COLORS].sort(() => Math.random() - 0.5);
+  const orbs = document.getElementById('orbs-area');
+  const slots = document.getElementById('slots-area');
+  orbs.innerHTML = ''; slots.innerHTML = '';
+
+  sh.forEach(c => {
+    const el = document.createElement('div');
+    el.className = 'orb'; el.id = `orb-${c.id}`; el.dataset.c = c.id;
+    el.style.background = c.bg;
+    el.style.setProperty('--shadow', c.shadow);
+    el.style.boxShadow = `0 6px 24px ${c.shadow}`;
+    el.onclick = () => s1pick(c.id);
+    orbs.appendChild(el);
+  });
+
+  COLORS.forEach(c => {
+    const el = document.createElement('div');
+    el.className = 'slot'; el.id = `slot-${c.id}`; el.dataset.c = c.id;
+    el.style.borderColor = c.bg;
+    el.onclick = () => s1drop(c.id);
+    slots.appendChild(el);
+  });
+}
+
+function s1pick(id) {
+  const orb = document.getElementById(`orb-${id}`);
+  if (orb.classList.contains('placed')) return;
+  sndClick();
+  if (s1sel) document.getElementById(`orb-${s1sel}`)?.classList.remove('selected');
+  s1sel = (s1sel === id) ? null : id;
+  if (s1sel) orb.classList.add('selected');
+}
+
+function s1drop(slotId) {
+  if (!s1sel) return;
+  const slot = document.getElementById(`slot-${slotId}`);
+  if (slot.classList.contains('filled')) return;
+
+  if (s1sel === slotId) {
+    sndPop();
+    const c = COLORS.find(x => x.id === s1sel);
+    slot.style.background = c.bg;
+    slot.style.boxShadow = `0 0 18px ${c.shadow}`;
+    slot.classList.add('filled');
+    document.getElementById(`orb-${s1sel}`).classList.remove('selected');
+    document.getElementById(`orb-${s1sel}`).classList.add('placed');
+    s1sel = null;
+    if (++s1placed === 3) setTimeout(() => { sndClear(); showClear('⚡', () => { setProgress(2); setupStage2(); showScreen('screen-stage2'); }); }, 280);
+  } else {
+    sndWrong();
+    addShake(slot);
+  }
+}
+
+// ── STAGE 2: Shape Matching ────────────────────────────
+const SHAPES = [
+  { id:'circle',   e:'🔴' },
+  { id:'triangle', e:'🔺' },
+  { id:'square',   e:'🟦' },
+  { id:'star',     e:'⭐' },
+];
+let s2sel = null, s2placed = 0;
+
+function setupStage2() {
+  s2sel = null; s2placed = 0;
+  const sh = [...SHAPES].sort(() => Math.random() - 0.5);
+  document.getElementById('shapes-row').innerHTML = '';
+  document.getElementById('shape-slots').innerHTML = '';
+
+  sh.forEach(s => {
+    const el = document.createElement('div');
+    el.className = 'shape-btn'; el.id = `shp-${s.id}`; el.textContent = s.e;
+    el.onclick = () => s2pick(s.id);
+    document.getElementById('shapes-row').appendChild(el);
+  });
+
+  SHAPES.forEach(s => {
+    const el = document.createElement('div');
+    el.className = 'shape-slot'; el.id = `sslot-${s.id}`; el.textContent = s.e;
+    el.onclick = () => s2drop(s.id);
+    document.getElementById('shape-slots').appendChild(el);
+  });
+}
+
+function s2pick(id) {
+  const btn = document.getElementById(`shp-${id}`);
+  if (btn.classList.contains('placed')) return;
+  sndClick();
+  if (s2sel) document.getElementById(`shp-${s2sel}`)?.classList.remove('selected');
+  s2sel = (s2sel === id) ? null : id;
+  if (s2sel) btn.classList.add('selected');
+}
+
+function s2drop(slotId) {
+  if (!s2sel) return;
+  const slot = document.getElementById(`sslot-${slotId}`);
+  if (slot.classList.contains('filled')) return;
+
+  if (s2sel === slotId) {
+    sndPop();
+    slot.classList.add('filled');
+    document.getElementById(`shp-${s2sel}`).classList.remove('selected');
+    document.getElementById(`shp-${s2sel}`).classList.add('placed');
+    s2sel = null;
+    if (++s2placed === 4) setTimeout(() => { sndClear(); showClear('🔧', () => { setProgress(3); setupStage3(); showScreen('screen-stage3'); }); }, 280);
+  } else {
+    sndWrong();
+    addShake(slot);
+  }
+}
+
+// ── STAGE 3: Counting ─────────────────────────────────
+let s3ans = 0;
+
+function setupStage3() {
+  s3ans = 1 + Math.floor(Math.random() * 5);
+
+  const disp = document.getElementById('stars-display');
+  disp.innerHTML = '';
+  for (let i = 0; i < s3ans; i++) {
+    const el = document.createElement('div');
+    el.className = 'count-star'; el.textContent = '⭐';
+    el.style.animationDelay = `${i * 0.09}s`;
+    disp.appendChild(el);
+  }
+
+  const btns = document.getElementById('number-btns');
+  btns.innerHTML = '';
+  for (let n = 1; n <= 5; n++) {
+    const btn = document.createElement('button');
+    btn.className = 'num-btn'; btn.textContent = n;
+    btn.onclick = () => s3guess(n, btn);
+    btns.appendChild(btn);
+  }
+}
+
+function s3guess(n, btn) {
+  if (n === s3ans) {
+    sndPop();
+    btn.style.background = '#2ed573'; btn.style.borderColor = '#2ed573';
+    setTimeout(() => { sndClear(); showClear('⭐', () => { setProgress(4); setupStage4(); showScreen('screen-stage4'); }); }, 380);
+  } else {
+    sndWrong();
+    btn.style.background = 'rgba(255,71,87,0.28)'; btn.style.borderColor = 'rgba(255,71,87,0.7)';
+    addShake(btn);
+    setTimeout(() => { btn.style.background = ''; btn.style.borderColor = ''; }, 700);
+  }
+}
+
+// ── STAGE 4: Size Order ────────────────────────────────
+const PLANETS = [
+  { id:'small',  size:50,  bg:'linear-gradient(135deg,#a29bfe,#6c5ce7)', order:1 },
+  { id:'medium', size:82,  bg:'linear-gradient(135deg,#fd79a8,#e17055)', order:2 },
+  { id:'large',  size:118, bg:'linear-gradient(135deg,#00cec9,#0984e3)', order:3 },
+];
+let s4next = 1, s4done = 0;
+
+function setupStage4() {
+  s4next = 1; s4done = 0;
+  const area = document.getElementById('planets-area');
+  area.innerHTML = '';
+  [...PLANETS].sort(() => Math.random() - 0.5).forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'planet'; el.id = `planet-${p.id}`;
+    el.dataset.order = p.order;
+    el.style.width = el.style.height = p.size + 'px';
+    el.style.background = p.bg;
+    el.onclick = () => s4tap(p.order, el);
+    area.appendChild(el);
+  });
+}
+
+function s4tap(order, el) {
+  if (order === s4next) {
+    sndPop();
+    const badge = document.createElement('div');
+    badge.className = 'order-num'; badge.textContent = order;
+    el.appendChild(badge);
+    el.classList.add('done');
+    s4next++; s4done++;
+    if (s4done === 3) {
+      setTimeout(() => {
+        sndWin();
+        showClear('🚀', () => showEnding());
+      }, 280);
+    }
+  } else {
+    sndWrong();
+    addShake(el);
+  }
+}
+
+// ── Ending ─────────────────────────────────────────────
+function showEnding() {
+  setProgress(0);
+  showScreen('screen-ending');
+  spawnConfetti(50);
+  setTimeout(() => spawnConfetti(40), 900);
+  setTimeout(() => spawnConfetti(30), 1800);
+  sndWin();
+}
+
+// ── Utility ────────────────────────────────────────────
+function addShake(el) {
+  el.classList.remove('shake');
+  void el.offsetWidth;
+  el.classList.add('shake');
+  setTimeout(() => el.classList.remove('shake'), 400);
+}
+
+// ── Init ───────────────────────────────────────────────
+makeStars();
+</script>
+</body>
+</html>
