@@ -869,6 +869,7 @@ function setMode(m){
   if(m==='solar'){solarTimeYears=0;buildSolarAllPanel();}
 
   const inSolar=(m==='solar');
+  earthMoonGroup.visible=!inSolar;
   earthMesh.visible=!inSolar;
   earthAtmos.visible=!inSolar;
   solarGroup.visible=inSolar;
