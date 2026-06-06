@@ -11,8 +11,8 @@
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 :root{
   --bg:#0d0d1a;--card:#1a1a2e;--card2:#16213e;
-  --gold:#f5c518;--red:#ff4757;--green:#2ed573;--blue:#1e90ff;--purple:#a855f7;
-  --orange:#ff7f3f;--text:#eee;--muted:#777;
+  --gold:#ff7f3f;--red:#ff4757;--green:#2ed573;--blue:#1e90ff;--purple:#a855f7;
+  --text:#eee;--muted:#777;
 }
 body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:12px;overflow-x:hidden;}
 body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 10%,rgba(255,127,63,0.12) 0%,transparent 50%),radial-gradient(ellipse at 80% 90%,rgba(168,85,247,0.1) 0%,transparent 50%);pointer-events:none;z-index:0;}
@@ -33,7 +33,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .save-card{background:var(--card);border:1px solid rgba(255,127,63,0.3);border-radius:16px;padding:12px 18px;margin-bottom:16px;width:100%;max-width:300px;display:flex;align-items:center;gap:12px;}
 .save-card-avatar{font-size:2.2rem;}
 .save-card-info{flex:1;}
-.save-card-name{font-size:0.9rem;font-weight:900;color:var(--orange);}
+.save-card-name{font-size:0.9rem;font-weight:900;color:var(--gold);}
 .save-card-detail{font-size:0.65rem;color:var(--muted);margin-top:2px;}
 .save-card-btns{display:flex;flex-direction:column;gap:5px;}
 .save-small-btn{border:none;border-radius:8px;font-family:'Nunito',sans-serif;font-size:0.7rem;font-weight:900;padding:5px 10px;cursor:pointer;}
@@ -47,16 +47,16 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .char-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;width:100%;max-width:360px;margin:12px 0;}
 .char-card{background:var(--card);border:2px solid rgba(255,255,255,0.1);border-radius:16px;padding:12px 8px;text-align:center;cursor:pointer;transition:all 0.15s;}
 .char-card:active{transform:scale(0.95);}
-.char-card.selected{border-color:var(--orange);background:rgba(255,127,63,0.1);}
+.char-card.selected{border-color:var(--gold);background:rgba(255,127,63,0.1);}
 .char-emoji{font-size:2.4rem;margin-bottom:4px;}
-.char-name{font-size:0.75rem;font-weight:900;color:var(--orange);}
+.char-name{font-size:0.75rem;font-weight:900;color:var(--gold);}
 .char-desc{font-size:0.6rem;color:var(--muted);margin-top:2px;}
 
 /* ── GAME WRAP ── */
 .game-wrap{position:relative;z-index:1;width:100%;max-width:420px;}
 .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
 .coin-pill{display:flex;align-items:center;gap:5px;background:var(--card);border:1px solid rgba(255,127,63,0.3);border-radius:100px;padding:5px 12px;}
-.coin-pill span{font-size:1rem;font-weight:900;color:var(--orange);}
+.coin-pill span{font-size:1rem;font-weight:900;color:var(--gold);}
 .shop-btn{background:linear-gradient(135deg,#a855f7,#7c3aed);border:none;border-radius:100px;color:#fff;font-family:'Nunito',sans-serif;font-size:0.8rem;font-weight:900;padding:7px 14px;cursor:pointer;}
 .shop-btn:active{transform:scale(0.95);}
 .battle-btn-wrap{display:flex;gap:6px;}
@@ -67,7 +67,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .char-panel{background:var(--card);border-radius:18px;padding:12px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.07);display:flex;gap:10px;align-items:center;}
 .char-avatar{font-size:2.8rem;text-align:center;min-width:56px;}
 .char-info{flex:1;}
-.char-info-name{font-size:0.95rem;font-weight:900;color:var(--orange);margin-bottom:3px;}
+.char-info-name{font-size:0.95rem;font-weight:900;color:var(--gold);margin-bottom:3px;}
 .equipped-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:4px;}
 .equipped-tag{background:rgba(255,255,255,0.07);border-radius:7px;padding:2px 7px;font-size:0.6rem;color:var(--muted);}
 .equipped-tag span{color:var(--text);}
@@ -87,12 +87,12 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 
 /* ── QUESTION ── */
 .question-card{background:var(--card);border-radius:18px;padding:12px 10px;text-align:center;margin-bottom:8px;border:1px solid rgba(255,255,255,0.06);}
-.emoji-row{display:flex;align-items:center;justify-content:center;gap:7px;min-height:38px;margin-bottom:6px;}
+.emoji-row{display:flex;align-items:center;justify-content:center;gap:7px;min-height:38px;margin-bottom:6px;flex-wrap:wrap;}
 .emoji-group{display:flex;flex-wrap:wrap;gap:2px;justify-content:center;max-width:140px;}
-.emoji-item{font-size:1.1rem;line-height:1.1;}
-.times-sign{font-size:1.6rem;font-weight:900;color:var(--orange);flex-shrink:0;}
+.emoji-item{font-size:1.1rem;line-height:1.2;}
+.times-sign{font-size:1.6rem;font-weight:900;color:var(--gold);flex-shrink:0;}
 .question-num{font-size:2rem;font-weight:900;}
-.question-num .num{color:var(--orange);}
+.question-num .num{color:var(--gold);}
 
 /* ── ANSWERS ── */
 .answers{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:7px;}
@@ -102,7 +102,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .ans-btn.wrong{background:rgba(255,71,87,0.2);border-color:var(--red);color:var(--red);animation:shake 0.3s ease;}
 @keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
-.feedback{text-align:center;font-size:1rem;font-weight:900;height:26px;margin-bottom:3px;}
+.feedback{text-align:center;font-size:0.9rem;font-weight:900;height:26px;margin-bottom:3px;}
 .feedback.correct{color:var(--green);}
 .feedback.wrong{color:var(--red);}
 
@@ -114,18 +114,18 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:80;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;}
 .overlay.show{display:flex;animation:fadeIn 0.3s ease;}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-.overlay-box{background:var(--card);border:2px solid var(--orange);border-radius:22px;padding:24px 28px;max-width:300px;width:100%;}
+.overlay-box{background:var(--card);border:2px solid var(--gold);border-radius:22px;padding:24px 28px;max-width:300px;width:100%;}
 .lvup-emoji{font-size:3rem;margin-bottom:6px;}
-.lvup-title{font-size:1.5rem;font-weight:900;color:var(--orange);margin-bottom:4px;}
+.lvup-title{font-size:1.5rem;font-weight:900;color:var(--gold);margin-bottom:4px;}
 .lvup-desc{color:var(--muted);font-size:0.85rem;margin-bottom:12px;}
 .lvup-stats{display:flex;gap:8px;justify-content:center;margin-bottom:14px;flex-wrap:wrap;}
 .lvup-stat{background:rgba(255,255,255,0.06);border-radius:9px;padding:7px 12px;font-size:0.75rem;}
-.lvup-stat b{color:var(--orange);display:block;font-size:0.95rem;}
+.lvup-stat b{color:var(--gold);display:block;font-size:0.95rem;}
 
 /* ══════════════════════════
    ── BATTLE SCREEN ──
 ══════════════════════════ */
-.battle-screen{display:none;position:fixed;inset:0;z-index:60;flex-direction:column;background:linear-gradient(180deg,#0a0a18 0%,#2a0a1e 100%);overflow:hidden;}
+.battle-screen{display:none;position:fixed;inset:0;z-index:60;flex-direction:column;background:linear-gradient(180deg,#0a0a18 0%,#1a0a2e 100%);overflow:hidden;}
 .battle-screen.active{display:flex;}
 
 /* battle bg stars */
@@ -138,13 +138,13 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   pointer-events:none;}
 
 /* ground */
-.battle-ground{position:absolute;bottom:0;left:0;right:0;height:80px;background:linear-gradient(180deg,transparent,rgba(100,40,20,0.3));border-top:2px solid rgba(100,40,20,0.4);}
+.battle-ground{position:absolute;bottom:0;left:0;right:0;height:80px;background:linear-gradient(180deg,transparent,rgba(100,60,20,0.3));border-top:2px solid rgba(100,60,20,0.4);}
 
 /* top bar */
 .battle-topbar{display:flex;justify-content:space-between;align-items:flex-start;padding:14px 16px 0;position:relative;z-index:2;}
 .b-stat-box{background:rgba(0,0,0,0.5);border-radius:12px;padding:8px 12px;min-width:130px;border:1px solid rgba(255,255,255,0.1);}
 .b-name{font-size:0.7rem;font-weight:900;margin-bottom:4px;}
-.b-name.hero{color:var(--orange);}
+.b-name.hero{color:var(--gold);}
 .b-name.monster{color:var(--red);}
 .b-hp-track{background:rgba(255,255,255,0.1);border-radius:100px;height:8px;overflow:hidden;margin-bottom:2px;}
 .b-hp-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,#2ed573,#7bed9f);transition:width 0.5s ease;}
@@ -188,26 +188,26 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .result-emoji{font-size:4rem;margin-bottom:8px;animation:bounce 1s ease infinite;}
 @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 .result-title{font-size:1.8rem;font-weight:900;margin-bottom:6px;}
-.result-title.win{color:var(--orange);}
+.result-title.win{color:var(--gold);}
 .result-title.lose{color:var(--red);}
 .result-rewards{background:var(--card);border-radius:14px;padding:12px 20px;margin:10px 0 16px;font-size:0.85rem;color:var(--muted);}
-.result-rewards b{color:var(--orange);}
+.result-rewards b{color:var(--gold);}
 
 /* ── SHOP ── */
-.shop-header{font-size:1.5rem;font-weight:900;color:var(--orange);margin-bottom:4px;}
-.shop-coins{display:flex;align-items:center;gap:6px;margin-bottom:14px;font-size:1rem;font-weight:700;color:var(--orange);}
+.shop-header{font-size:1.5rem;font-weight:900;color:var(--gold);margin-bottom:4px;}
+.shop-coins{display:flex;align-items:center;gap:6px;margin-bottom:14px;font-size:1rem;font-weight:700;color:var(--gold);}
 .shop-section{font-size:0.72rem;color:var(--purple);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin:10px 0 5px;width:100%;}
 .shop-items{display:flex;flex-direction:column;gap:7px;width:100%;max-width:360px;}
 .shop-item{background:var(--card);border:1px solid rgba(255,255,255,0.08);border-radius:13px;padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all 0.15s;}
 .shop-item:active{transform:scale(0.97);}
 .shop-item.owned{border-color:var(--green);opacity:0.7;}
-.shop-item.equipped-item{border-color:var(--orange);}
+.shop-item.equipped-item{border-color:var(--gold);}
 .shop-item-icon{font-size:1.8rem;min-width:34px;text-align:center;}
 .shop-item-info{flex:1;}
 .shop-item-name{font-size:0.85rem;font-weight:900;}
 .shop-item-desc{font-size:0.6rem;color:var(--muted);margin-top:1px;}
 .shop-item-stat{font-size:0.65rem;color:var(--green);margin-top:1px;}
-.shop-price{display:flex;align-items:center;gap:3px;font-size:0.85rem;font-weight:900;color:var(--orange);flex-shrink:0;}
+.shop-price{display:flex;align-items:center;gap:3px;font-size:0.85rem;font-weight:900;color:var(--gold);flex-shrink:0;}
 .shop-price.owned-label{color:var(--green);font-size:0.75rem;}
 .back-btn{background:rgba(255,255,255,0.08);border:none;border-radius:100px;color:var(--text);font-family:'Nunito',sans-serif;font-size:0.85rem;font-weight:700;padding:9px 22px;cursor:pointer;margin-top:14px;}
 .shop-scroll{overflow-y:auto;width:100%;max-width:360px;display:flex;flex-direction:column;align-items:center;padding-bottom:20px;}
@@ -219,7 +219,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 <div class="screen active" id="screenTitle">
   <div class="title-hero">✖️🧙🔢</div>
   <div class="title-main">かけざんクエスト</div>
-  <div class="title-sub">9×9をといてつよいまほうつかいになれ！</div>
+  <div class="title-sub">9×9をといてつよくなれ！</div>
   <div id="saveSlots" style="width:100%;max-width:300px;margin-bottom:8px;"></div>
   <button class="big-btn" onclick="showScreen('screenCharSelect')">あたらしくはじめる</button>
   <a href="../" style="color:var(--muted);font-size:0.8rem;margin-top:12px;text-decoration:none;">← ゲーム一覧にもどる</a>
@@ -229,8 +229,8 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 
 <!-- ══ CHAR SELECT ══ -->
 <div class="screen" id="screenCharSelect">
-  <div style="font-size:1.3rem;font-weight:900;color:var(--orange);margin-bottom:4px;">キャラをえらぼう！</div>
-  <div style="color:var(--muted);font-size:0.8rem;margin-bottom:8px;">どのまほうつかいになる？</div>
+  <div style="font-size:1.3rem;font-weight:900;color:var(--gold);margin-bottom:4px;">キャラをえらぼう！</div>
+  <div style="color:var(--muted);font-size:0.8rem;margin-bottom:8px;">どのゆうしゃになる？</div>
   <div class="char-grid" id="charGrid"></div>
   <button class="big-btn" id="startBtn" onclick="startGame()" style="opacity:0.4;pointer-events:none;">このキャラではじめる！</button>
 </div>
@@ -250,7 +250,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 <div class="battle-screen" id="battleScreen">
   <div class="battle-topbar">
     <div class="b-stat-box">
-      <div class="b-name hero" id="bHeroName">まほうつかい Lv.1</div>
+      <div class="b-name hero" id="bHeroName">ゆうしゃ Lv.1</div>
       <div class="b-hp-track"><div class="b-hp-fill" id="bHeroHpBar" style="width:100%"></div></div>
       <div class="b-hp-val" id="bHeroHpVal">20/20</div>
       <div class="b-level" id="bHeroStats">⚔️5 🛡️2</div>
@@ -263,7 +263,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     </div>
   </div>
   <div class="battle-arena">
-    <div id="heroSprite" class="b-sprite hero-sprite">🧙‍♀️</div>
+    <div id="heroSprite" class="b-sprite hero-sprite">🧙‍♂️</div>
     <div id="monsterSprite" class="b-sprite monster-sprite">🟢</div>
   </div>
   <div class="battle-ground"></div>
@@ -281,9 +281,9 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   <div class="shop-header">✖️ ショップ</div>
   <div class="shop-coins" id="shopCoinRow"></div>
   <div class="shop-scroll">
-    <div class="shop-section">⚔️ まほうのつえ</div>
+    <div class="shop-section">⚔️ ぶき</div>
     <div class="shop-items" id="shopWeapons"></div>
-    <div class="shop-section">🛡️ まほうのよろい</div>
+    <div class="shop-section">🛡️ ぼうぐ</div>
     <div class="shop-items" id="shopArmors"></div>
   </div>
   <button class="back-btn" onclick="closeShop()">← もどる</button>
@@ -304,9 +304,9 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   </div>
 
   <div class="char-panel">
-    <div class="char-avatar" id="charAvatar">🧙‍♀️</div>
+    <div class="char-avatar" id="charAvatar">⚔️</div>
     <div class="char-info">
-      <div class="char-info-name" id="charInfoName">まほうつかい Lv.1</div>
+      <div class="char-info-name" id="charInfoName">ゆうしゃ Lv.1</div>
       <div class="equipped-row" id="equippedRow"></div>
       <div class="bar-row"><div class="bar-label">HP</div><div class="bar-track"><div class="bar-fill hp" id="hpBar" style="width:100%"></div></div><div class="bar-val" id="hpVal">20/20</div></div>
       <div class="bar-row"><div class="bar-label">EXP</div><div class="bar-track"><div class="bar-fill exp" id="expBar" style="width:0%"></div></div><div class="bar-val" id="expVal">0/10</div></div>
@@ -336,23 +336,23 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 
 <script>
 const CHARACTERS=[
-  {id:'wizard', name:'まほうつかい',emoji:'🧙‍♀️',desc:'バランスがいい',baseAtk:6,baseDef:4,baseHp:24,expRate:1.0},
-  {id:'sage',   name:'けんじゃ',    emoji:'🧝‍♂️',desc:'こうげきりょく↑',baseAtk:9,baseDef:2,baseHp:18,expRate:1.1},
-  {id:'paladin',name:'せいきし',    emoji:'🦸‍♀️',desc:'ぼうぐりょく↑',baseAtk:4,baseDef:7,baseHp:28,expRate:0.9},
+  {id:'warrior',name:'せんし',  emoji:'🧙‍♂️',desc:'バランスがいい',baseAtk:6,baseDef:4,baseHp:24,expRate:1.0},
+  {id:'mage',   name:'まほうし',emoji:'🧝',  desc:'こうげきりょく↑',baseAtk:9,baseDef:2,baseHp:18,expRate:1.1},
+  {id:'knight', name:'きし',    emoji:'🦸',  desc:'ぼうぐりょく↑', baseAtk:4,baseDef:7,baseHp:28,expRate:0.9},
 ];
 const WEAPONS=[
-  {id:'wand',   name:'きのつえ',    emoji:'🪄',price:0, atk:0, starter:true,desc:'さいしょのまほうのつえ'},
-  {id:'staff',  name:'まほうのつえ', emoji:'⚡',price:15,atk:4, desc:'こうげき +4'},
-  {id:'tome',   name:'まほうのほん', emoji:'📖',price:30,atk:8, desc:'こうげき +8'},
-  {id:'crystal',name:'まほうのたま', emoji:'🔮',price:55,atk:13,desc:'こうげき +13'},
-  {id:'dragon', name:'りゅうのつえ', emoji:'🐉',price:90,atk:20,desc:'こうげき +20'},
+  {id:'stick', name:'きのぼう',   emoji:'🪵',price:0, atk:0, starter:true,desc:'さいしょのぶき'},
+  {id:'sword', name:'てつのつるぎ',emoji:'⚔️',price:15,atk:4, desc:'こうげき +4'},
+  {id:'axe',   name:'せんとうおの',emoji:'🪓',price:30,atk:8, desc:'こうげき +8'},
+  {id:'spear', name:'みずのやり', emoji:'🔱',price:55,atk:13,desc:'こうげき +13'},
+  {id:'bow',   name:'まほうのゆみ',emoji:'🏹',price:90,atk:20,desc:'こうげき +20'},
 ];
 const ARMORS=[
-  {id:'robe',   name:'まほうのふく', emoji:'👘',price:0, def:0, starter:true,desc:'さいしょのまほうのよろい'},
-  {id:'cloak',  name:'まほうのマント',emoji:'🧣',price:12,def:3, desc:'ぼうぐ +3'},
-  {id:'vest',   name:'まほうのチョッキ',emoji:'🦺',price:28,def:6, desc:'ぼうぐ +6'},
-  {id:'armor',  name:'まほうのよろい', emoji:'🛡️',price:50,def:11,desc:'ぼうぐ +11'},
-  {id:'aegis',  name:'りゅうのよろい', emoji:'🐲',price:85,def:18,desc:'ぼうぐ +18'},
+  {id:'rags',   name:'ぬののふく',  emoji:'👕',price:0, def:0, starter:true,desc:'さいしょのぼうぐ'},
+  {id:'leather',name:'かわのよろい', emoji:'🦺',price:12,def:3, desc:'ぼうぐ +3'},
+  {id:'chain',  name:'くさりかたびら',emoji:'🥋',price:28,def:6, desc:'ぼうぐ +6'},
+  {id:'plate',  name:'てつのよろい', emoji:'🛡️',price:50,def:11,desc:'ぼうぐ +11'},
+  {id:'dragon', name:'りゅうのよろい',emoji:'🐉',price:85,def:18,desc:'ぼうぐ +18'},
 ];
 const MONSTERS=[
   {id:'slime',   name:'スライム',   emoji:'🟢',lv:1, hp:12, atk:3, def:1, exp:4, gold:3},
@@ -371,12 +371,12 @@ const LEVEL_CONFIG=[
   {label:'レベル4：1〜9のかけざん', aMax:9, bMax:9},
   {label:'レベル5：9×9チャレンジ！',aMax:9, bMax:9},
 ];
-const EMOJIS=['⭐','🍎','🐶','🚀','💎'];
+const EMOJIS=['🎂','⭐','🐶','🚀','💎'];
 
-let coins=0,streak=0,answered=false,correctAnswer=0,questionA=1,questionB=1;
+let coins=0,streak=0,answered=false,correctAnswer=0,qA=1,qB=1;
 let quizLevel=1;
 let charTemplate=null;
-let hero={name:'',emoji:'',lv:1,exp:0,expNext:10,hp:20,hpMax:20,atk:5,def:2,weapon:'wand',armor:'robe',owned:{weapons:['wand'],armors:['robe']},charId:'wizard',expRate:1.0};
+let hero={name:'',emoji:'',lv:1,exp:0,expNext:10,hp:20,hpMax:20,atk:5,def:2,weapon:'stick',armor:'rags',owned:{weapons:['stick'],armors:['rags']},charId:'warrior',expRate:1.0};
 let lvupQueue=[];
 
 function randInt(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
@@ -415,7 +415,7 @@ function showGame(){
 function startGame(){
   if(!charTemplate)return;
   const c=charTemplate;
-  hero={name:c.name,emoji:c.emoji,lv:1,exp:0,expNext:10,hp:c.baseHp,hpMax:c.baseHp,atk:c.baseAtk,def:c.baseDef,weapon:'wand',armor:'robe',owned:{weapons:['wand'],armors:['robe']},charId:c.id,expRate:c.expRate};
+  hero={name:c.name,emoji:c.emoji,lv:1,exp:0,expNext:10,hp:c.baseHp,hpMax:c.baseHp,atk:c.baseAtk,def:c.baseDef,weapon:'stick',armor:'rags',owned:{weapons:['stick'],armors:['rags']},charId:c.id,expRate:c.expRate};
   coins=0;streak=0;quizLevel=1;
   updateHeroUI();showGame();generateQuestion();
 }
@@ -443,52 +443,31 @@ function updateHeroUI(){
 function generateQuestion(){
   answered=false;
   const cfg=getLvCfg();
-  let att=0;
-  do {
-    questionA=randInt(1,cfg.aMax);
-    questionB=randInt(1,cfg.bMax);
-    att++;
-  } while(questionA*questionB>=30 && questionA!==2 && questionB!==2 && att<200);
-  correctAnswer=questionA*questionB;
+  /* pick a,b with product < 30 (exception: factor 2 always allowed) */
+  let tries=0;
+  do{qA=randInt(1,cfg.aMax);qB=randInt(1,cfg.bMax);tries++;}
+  while(qA*qB>=30&&qA!==2&&qB!==2&&tries<200);
+  correctAnswer=qA*qB;
   const em=getEmoji();
   const row=document.getElementById('emojiRow');
-
-  /* Show emoji grid for small products */
-  if(correctAnswer<=25){
-    let html='';
-    for(let r=0;r<questionA;r++){
-      html+='<div style="display:flex;gap:2px;justify-content:center;">';
-      for(let c=0;c<questionB;c++) html+=`<span class="emoji-item">${em}</span>`;
-      html+='</div>';
+  if(correctAnswer<=20){
+    let h='';
+    for(let r=0;r<qA;r++){
+      h+='<div style="display:flex;gap:2px;">';
+      for(let c=0;c<qB;c++)h+=`<span class="emoji-item">${em}</span>`;
+      h+='</div>';
     }
-    row.innerHTML=`<div style="display:flex;flex-direction:column;gap:2px;align-items:center;">${html}</div>`;
-  } else {
+    row.innerHTML=`<div style="display:flex;flex-direction:column;gap:2px;align-items:center;">${h}</div>`;
+  }else{
     row.innerHTML=`<span style="font-size:1.6rem">${em}</span><span class="times-sign">×</span><span style="font-size:1.6rem">${em}</span>`;
   }
-
-  document.getElementById('question').innerHTML=`<span class="num">${questionA}</span> × <span class="num">${questionB}</span> ＝ ？`;
-
-  /* Generate 3 wrong answers */
-  const opts=new Set([correctAnswer]);
-  let wAtt=0;
-  while(opts.size<4&&wAtt<300){
-    wAtt++;
-    let w;
-    const r=Math.random();
-    if(r<0.35){
-      /* Same a, different b */
-      const nb=Math.max(1,Math.min(9,questionB+randInt(-3,3)));
-      w=questionA*nb;
-    } else if(r<0.7){
-      /* Different a, same b */
-      const na=Math.max(1,Math.min(9,questionA+randInt(-3,3)));
-      w=na*questionB;
-    } else {
-      /* Nearby value */
-      const d=randInt(1,6)*(Math.random()<0.5?1:-1);
-      w=correctAnswer+d;
-    }
-    if(w>0&&w!==correctAnswer) opts.add(w);
+  document.getElementById('question').innerHTML=`<span class="num">${qA}</span> × <span class="num">${qB}</span> ＝ ？`;
+  const opts=new Set([correctAnswer]);let att=0;
+  while(opts.size<4&&att<200){
+    att++;
+    const d=randInt(1,6)*(Math.random()<0.5?1:-1);
+    const w=correctAnswer+d;
+    if(w>0)opts.add(w);
   }
   const arr=[...opts].sort(()=>Math.random()-0.5);
   const btns=document.querySelectorAll('.ans-btn');
@@ -498,12 +477,26 @@ function generateQuestion(){
   document.getElementById('levelLabel').textContent=cfg.label;
 }
 
+function timeUp(){}
+function playCorrectSound(){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const o=ctx.createOscillator();const g=ctx.createGain();
+    o.connect(g);g.connect(ctx.destination);
+    o.frequency.setValueAtTime(523,ctx.currentTime);
+    o.frequency.setValueAtTime(659,ctx.currentTime+0.1);
+    o.frequency.setValueAtTime(784,ctx.currentTime+0.2);
+    g.gain.setValueAtTime(0.3,ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.5);
+    o.start(ctx.currentTime);o.stop(ctx.currentTime+0.5);
+  }catch(e){}
+}
 function answer(idx){
   if(answered)return;answered=true;
   const btns=document.querySelectorAll('.ans-btn');
   const chosen=parseInt(btns[idx].textContent);
   if(chosen===correctAnswer){
-    btns[idx].classList.add('correct');streak++;
+    btns[idx].classList.add('correct');streak++;playCorrectSound();
     const sBonus=streak>=5?3:streak>=3?2:0;
     const earned=1+sBonus;coins+=earned;
     const expGain=Math.ceil((1)*hero.expRate);hero.exp+=expGain;
@@ -519,9 +512,9 @@ function answer(idx){
     btns[idx].classList.add('wrong');streak=0;
     const dmg=Math.max(1,4-Math.floor(heroTotalDef()/3));
     hero.hp=Math.max(0,hero.hp-dmg);
-    showFeedback(`❌ ちがうよ！ ${questionA}×${questionB}＝${correctAnswer}  -${dmg}HP`,'wrong');
+    showFeedback(`❌ ${qA}×${qB}＝${correctAnswer}！ -${dmg}HP`,'wrong');
     highlightCorrect();updateHeroUI();
-    setTimeout(generateQuestion,1800);
+    setTimeout(generateQuestion,1600);
   }
 }
 function highlightCorrect(){document.querySelectorAll('.ans-btn').forEach(b=>{if(parseInt(b.textContent)===correctAnswer)b.classList.add('correct');b.disabled=true;});}
@@ -538,9 +531,9 @@ function checkHeroLevelUp(){
     hero.exp-=hero.expNext;hero.lv++;
     hero.expNext=Math.floor(hero.expNext*1.4);
     const c=CHARACTERS.find(x=>x.id===hero.charId);
-    const ag=c.id==='sage'?3:c.id==='paladin'?1:2;
-    const dg=c.id==='paladin'?3:c.id==='sage'?1:2;
-    const hg=c.id==='paladin'?5:c.id==='sage'?3:4;
+    const ag=c.id==='mage'?3:c.id==='knight'?1:2;
+    const dg=c.id==='knight'?3:c.id==='mage'?1:2;
+    const hg=c.id==='knight'?5:c.id==='mage'?3:4;
     hero.atk+=ag;hero.def+=dg;hero.hpMax+=hg;hero.hp=hero.hpMax;
     lvupQueue.push({ag,dg,hg});
   }
@@ -550,7 +543,7 @@ function displayNextLvup(){
   if(!lvupQueue.length)return;
   const{ag,dg,hg}=lvupQueue[0];
   document.getElementById('lvupTitle').textContent=`レベル ${hero.lv} にアップ！`;
-  document.getElementById('lvupDesc').textContent='まほうがつよくなったよ！HPもかいふく！';
+  document.getElementById('lvupDesc').textContent='キャラがつよくなったよ！HPもかいふく！';
   document.getElementById('lvupStats').innerHTML=`<div class="lvup-stat"><b>+${ag}</b>こうげき</div><div class="lvup-stat"><b>+${dg}</b>ぼうぐ</div><div class="lvup-stat"><b>+${hg}</b>HP</div>`;
   document.getElementById('lvupOverlay').classList.add('show');
 }
@@ -561,7 +554,7 @@ function closeLvup(){
   generateQuestion();
 }
 
-let battleMon=null,battleHeroHp=0,battleMonHp=0,battleTurn=0,battleRunning=false;
+let battleMon=null,battleHeroHp=0,battleMonHp=0,battleTurn=0,battleRunning=false,battleTimeout=null;
 
 function openBattle(){
   const idx=Math.min(hero.lv-1,MONSTERS.length-1);
