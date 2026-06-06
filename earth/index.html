@@ -1040,7 +1040,7 @@ function animate(){
     // Earth rotation
     if(!isDragging){
       if(autoRotating){
-        rotY+=(mode==='moon'?0.0175*moonSpeedMult:0.0035);
+        rotY+=(mode==='moon'?0.011*moonSpeedMult:0.0035);
       } else {
         velY*=0.97; velX*=0.97;
         if(!(mode==='free'&&freePaused)) rotY+=(mode==='free'?velY+0.0008:velY);
