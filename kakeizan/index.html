@@ -443,8 +443,12 @@ function updateHeroUI(){
 function generateQuestion(){
   answered=false;
   const cfg=getLvCfg();
-  questionA=randInt(1,cfg.aMax);
-  questionB=randInt(1,cfg.bMax);
+  let att=0;
+  do {
+    questionA=randInt(1,cfg.aMax);
+    questionB=randInt(1,cfg.bMax);
+    att++;
+  } while(questionA*questionB>=30 && questionA!==2 && questionB!==2 && att<200);
   correctAnswer=questionA*questionB;
   const em=getEmoji();
   const row=document.getElementById('emojiRow');
