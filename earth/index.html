@@ -117,8 +117,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Hi
 
 /* ── MOON DAY COUNTER ── */
 #moon-day-panel{
-  position:fixed;left:50%;transform:translateX(-50%);
-  bottom:calc(var(--bar-h) + 132px + var(--sab));
+  position:fixed;left:16px;top:16px;
   z-index:10;pointer-events:none;
   background:rgba(0,5,30,0.88);border:1px solid rgba(255,255,255,0.15);
   border-radius:16px;padding:12px 20px;display:none;min-width:160px;text-align:center;
@@ -248,9 +247,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Hi
 </div>
 <div id="tokyo-label" class="clabel" style="display:none">
   🇯🇵 とうきょう
-</div>
-<div id="america-label" class="clabel" style="display:none">
-  🇺🇸 アメリカ
 </div>
 <div id="moon-label">🌕 つき</div>
 <div id="moon-day-panel">
@@ -793,6 +789,7 @@ const usMarker=makeMarker(0x5599ff); usMarker.position.copy(latLonTo3D(40,-74,2.
 let mode='free';
 let rotY=0.3,rotX=0;
 let velY=0.001,velX=0;
+let freePaused=false;
 let isDragging=false,lastX=0,lastY=0;
 let autoRotating=false;
 let moonSpeedMult=1;
@@ -817,6 +814,7 @@ C.addEventListener('mousemove',onMove);
 C.addEventListener('touchmove',e=>{e.preventDefault();onMove(e);},{passive:false});
 C.addEventListener('mouseup',()=>{isDragging=false;});
 C.addEventListener('touchend',()=>{isDragging=false;});
+window.addEventListener('keydown',e=>{if(e.code==='Space'&&mode==='free'){e.preventDefault();freePaused=!freePaused;}});
 
 function onMove(e){
   if(!isDragging)return;
@@ -897,7 +895,6 @@ function setMode(m){
 
   document.getElementById('japan-label').style.display=(!inSolar&&cfg.markers)?'':'none';
   document.getElementById('tokyo-label').style.display=(!inSolar&&cfg.markers)?'':'none';
-  document.getElementById('america-label').style.display=(!inSolar&&cfg.markers)?'':'none';
   const pb=document.getElementById('play-btn');
   pb.classList.toggle('show',cfg.showPlay&&!inSolar);
   if(!cfg.showPlay){autoRotating=false;pb.textContent='▶';velY=0.001;}
@@ -1062,7 +1059,7 @@ function animate(){
         rotY+=(mode==='moon'?0.0175*moonSpeedMult:0.0035);
       } else {
         velY*=0.97; velX*=0.97;
-        rotY+=(mode==='free'?velY+0.0008:velY);
+        if(!(mode==='free'&&freePaused)) rotY+=(mode==='free'?velY+0.0008:velY);
         rotX=Math.max(-Math.PI/2.4,Math.min(Math.PI/2.4,rotX+velX));
       }
       earthMesh.rotation.set(rotX,rotY,0);
@@ -1087,7 +1084,6 @@ function animate(){
     if(cfg.markers){
       projectLabel(jpMarker,'japan-label');
       projectLabel(tokyoMarker,'tokyo-label');
-      projectLabel(usMarker,'america-label');
     }
     projectMoonLabel();
   }
