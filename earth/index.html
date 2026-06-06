@@ -897,6 +897,7 @@ function setMode(m){
   const pb=document.getElementById('play-btn');
   pb.classList.toggle('show',cfg.showPlay&&!inSolar);
   if(!cfg.showPlay){autoRotating=false;pb.textContent='▶';velY=0.001;}
+  else{autoRotating=true;pb.textContent='⏸';velY=0;}
 
   const sb=document.getElementById('speed-btn');
   sb.classList.toggle('show',m==='moon');
