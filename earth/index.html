@@ -244,7 +244,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Hi
 </div>
 
 <div id="japan-label" class="clabel" style="display:none">
-  <span style="font-size:1.1rem;line-height:1">🧒</span> シアトル
+  <span style="font-size:1.1rem;line-height:1">🧒</span> しあとる
+</div>
+<div id="tokyo-label" class="clabel" style="display:none">
+  <div class="cdot" style="background:#ff5566;box-shadow:0 0 7px #ff5566"></div>とうきょう
 </div>
 <div id="america-label" class="clabel" style="display:none">
   <div class="cdot" style="background:#6b9eff;box-shadow:0 0 7px #6b9eff"></div>🇺🇸 アメリカ
@@ -781,6 +784,7 @@ function makeMarker(col){
   return m;
 }
 const jpMarker=makeMarker(0xff9933); jpMarker.position.copy(latLonTo3D(47.6,-122.3,2.07)); earthMesh.add(jpMarker);
+const tokyoMarker=makeMarker(0xff5566); tokyoMarker.position.copy(latLonTo3D(35.68,139.69,2.07)); earthMesh.add(tokyoMarker);
 const usMarker=makeMarker(0x5599ff); usMarker.position.copy(latLonTo3D(40,-74,2.07)); earthMesh.add(usMarker);
 
 // ════════════════
@@ -892,6 +896,7 @@ function setMode(m){
   galaxyCenter.visible=inSolar;
 
   document.getElementById('japan-label').style.display=(!inSolar&&cfg.markers)?'':'none';
+  document.getElementById('tokyo-label').style.display=(!inSolar&&cfg.markers)?'':'none';
   document.getElementById('america-label').style.display=(!inSolar&&cfg.markers)?'':'none';
   const pb=document.getElementById('play-btn');
   pb.classList.toggle('show',cfg.showPlay&&!inSolar);
@@ -1081,6 +1086,7 @@ function animate(){
     const cfg=MCFG[mode];
     if(cfg.markers){
       projectLabel(jpMarker,'japan-label');
+      projectLabel(tokyoMarker,'tokyo-label');
       projectLabel(usMarker,'america-label');
     }
     projectMoonLabel();
