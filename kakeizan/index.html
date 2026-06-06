@@ -470,9 +470,9 @@ function generateQuestion(){
 
   /* Generate 3 wrong answers */
   const opts=new Set([correctAnswer]);
-  let att=0;
-  while(opts.size<4&&att<300){
-    att++;
+  let wAtt=0;
+  while(opts.size<4&&wAtt<300){
+    wAtt++;
     let w;
     const r=Math.random();
     if(r<0.35){
