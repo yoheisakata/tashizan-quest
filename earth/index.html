@@ -606,23 +606,70 @@ const sunLight=new THREE.DirectionalLight(0xfff5dd,2.2);
 sunLight.position.set(8,2,4);
 scene.add(sunLight);
 
-// Sun visual sphere
-const sunVisual=new THREE.Mesh(
-  new THREE.SphereGeometry(0.55,16,16),
-  new THREE.MeshBasicMaterial({color:0xffee44})
-);
-sunVisual.position.set(14,3.5,7);
-sunVisual.visible=false;
-scene.add(sunVisual);
+// ── Sun texture helpers ──
+function makeSunBodyTex(){
+  const S=512,cv=document.createElement('canvas');
+  cv.width=cv.height=S;
+  const ctx=cv.getContext('2d'),h=S/2;
+  // Limb darkening gradient
+  const g=ctx.createRadialGradient(h,h,0,h,h,h);
+  g.addColorStop(0.00,'#ffffff');
+  g.addColorStop(0.15,'#fff9cc');
+  g.addColorStop(0.42,'#ffdd44');
+  g.addColorStop(0.72,'#ff8800');
+  g.addColorStop(0.90,'#cc2200');
+  g.addColorStop(1.00,'#880000');
+  ctx.fillStyle=g;ctx.fillRect(0,0,S,S);
+  // Granulation (solar convection cells)
+  ctx.globalCompositeOperation='screen';
+  for(let i=0;i<420;i++){
+    const x=Math.random()*S,y=Math.random()*S;
+    const dist=Math.hypot(x-h,y-h)/h;
+    if(dist>0.94)continue;
+    const fade=Math.max(0,1-dist*1.08);
+    const a=(Math.random()*0.14+0.03)*fade;
+    ctx.fillStyle=`rgba(255,240,160,${a.toFixed(3)})`;
+    ctx.beginPath();ctx.arc(x,y,Math.random()*5+1.5,0,Math.PI*2);ctx.fill();
+  }
+  return new THREE.CanvasTexture(cv);
+}
+function makeSunCoronaTex(){
+  const S=512,cv=document.createElement('canvas');
+  cv.width=cv.height=S;
+  const ctx=cv.getContext('2d'),h=S/2;
+  const g=ctx.createRadialGradient(h,h,h*0.04,h,h,h);
+  g.addColorStop(0.00,'rgba(255,255,230,1)');
+  g.addColorStop(0.08,'rgba(255,220,80,0.85)');
+  g.addColorStop(0.22,'rgba(255,130,20,0.45)');
+  g.addColorStop(0.45,'rgba(255,60,0,0.14)');
+  g.addColorStop(0.70,'rgba(180,30,0,0.04)');
+  g.addColorStop(1.00,'rgba(0,0,0,0)');
+  ctx.fillStyle=g;ctx.fillRect(0,0,S,S);
+  return new THREE.CanvasTexture(cv);
+}
+const _sunTex=makeSunBodyTex();
+const _sunCoronaTex=makeSunCoronaTex();
 
-// Sun glow (halo)
-const sunGlow=new THREE.Mesh(
-  new THREE.SphereGeometry(0.9,16,16),
-  new THREE.MeshBasicMaterial({color:0xffee44,transparent:true,opacity:0.15})
+// ── Sun group (daynight / space modes) ──
+const sunGroup=new THREE.Object3D();
+sunGroup.position.set(14,3.5,7);
+sunGroup.visible=false;
+scene.add(sunGroup);
+const sunVisual=new THREE.Mesh(
+  new THREE.SphereGeometry(0.88,32,32),
+  new THREE.MeshBasicMaterial({map:_sunTex})
 );
-sunGlow.position.copy(sunVisual.position);
-sunGlow.visible=false;
-scene.add(sunGlow);
+sunGroup.add(sunVisual);
+[[1.18,0.42,'#fff8d0'],[1.65,0.16,'#ffcc44'],[2.5,0.06,'#ff8800'],[4.0,0.022,'#ff4400']].forEach(([r,op,col])=>{
+  sunGroup.add(new THREE.Mesh(new THREE.SphereGeometry(r,16,16),
+    new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:op,depthWrite:false})));
+});
+const sunCorona=new THREE.Sprite(
+  new THREE.SpriteMaterial({map:_sunCoronaTex,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false})
+);
+sunCorona.scale.setScalar(11);
+sunGroup.add(sunCorona);
+const sunGlow=sunGroup; // alias kept for setMode
 
 // ══════════════════════════════
 //  SOLAR SYSTEM
@@ -636,13 +683,19 @@ const solarLight=new THREE.PointLight(0xfff8e7,3.5,300);
 solarLight.visible=false;
 scene.add(solarLight);
 
-// Sun sphere + glow halos
-const solarSun=new THREE.Mesh(new THREE.SphereGeometry(2.8,32,32),new THREE.MeshBasicMaterial({color:0xffdd44}));
+// Solar-mode sun (same texture, larger scale)
+const solarSun=new THREE.Mesh(new THREE.SphereGeometry(2.8,48,48),
+  new THREE.MeshBasicMaterial({map:_sunTex}));
 solarGroup.add(solarSun);
-[[4.5,0.13],[7.0,0.06],[11,0.025]].forEach(([r,op])=>{
+[[4.0,0.32,'#fff8cc'],[6.0,0.13,'#ffcc44'],[9.5,0.055,'#ff8800'],[16,0.018,'#ff4400'],[26,0.005,'#cc2200']].forEach(([r,op,col])=>{
   solarGroup.add(new THREE.Mesh(new THREE.SphereGeometry(r,16,16),
-    new THREE.MeshBasicMaterial({color:0xff9900,transparent:true,opacity:op})));
+    new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:op,depthWrite:false})));
 });
+const solarCorona=new THREE.Sprite(
+  new THREE.SpriteMaterial({map:_sunCoronaTex,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false})
+);
+solarCorona.scale.setScalar(70);
+solarGroup.add(solarCorona);
 
 // Planet definitions — inclination exaggerated for 3D visual clarity
 // (real values are 1–7°; we use 10–30° so orbits visibly cross in 3D space)
@@ -874,8 +927,7 @@ function setMode(m){
   sb.classList.toggle('show',m==='moon');
   if(m!=='moon'){moonSpeedMult=1;sb.classList.remove('active');sb.textContent='1x';}
 
-  sunVisual.visible=cfg.sun;
-  sunGlow.visible=cfg.sun;
+  sunGroup.visible=cfg.sun;
   if(!inSolar){
     orbitRing.visible=cfg.showMoon;
     moonPivot.visible=cfg.showMoon;
@@ -1072,6 +1124,14 @@ function animate(){
     projectMoonLabel();
     projectMoonFaceLabel();
   }
+
+  // Sun rotation + subtle pulse
+  const nt=Date.now()*0.001;
+  const sp=1+0.016*Math.sin(nt*2.3);
+  sunVisual.rotation.y=nt*0.04;
+  sunVisual.scale.setScalar(sp);
+  solarSun.rotation.y=nt*0.04;
+  solarSun.scale.setScalar(sp);
 
   renderer.render(scene,camera);
 }
