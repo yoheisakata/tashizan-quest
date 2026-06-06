@@ -194,13 +194,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Hi
   font-size:0.8rem;font-weight:700;color:rgba(210,240,255,0.85);
   text-shadow:0 0 8px #000;white-space:nowrap;display:none;
 }
-/* ── MOON FACE LABEL ── */
-#moon-face-label{
-  position:fixed;z-index:10;pointer-events:none;
-  font-size:0.75rem;font-weight:900;color:#ffe047;
-  text-shadow:0 0 10px rgba(255,220,0,0.9),0 0 4px #000;
-  white-space:nowrap;display:none;
-}
 
 /* ── LANDSCAPE (横向き) ── */
 @media (orientation:landscape) and (max-height:500px){
@@ -257,7 +250,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Hi
   <div class="cdot" style="background:#6b9eff;box-shadow:0 0 7px #6b9eff"></div>🇺🇸 アメリカ
 </div>
 <div id="moon-label">🌕 つき</div>
-<div id="moon-face-label">★ おもてめん（ちきゅうがわ）</div>
 <div id="moon-day-panel">
   <div id="moon-day-num">1日め</div>
   <div id="moon-day-sub">27日で ちきゅうを 1しゅう</div>
@@ -568,24 +560,6 @@ new THREE.TextureLoader().load(
   'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/textures/planets/moon_1024.jpg',
   tex=>{moonMat.map=tex;moonMat.needsUpdate=true;}
 );
-
-// Near-side marker: yellow dot on the face that always points toward Earth
-// Position (-0.57,0,0) in moonMesh local space = the Earth-facing hemisphere
-const moonFaceMarker=new THREE.Mesh(
-  new THREE.SphereGeometry(0.07,8,8),
-  new THREE.MeshBasicMaterial({color:0xffe047})
-);
-moonFaceMarker.position.set(-0.57,0,0);
-moonFaceMarker.visible=false;
-moonMesh.add(moonFaceMarker);
-// Soft glow around marker
-const moonFaceGlow=new THREE.Mesh(
-  new THREE.SphereGeometry(0.13,8,8),
-  new THREE.MeshBasicMaterial({color:0xffe047,transparent:true,opacity:0.25})
-);
-moonFaceGlow.position.copy(moonFaceMarker.position);
-moonFaceGlow.visible=false;
-moonMesh.add(moonFaceGlow);
 
 // Moon orbit ring
 const orbitPts=[];
@@ -931,8 +905,6 @@ function setMode(m){
   if(!inSolar){
     orbitRing.visible=cfg.showMoon;
     moonPivot.visible=cfg.showMoon;
-    moonFaceMarker.visible=(m==='moon');
-    moonFaceGlow.visible=(m==='moon');
   } else {
     moonPivot.visible=false;
   }
@@ -1013,16 +985,6 @@ function projectPlanetLabels(){
   });
 }
 
-function projectMoonFaceLabel(){
-  const el=document.getElementById('moon-face-label');
-  if(mode!=='moon'){el.style.display='none';return;}
-  moonFaceMarker.getWorldPosition(tmpV);
-  const p=tmpV.project(camera);
-  if(p.z>1){el.style.display='none';return;}
-  el.style.display='block';
-  el.style.left=((p.x+1)/2*innerWidth+10)+'px';
-  el.style.top=((-p.y+1)/2*innerHeight-20)+'px';
-}
 
 // ════════════════
 //  ANIMATION LOOP
@@ -1122,7 +1084,6 @@ function animate(){
       projectLabel(usMarker,'america-label');
     }
     projectMoonLabel();
-    projectMoonFaceLabel();
   }
 
   // Sun rotation + subtle pulse
