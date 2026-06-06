@@ -244,7 +244,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Hi
 </div>
 
 <div id="japan-label" class="clabel" style="display:none">
-  <div class="cdot" style="background:#ff6b6b;box-shadow:0 0 7px #ff6b6b"></div>🇯🇵 にほん
+  <span style="font-size:1.1rem;line-height:1">🧒</span> シアトル
 </div>
 <div id="america-label" class="clabel" style="display:none">
   <div class="cdot" style="background:#6b9eff;box-shadow:0 0 7px #6b9eff"></div>🇺🇸 アメリカ
@@ -780,7 +780,7 @@ function makeMarker(col){
   );
   return m;
 }
-const jpMarker=makeMarker(0xff5555); jpMarker.position.copy(latLonTo3D(35,139,2.07)); earthMesh.add(jpMarker);
+const jpMarker=makeMarker(0xff9933); jpMarker.position.copy(latLonTo3D(47.6,-122.3,2.07)); earthMesh.add(jpMarker);
 const usMarker=makeMarker(0x5599ff); usMarker.position.copy(latLonTo3D(40,-74,2.07)); earthMesh.add(usMarker);
 
 // ════════════════
@@ -839,7 +839,7 @@ const MCFG={
   free:{
     title:'🌏 ちきゅうをまわそう',
     desc:'ゆびでさわって ちきゅうをまわしてみよう！',
-    fact:'⭐ ちきゅうはまあるい！まわりの長さは 約40,000km。\nとうきょうからニューヨークまで 約10,800km もあるよ！',
+    fact:'⭐ ちきゅうはまあるい！まわりの長さは 約40,000km。\nシアトルから ニューヨークまで 約3,900km もあるよ！',
     camZ:6,camY:0,markers:true,showMoon:false,showDN:false,showPlay:false,sun:false,initRotY:null
   },
   moon:{
