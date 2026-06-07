@@ -455,7 +455,7 @@ function generateQuestion(){
     for(let g=0;g<qB;g++){
       let items='';
       for(let i=0;i<qA;i++) items+=`<span class="emoji-item">${em}</span>`;
-      groups+=`<div style="display:flex;gap:2px;background:rgba(255,255,255,0.07);border-radius:8px;padding:4px 6px;">${items}</div>`;
+      groups+=`<div style="display:flex;flex-direction:column;align-items:center;gap:3px;"><div style="font-size:0.65rem;font-weight:900;color:var(--gold);letter-spacing:1px;">${qA}</div><div style="display:flex;gap:2px;background:rgba(255,255,255,0.07);border-radius:8px;padding:4px 6px;">${items}</div></div>`;
     }
     row.innerHTML=`<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;align-items:center;">${groups}</div>`;
   }else{
