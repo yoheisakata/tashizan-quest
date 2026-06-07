@@ -526,6 +526,33 @@ function spawnCoin(n,btn){
   }
 }
 
+function playLevelUpSound(){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    // DQ風ファンファーレ：上昇アルペジオ＋締めのフレーズ
+    const notes=[
+      // 時間, 周波数, 長さ, 音量
+      [0.00, 523.25, 0.12, 0.3],  // C5
+      [0.10, 659.25, 0.12, 0.3],  // E5
+      [0.20, 783.99, 0.12, 0.3],  // G5
+      [0.30, 1046.5, 0.20, 0.35], // C6
+      [0.52, 783.99, 0.10, 0.25], // G5
+      [0.63, 1046.5, 0.45, 0.40], // C6 (長め)
+    ];
+    notes.forEach(([t,freq,dur,vol])=>{
+      const o=ctx.createOscillator();
+      const g=ctx.createGain();
+      o.type='square';
+      o.frequency.value=freq;
+      o.connect(g);g.connect(ctx.destination);
+      g.gain.setValueAtTime(0,ctx.currentTime+t);
+      g.gain.linearRampToValueAtTime(vol,ctx.currentTime+t+0.01);
+      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+t+dur);
+      o.start(ctx.currentTime+t);
+      o.stop(ctx.currentTime+t+dur+0.05);
+    });
+  }catch(e){}
+}
 function checkHeroLevelUp(){
   while(hero.exp>=hero.expNext){
     hero.exp-=hero.expNext;hero.lv++;
@@ -537,7 +564,7 @@ function checkHeroLevelUp(){
     hero.atk+=ag;hero.def+=dg;hero.hpMax+=hg;hero.hp=hero.hpMax;
     lvupQueue.push({ag,dg,hg});
   }
-  if(lvupQueue.length===1) displayNextLvup();
+  if(lvupQueue.length===1){playLevelUpSound();displayNextLvup();}
 }
 function displayNextLvup(){
   if(!lvupQueue.length)return;
