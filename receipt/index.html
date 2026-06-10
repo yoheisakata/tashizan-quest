@@ -442,8 +442,18 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.5)}
   </div>
 
   <div class="form-field">
-    <div class="field-label">金額（円）</div>
-    <input type="number" id="fAmount" placeholder="0" min="0" inputmode="numeric">
+    <div class="field-label">金額</div>
+    <div style="display:flex;gap:8px">
+      <select id="fCurrency" style="width:100px;flex-shrink:0">
+        <option value="USD">$ USD</option>
+        <option value="JPY">¥ JPY</option>
+      </select>
+      <input type="number" id="fAmount" placeholder="0.00" min="0" step="0.01" inputmode="decimal" style="flex:1">
+    </div>
+    <div id="rateInfo" style="display:none;margin-top:6px;font-size:0.72rem;color:var(--text2);display:flex;align-items:center;gap:6px">
+      <span id="rateText">換算レートを取得中...</span>
+      <span id="rateConverted" style="color:var(--accent);font-weight:700"></span>
+    </div>
   </div>
 
   <div class="form-field">
@@ -487,6 +497,52 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.5)}
       <input type="password" id="apiKeyInput" placeholder="sk-ant-..." autocomplete="off">
     </div>
     <button class="btn btn-primary mt-8" id="saveApiKeyBtn">APIキーを保存</button>
+  </div>
+
+  <div class="card">
+    <div class="sec-head" style="margin-bottom:8px">
+      <span class="sec-title">☁️ クラウド同期 (Firebase)</span>
+      <span id="fbStatus" style="font-size:0.7rem;font-weight:800;color:var(--text3)">未接続</span>
+    </div>
+
+    <div class="tip">
+      <strong>セットアップ手順：</strong><br>
+      1. <strong>console.firebase.google.com</strong> でプロジェクト作成<br>
+      2. 「ウェブアプリを追加」→ 設定JSONをコピー<br>
+      3. Authentication → Google プロバイダを有効化<br>
+      4. Firestore → データベース作成（テストモードでOK）
+    </div>
+
+    <div id="fbSetupSection">
+      <div class="form-field">
+        <div class="field-label">Firebase 設定JSON</div>
+        <textarea id="fbConfigInput" placeholder='{"apiKey":"AIza...","authDomain":"xxx.firebaseapp.com","projectId":"xxx"}' style="min-height:90px;font-size:0.73rem;font-family:monospace;line-height:1.5"></textarea>
+      </div>
+      <button class="btn btn-primary" id="fbConnectBtn">接続する</button>
+    </div>
+
+    <div id="fbLoginSection" style="display:none">
+      <button class="btn btn-primary" id="fbLoginBtn">🔑 Googleでログイン</button>
+      <p style="font-size:0.72rem;color:var(--text2);margin-top:10px;text-align:center;line-height:1.5">
+        ログインするとデータが自動でクラウドに保存されます
+      </p>
+      <button class="btn btn-secondary mt-8" id="fbDisconnectBtn">接続解除</button>
+    </div>
+
+    <div id="fbUserSection" style="display:none">
+      <div class="settings-row" style="margin-bottom:10px">
+        <div class="settings-icon">☁️</div>
+        <div class="settings-body">
+          <div class="settings-label" id="fbUserName">-</div>
+          <div class="settings-desc" id="fbSyncStatus">同期準備中...</div>
+        </div>
+        <span class="settings-act" id="fbLogoutBtn">ログアウト</span>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" id="fbSyncNowBtn">今すぐ同期</button>
+        <button class="btn btn-secondary" id="fbDisconnectBtn2">接続解除</button>
+      </div>
+    </div>
   </div>
 
   <div class="card">
@@ -573,29 +629,39 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.5)}
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
 <script>
 // ─── Constants ───────────────────────────────────────────────────────────────
 
+// TurboTax-aligned US tax return categories
 const CATEGORIES = {
-  medical:   { label:'医療費',       emoji:'🏥', color:'#ef4444', bg:'rgba(239,68,68,0.15)',   sub:'医療費控除' },
-  donation:  { label:'寄付・ふるさと', emoji:'🎗️', color:'#8b5cf6', bg:'rgba(139,92,246,0.15)',  sub:'寄附金控除' },
-  business:  { label:'事業経費',     emoji:'💼', color:'#3b82f6', bg:'rgba(59,130,246,0.15)',  sub:'事業所得の経費' },
-  housing:   { label:'住宅関連',     emoji:'🏠', color:'#f97316', bg:'rgba(249,115,22,0.15)',  sub:'住宅ローン等' },
-  insurance: { label:'保険料',       emoji:'🛡️', color:'#14b8a6', bg:'rgba(20,184,166,0.15)',  sub:'各種保険料控除' },
-  education: { label:'教育・研修',   emoji:'📚', color:'#eab308', bg:'rgba(234,179,8,0.15)',   sub:'特定支出控除' },
-  transport: { label:'交通費',       emoji:'🚗', color:'#06b6d4', bg:'rgba(6,182,212,0.15)',   sub:'通勤・業務' },
-  other:     { label:'その他',       emoji:'📦', color:'#6b7280', bg:'rgba(107,114,128,0.15)', sub:'上記以外' },
+  medical:    { label:'Medical & Dental',   emoji:'🏥', color:'#ef4444', bg:'rgba(239,68,68,0.15)',    sub:'Schedule A' },
+  charity:    { label:'Charitable Gifts',   emoji:'🎗️', color:'#8b5cf6', bg:'rgba(139,92,246,0.15)',   sub:'Schedule A' },
+  business:   { label:'Business Expense',   emoji:'💼', color:'#3b82f6', bg:'rgba(59,130,246,0.15)',   sub:'Schedule C' },
+  meals:      { label:'Meals (50%)',         emoji:'🍽️', color:'#f97316', bg:'rgba(249,115,22,0.15)',   sub:'Schedule C - 50%' },
+  travel:     { label:'Business Travel',    emoji:'✈️', color:'#06b6d4', bg:'rgba(6,182,212,0.15)',    sub:'Schedule C' },
+  vehicle:    { label:'Vehicle & Gas',      emoji:'🚗', color:'#14b8a6', bg:'rgba(20,184,166,0.15)',   sub:'Schedule C' },
+  homeoffice: { label:'Home Office',        emoji:'🏠', color:'#eab308', bg:'rgba(234,179,8,0.15)',    sub:'Schedule C / A' },
+  education:  { label:'Education',          emoji:'📚', color:'#a855f7', bg:'rgba(168,85,247,0.15)',   sub:'LLC / Form 8863' },
+  childcare:  { label:'Child & Dependent',  emoji:'👶', color:'#ec4899', bg:'rgba(236,72,153,0.15)',   sub:'Form 2441' },
+  other:      { label:'Other Deductible',   emoji:'📦', color:'#6b7280', bg:'rgba(107,114,128,0.15)',  sub:'Misc Deductions' },
 };
 
 // ─── State ───────────────────────────────────────────────────────────────────
 
 let receipts = [];
-let settings = { apiKey: '', year: new Date().getFullYear() };
+let settings = { apiKey: '', year: new Date().getFullYear(), fbConfig: '' };
 let currentEditId = null;
 let listFilter = 'all';
 let currentDetailId = null;
 let pendingConfirmCallback = null;
 let photoDataUrl = null;
+
+// ─── Firebase State ───────────────────────────────────────────────────────────
+let fbApp = null, fbAuth = null, fbDb = null, fbCurrentUser = null;
 
 // ─── Persistence ─────────────────────────────────────────────────────────────
 
@@ -617,6 +683,137 @@ function save() {
   }
 }
 
+// ─── Firebase ────────────────────────────────────────────────────────────────
+
+function fbReceiptsRef() {
+  return fbDb.collection('users').doc(fbCurrentUser.uid).collection('receipts');
+}
+
+function initFirebase(configStr) {
+  try {
+    const config = JSON.parse(configStr);
+    // Clean up existing app if any
+    try { firebase.app('receipt').delete(); } catch(_) {}
+    fbApp  = firebase.initializeApp(config, 'receipt');
+    fbAuth = firebase.auth(fbApp);
+    fbDb   = firebase.firestore(fbApp);
+    fbAuth.onAuthStateChanged(user => {
+      fbCurrentUser = user;
+      updateFbUI();
+      if (user) syncFromFirestore();
+    });
+    settings.fbConfig = configStr;
+    save();
+    return true;
+  } catch(e) {
+    showToast('設定エラー: ' + e.message, 3500);
+    return false;
+  }
+}
+
+function updateFbUI() {
+  const setup  = document.getElementById('fbSetupSection');
+  const login  = document.getElementById('fbLoginSection');
+  const user   = document.getElementById('fbUserSection');
+  const status = document.getElementById('fbStatus');
+  if (!fbApp) {
+    setup.style.display=''; login.style.display='none'; user.style.display='none';
+    status.textContent='未接続'; status.style.color='var(--text3)';
+  } else if (!fbCurrentUser) {
+    setup.style.display='none'; login.style.display=''; user.style.display='none';
+    status.textContent='未ログイン'; status.style.color='var(--warn)';
+  } else {
+    setup.style.display='none'; login.style.display='none'; user.style.display='';
+    status.textContent='同期中'; status.style.color='var(--accent)';
+    document.getElementById('fbUserName').textContent = fbCurrentUser.displayName || fbCurrentUser.email;
+  }
+}
+
+// 画像をクラウド用に再圧縮（Firestoreの1MB制限対策）
+function compressForCloud(dataUrl) {
+  return new Promise(resolve => {
+    if (!dataUrl) { resolve(null); return; }
+    const img = new Image();
+    img.onload = () => {
+      let w = img.width, h = img.height;
+      const max = 800;
+      if (w > max || h > max) { const s = max/Math.max(w,h); w=Math.round(w*s); h=Math.round(h*s); }
+      const c = document.createElement('canvas');
+      c.width=w; c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      resolve(c.toDataURL('image/jpeg', 0.55));
+    };
+    img.onerror = () => resolve(null);
+    img.src = dataUrl;
+  });
+}
+
+async function syncFromFirestore() {
+  if (!fbCurrentUser || !fbDb) return;
+  const statusEl = document.getElementById('fbSyncStatus');
+  if (statusEl) statusEl.textContent = '同期中...';
+  try {
+    const snap = await fbReceiptsRef().get();
+    const cloud = [];
+    snap.forEach(d => cloud.push(d.data()));
+
+    // ローカルのみのものをクラウドへアップ
+    const cloudIds = new Set(cloud.map(r=>r.id));
+    const localOnly = receipts.filter(r=>!cloudIds.has(r.id));
+    for (const r of localOnly) {
+      const cloudImg = await compressForCloud(r.image);
+      await fbReceiptsRef().doc(r.id).set({ ...r, image: cloudImg });
+    }
+
+    // クラウドと競合した場合は新しい方を優先
+    const localMap = Object.fromEntries(receipts.map(r=>[r.id,r]));
+    const merged = cloud.map(cr => {
+      const lr = localMap[cr.id];
+      return (lr && lr.updatedAt > cr.updatedAt) ? lr : cr;
+    });
+    // ローカルのみを追加
+    for (const r of localOnly) merged.push(r);
+
+    receipts = merged.sort((a,b)=>b.createdAt-a.createdAt);
+    save();
+    renderDashboard();
+    if (statusEl) statusEl.textContent = '同期済み ✓ ' + new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
+    showToast('☁️ クラウドと同期しました');
+  } catch(e) {
+    console.warn('Sync error:', e);
+    if (statusEl) statusEl.textContent = '同期エラー';
+    showToast('同期エラー: ' + (e.message||'不明'), 3500);
+  }
+}
+
+async function saveToFirestore(receipt) {
+  if (!fbCurrentUser || !fbDb) return;
+  try {
+    const cloudImg = await compressForCloud(receipt.image);
+    await fbReceiptsRef().doc(receipt.id).set({ ...receipt, image: cloudImg });
+    const statusEl = document.getElementById('fbSyncStatus');
+    if (statusEl) statusEl.textContent = '同期済み ✓ ' + new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
+  } catch(e) { console.warn('Firestore save failed:', e); }
+}
+
+async function deleteFromFirestore(id) {
+  if (!fbCurrentUser || !fbDb) return;
+  try {
+    await fbReceiptsRef().doc(id).delete();
+  } catch(e) { console.warn('Firestore delete failed:', e); }
+}
+
+function disconnectFirebase() {
+  if (fbAuth) fbAuth.signOut().catch(()=>{});
+  try { firebase.app('receipt').delete(); } catch(_) {}
+  fbApp = fbAuth = fbDb = fbCurrentUser = null;
+  settings.fbConfig = '';
+  save();
+  updateFbUI();
+  document.getElementById('fbConfigInput').value = '';
+  showToast('接続を解除しました');
+}
+
 // ─── Utility ─────────────────────────────────────────────────────────────────
 
 function toWareki(y) {
@@ -626,8 +823,39 @@ function toWareki(y) {
   return `${y}年`;
 }
 
-function formatMoney(n) {
+// ─── Currency / FX ───────────────────────────────────────────────────────────
+
+const fxCache = {};
+
+async function getJpyUsdRate(date) {
+  const key = date || 'latest';
+  if (fxCache[key]) return fxCache[key];
+  try {
+    const url = date
+      ? `https://api.frankfurter.app/${date}?from=JPY&to=USD`
+      : 'https://api.frankfurter.app/latest?from=JPY&to=USD';
+    const res = await fetch(url);
+    const data = await res.json();
+    const rate = data.rates?.USD;
+    if (rate) fxCache[key] = rate;
+    return rate || fxCache['fallback'] || 0.0067;
+  } catch {
+    return fxCache['fallback'] || 0.0067;
+  }
+}
+
+function formatUSD(n) {
+  return '$' + (n||0).toFixed(2);
+}
+
+function formatMoney(n, currency) {
+  if (!currency || currency === 'USD') return formatUSD(n);
   return '¥' + Math.round(n).toLocaleString('ja-JP');
+}
+
+function amountInUSD(r) {
+  // receipts without currency field treated as USD
+  return r.amountUSD ?? r.amount ?? 0;
 }
 
 function formatDate(d) {
@@ -675,14 +903,14 @@ function renderDashboard() {
   document.getElementById('warekiDisplay').textContent = toWareki(y);
 
   const yr = receipts.filter(r => r.year === y);
-  const total = yr.reduce((s,r) => s + r.amount, 0);
+  const total = yr.reduce((s,r) => s + amountInUSD(r), 0);
   const count = yr.length;
-  const avg = count ? Math.round(total/count) : 0;
+  const avg = count ? total/count : 0;
 
   document.getElementById('summaryGrid').innerHTML = `
     <div class="sum-card accent">
       <div class="sum-label">合計金額 (${y}年)</div>
-      <div class="sum-val">${formatMoney(total)}</div>
+      <div class="sum-val">${formatUSD(total)}</div>
       <div class="sum-sub">${count}件のレシート</div>
     </div>
     <div class="sum-card">
@@ -691,13 +919,13 @@ function renderDashboard() {
     </div>
     <div class="sum-card">
       <div class="sum-label">平均金額</div>
-      <div class="sum-val" style="font-size:1.2rem">${formatMoney(avg)}</div>
+      <div class="sum-val" style="font-size:1.2rem">${formatUSD(avg)}</div>
     </div>
   `;
 
   // Category breakdown
   const catTotals = {};
-  yr.forEach(r => { catTotals[r.category] = (catTotals[r.category]||0) + r.amount; });
+  yr.forEach(r => { catTotals[r.category] = (catTotals[r.category]||0) + amountInUSD(r); });
   const catCounts = {};
   yr.forEach(r => { catCounts[r.category] = (catCounts[r.category]||0) + 1; });
   const maxAmt = Math.max(1, ...Object.values(catTotals));
@@ -717,7 +945,7 @@ function renderDashboard() {
           <div class="cat-count">${catCounts[cat]}件</div>
         </div>
         <div class="cat-progress"><div class="cat-prog-fill" style="width:${pct}%"></div></div>
-        <div class="cat-amount">${formatMoney(amt)}</div>
+        <div class="cat-amount">${formatUSD(amt)}</div>
       </div>`;
     }).join('');
   }
@@ -750,7 +978,9 @@ function receiptItemHtml(r) {
         <span class="cat-dot" style="color:${c.color}">${c.emoji} ${c.label}</span>
       </div>
     </div>
-    <div class="receipt-amount">${formatMoney(r.amount)}</div>
+    <div class="receipt-amount">${r.currency==='JPY'
+      ? `<span style="font-size:0.7rem;color:var(--text2)">¥${Math.round(r.amount).toLocaleString('ja-JP')}</span><br>${formatUSD(amountInUSD(r))}`
+      : formatUSD(amountInUSD(r))}</div>
   </div>`;
 }
 
@@ -784,10 +1014,10 @@ function renderList() {
       <div class="empty-desc">${listFilter==='all'?'「追加」タブからレシートを登録しましょう':'このカテゴリのレシートはありません'}</div>
     </div>`;
   } else {
-    let totalFiltered = sorted.reduce((s,r)=>s+r.amount,0);
+    let totalFiltered = sorted.reduce((s,r)=>s+amountInUSD(r),0);
     listEl.innerHTML =
       `<div style="font-size:0.72rem;color:var(--text2);margin-bottom:10px;font-weight:700">
-        ${sorted.length}件 合計 ${formatMoney(totalFiltered)}
+        ${sorted.length}件 合計 ${formatUSD(totalFiltered)}
       </div>` +
       sorted.map(r => receiptItemHtml(r)).join('');
   }
@@ -805,6 +1035,8 @@ function initAddForm(editReceipt) {
   document.getElementById('fDate').value = editReceipt ? editReceipt.date : today();
   document.getElementById('fAmount').value = editReceipt ? editReceipt.amount : '';
   document.getElementById('fNotes').value = editReceipt ? (editReceipt.notes||'') : '';
+  document.getElementById('fCurrency').value = editReceipt ? (editReceipt.currency||'USD') : 'USD';
+  updateRateInfo();
 
   updatePhotoPreview();
 
@@ -858,6 +1090,28 @@ function updateAiButtonState() {
   }
 }
 
+async function updateRateInfo() {
+  const currency = document.getElementById('fCurrency')?.value;
+  const rateInfo = document.getElementById('rateInfo');
+  const rateText = document.getElementById('rateText');
+  const rateConv = document.getElementById('rateConverted');
+  if (!rateInfo) return;
+
+  if (currency !== 'JPY') {
+    rateInfo.style.display = 'none';
+    return;
+  }
+  rateInfo.style.display = 'flex';
+  rateText.textContent = '換算レートを取得中...';
+  rateConv.textContent = '';
+
+  const date = document.getElementById('fDate').value || null;
+  const rate = await getJpyUsdRate(date);
+  const amount = parseFloat(document.getElementById('fAmount').value) || 0;
+  rateText.textContent = `1 JPY = ${rate.toFixed(6)} USD（${date || '本日'}）`;
+  if (amount > 0) rateConv.textContent = `→ ${formatUSD(amount * rate)}`;
+}
+
 // ─── Claude AI Extraction ─────────────────────────────────────────────────────
 
 async function extractWithAI() {
@@ -881,10 +1135,11 @@ async function extractWithAI() {
   "vendor": "店舗名（不明なら空文字）",
   "date": "日付YYYY-MM-DD形式（不明なら空文字）",
   "amount": 合計金額の数値（税込、不明なら0）,
-  "category": "${catKeys}のいずれか",
-  "notes": "主な品目や用途の簡潔な説明（日本語）"
+  "currency": "USD または JPY（通貨記号や言語から判断）",
+  "category": "${catKeys} のいずれか",
+  "notes": "品目や用途の簡潔な説明（日本語）"
 }
-カテゴリ選択基準: medical=薬局・病院・医療, donation=募金・寄付・ふるさと納税, business=仕事の備品・接待, housing=家賃・修繕・家具, insurance=保険料, education=書籍・研修・セミナー, transport=交通・ガソリン, other=その他`;
+カテゴリ選択基準（US Tax Return）: medical=医療・歯科・薬, charity=寄付・慈善団体, business=事業用備品・広告・通信費, meals=仕事上の食事（50%控除）, travel=出張・ホテル・航空券, vehicle=ガソリン・駐車・業務用車両, homeoffice=ホームオフィス・家賃一部, education=資格取得・研修・学費, childcare=保育・ベビーシッター, other=その他控除`;
 
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -923,12 +1178,15 @@ async function extractWithAI() {
     if (extracted.date && /^\d{4}-\d{2}-\d{2}$/.test(extracted.date))
       document.getElementById('fDate').value = extracted.date;
     if (extracted.amount) document.getElementById('fAmount').value = extracted.amount;
+    if (extracted.currency && ['USD','JPY'].includes(extracted.currency))
+      document.getElementById('fCurrency').value = extracted.currency;
     if (extracted.notes) document.getElementById('fNotes').value = extracted.notes;
     if (extracted.category && CATEGORIES[extracted.category]) {
       document.querySelectorAll('.cat-opt').forEach(el => {
         el.classList.toggle('selected', el.dataset.cat === extracted.category);
       });
     }
+    updateRateInfo();
 
     showToast('✨ AI自動入力が完了しました');
   } catch(e) {
@@ -944,21 +1202,33 @@ async function extractWithAI() {
 
 // ─── Save / Delete Receipt ────────────────────────────────────────────────────
 
-function saveReceipt() {
-  const vendor = document.getElementById('fVendor').value.trim();
-  const date = document.getElementById('fDate').value;
-  const amount = parseFloat(document.getElementById('fAmount').value) || 0;
-  const notes = document.getElementById('fNotes').value.trim();
+async function saveReceipt() {
+  const vendor   = document.getElementById('fVendor').value.trim();
+  const date     = document.getElementById('fDate').value;
+  const amount   = parseFloat(document.getElementById('fAmount').value) || 0;
+  const notes    = document.getElementById('fNotes').value.trim();
   const category = getSelectedCategory();
+  const currency = document.getElementById('fCurrency').value;
 
   if (!date) { showToast('日付を入力してください'); return; }
   if (amount <= 0) { showToast('金額を入力してください'); return; }
+
+  const saveBtn = document.getElementById('saveBtn');
+  let amountUSD = amount;
+  if (currency === 'JPY') {
+    saveBtn.textContent = '換算中...';
+    saveBtn.disabled = true;
+    const rate = await getJpyUsdRate(date);
+    amountUSD = parseFloat((amount * rate).toFixed(4));
+    saveBtn.textContent = '保存する';
+    saveBtn.disabled = false;
+  }
 
   const year = parseInt(date.split('-')[0]);
   const receipt = {
     id: currentEditId || uid(),
     vendor: vendor || '（店舗名なし）',
-    date, amount, category, notes,
+    date, currency, amount, amountUSD, category, notes,
     image: photoDataUrl,
     year,
     createdAt: currentEditId ? (receipts.find(r=>r.id===currentEditId)?.createdAt||Date.now()) : Date.now(),
@@ -973,6 +1243,7 @@ function saveReceipt() {
   }
 
   save();
+  saveToFirestore(receipt);
   showToast(currentEditId ? '✅ 更新しました' : '✅ 保存しました');
   currentEditId = null;
   showPage('dashboard');
@@ -982,6 +1253,7 @@ function deleteReceipt(id) {
   showConfirm('レシートを削除しますか？', 'この操作は元に戻せません。', () => {
     receipts = receipts.filter(r=>r.id!==id);
     save();
+    deleteFromFirestore(id);
     showToast('🗑️ 削除しました');
     closeModal('detailModal');
     closeModal('confirmModal');
@@ -1023,6 +1295,9 @@ function renderSettings() {
   const input = document.getElementById('apiKeyInput');
   input.value = settings.apiKey ? '••••••••••••' + settings.apiKey.slice(-4) : '';
   input.dataset.masked = settings.apiKey ? 'true' : 'false';
+  // Firebase UI
+  if (settings.fbConfig && !fbApp) initFirebase(settings.fbConfig);
+  updateFbUI();
 }
 
 // ─── Export ───────────────────────────────────────────────────────────────────
@@ -1189,6 +1464,11 @@ document.addEventListener('DOMContentLoaded', () => {
     updatePhotoPreview();
   });
 
+  // ── Currency / rate info ──
+  document.getElementById('fCurrency').addEventListener('change', updateRateInfo);
+  document.getElementById('fDate').addEventListener('change', updateRateInfo);
+  document.getElementById('fAmount').addEventListener('input', updateRateInfo);
+
   // ── AI extract ──
   document.getElementById('aiExtractBtn').addEventListener('click', extractWithAI);
 
@@ -1280,8 +1560,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // ── Swipe to close modal on handle pull ──
-  // (handled by overlay click above)
+  // ── Firebase settings ──
+  document.getElementById('fbConnectBtn').addEventListener('click', () => {
+    const val = document.getElementById('fbConfigInput').value.trim();
+    if (!val) { showToast('設定JSONを入力してください'); return; }
+    if (initFirebase(val)) showToast('✅ Firebaseに接続しました');
+  });
+  document.getElementById('fbLoginBtn').addEventListener('click', () => {
+    if (!fbAuth) return;
+    const provider = new firebase.auth.GoogleAuthProvider();
+    fbAuth.signInWithPopup(provider).catch(e => showToast('ログインエラー: ' + e.message, 3500));
+  });
+  document.getElementById('fbLogoutBtn').addEventListener('click', () => {
+    if (fbAuth) fbAuth.signOut();
+  });
+  document.getElementById('fbSyncNowBtn').addEventListener('click', () => syncFromFirestore());
+  document.getElementById('fbDisconnectBtn').addEventListener('click', disconnectFirebase);
+  document.getElementById('fbDisconnectBtn2').addEventListener('click', disconnectFirebase);
+
+  // Firebase自動接続（設定が保存済みの場合）
+  if (settings.fbConfig) initFirebase(settings.fbConfig);
 });
 </script>
 </body>
