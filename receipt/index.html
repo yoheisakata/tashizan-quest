@@ -851,7 +851,7 @@ function updateAiButtonState() {
     hint.textContent = '※ 設定タブでClaude APIキーを登録するとAI自動抽出が使えます';
     hint.style.display = 'block';
   } else if (!hasPhoto) {
-    hint.textContent = '※ 写真を追加するとAI自動抽出が使えます';
+    hint.textContent = '✨ 写真を撮ると自動でAI入力されます';
     hint.style.display = 'block';
   } else {
     hint.style.display = 'none';
@@ -936,8 +936,8 @@ async function extractWithAI() {
     showToast('⚠️ AI抽出エラー: ' + (e.message||'不明なエラー'), 3500);
   } finally {
     btn.disabled = false;
-    icon.textContent = '✨';
-    label.textContent = 'AIで自動入力（Claude）';
+    icon.textContent = '🔄';
+    label.textContent = '再解析する';
     updateAiButtonState();
   }
 }
@@ -1170,6 +1170,8 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       photoDataUrl = await compressImage(file);
       updatePhotoPreview();
+      // APIキーがあれば自動抽出
+      if (settings.apiKey) extractWithAI();
     } catch(err) {
       showToast('画像の読み込みに失敗しました');
     }
