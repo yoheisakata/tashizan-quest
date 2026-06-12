@@ -664,6 +664,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.5)}
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
@@ -1228,9 +1229,11 @@ async function extractWithAI() {
   label.textContent = 'AI解析中...';
 
   try {
-    // Strip data URL prefix to get base64
-    const base64 = photoDataUrl.split(',')[1];
-    const mimeMatch = photoDataUrl.match(/data:([^;]+);/);
+    // On mobile, compress more aggressively to reduce payload size for the API
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const apiImage = isMobile ? (await compressForCloud(photoDataUrl) || photoDataUrl) : photoDataUrl;
+    const base64 = apiImage.split(',')[1];
+    const mimeMatch = apiImage.match(/data:([^;]+);/);
     const mediaType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
 
     const catKeys = Object.keys(CATEGORIES).join('/');
@@ -1557,15 +1560,23 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('photoInput').addEventListener('change', async e => {
-    const file = e.target.files[0];
+    let file = e.target.files[0];
     if (!file) return;
     try {
+      // Convert HEIC/HEIF to JPEG before processing
+      const isHeic = file.type === 'image/heic' || file.type === 'image/heif' ||
+        /\.heic$/i.test(file.name) || /\.heif$/i.test(file.name);
+      if (isHeic && typeof heic2any !== 'undefined') {
+        showToast('HEIC変換中...');
+        const blob = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.85 });
+        file = new File([blob], file.name.replace(/\.heic$/i, '.jpg').replace(/\.heif$/i, '.jpg'), { type: 'image/jpeg' });
+      }
       photoDataUrl = await compressImage(file);
       updatePhotoPreview();
       // APIキーがあれば自動抽出
       if (settings.apiKey) extractWithAI();
     } catch(err) {
-      showToast('画像の読み込みに失敗しました');
+      showToast('画像の読み込みに失敗しました: ' + (err.message || err));
     }
     e.target.value = '';
   });
