@@ -1181,6 +1181,7 @@ function updateAiButtonState() {
   const hasKey = !!settings.apiKey;
   const btn = document.getElementById('aiExtractBtn');
   const hint = document.getElementById('aiHint');
+  if (!btn || !hint) return;
   btn.disabled = !hasPhoto || !hasKey;
   if (!hasKey) {
     hint.textContent = '※ 設定タブでClaude APIキーを登録するとAI自動抽出が使えます';
@@ -1294,7 +1295,19 @@ async function extractWithAI() {
     showToast('✨ AI自動入力が完了しました');
   } catch(e) {
     console.error('AI error:', e);
-    showToast('⚠️ AI抽出エラー: ' + (e.message||'不明なエラー'), 3500);
+    const detail = e?.message || e?.toString?.() || String(e);
+    const isCors = detail === 'TypeError' || detail === 'Failed to fetch' || detail === 'Load failed' || detail === 'Type error';
+    if (isCors) {
+      showError(
+        'AI抽出エラー: ネットワークまたはCORSエラー\n\n' +
+        '原因として考えられること:\n' +
+        '• Claude APIキーが正しくない\n' +
+        '• モバイルのブラウザがリクエストをブロックしている\n\n' +
+        'フォームに手動で入力してください。\n\n詳細: ' + detail
+      );
+    } else {
+      showError('AI抽出エラー:\n\n' + detail + '\n\nフォームに手動で入力してください。');
+    }
   } finally {
     btn.disabled = false;
     icon.textContent = '🔄';
