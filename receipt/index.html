@@ -542,6 +542,9 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.5)}
         <button class="btn btn-secondary" id="fbSyncNowBtn">今すぐ同期</button>
         <button class="btn btn-secondary" id="fbDisconnectBtn2">接続解除</button>
       </div>
+      <button class="btn btn-primary mt-8" id="showQrBtn" style="background:linear-gradient(135deg,#7c3aed,#a855f7);box-shadow:0 6px 20px rgba(168,85,247,0.3)">
+        📲 iPhoneに設定をQRコードで送る
+      </button>
     </div>
   </div>
 
@@ -629,6 +632,24 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.5)}
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
+<!-- QR Code Modal -->
+<div class="modal-overlay" id="qrModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📲 iPhoneで読み取る</div>
+    <p style="font-size:0.8rem;color:var(--text2);margin-bottom:16px;line-height:1.6">
+      iPhoneのカメラでQRコードを読み取ると、Firebase設定が自動で入力されます。
+    </p>
+    <div style="display:flex;justify-content:center;padding:20px;background:#fff;border-radius:16px;margin-bottom:16px">
+      <canvas id="qrCanvas"></canvas>
+    </div>
+    <p style="font-size:0.7rem;color:var(--text2);text-align:center;margin-bottom:16px">
+      設定情報はURLに含まれます。信頼できる場所でのみ使用してください。
+    </p>
+    <button class="btn btn-secondary" id="qrCloseBtn">閉じる</button>
+  </div>
+</div>
+
 <!-- Error Modal -->
 <div class="modal-overlay" id="errorModal">
   <div class="modal">
@@ -642,6 +663,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.5)}
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
@@ -838,6 +860,39 @@ async function deleteFromFirestore(id) {
   try {
     await fbReceiptsRef().doc(id).delete();
   } catch(e) { console.warn('Firestore delete failed:', e); }
+}
+
+function showQRCode() {
+  if (!settings.fbConfig) return;
+  // Encode config into URL hash so iPhone just opens the link
+  const encoded = btoa(unescape(encodeURIComponent(settings.fbConfig)));
+  const url = location.origin + location.pathname + '#setup=' + encoded;
+  const canvas = document.getElementById('qrCanvas');
+  QRCode.toCanvas(canvas, url, {
+    width: 240, margin: 2,
+    color: { dark: '#000000', light: '#ffffff' }
+  }, err => {
+    if (err) { showError('QRコード生成エラー:\n' + err.message); return; }
+    openModal('qrModal');
+  });
+}
+
+function checkSetupHash() {
+  const hash = location.hash;
+  if (!hash.startsWith('#setup=')) return;
+  try {
+    const configStr = decodeURIComponent(escape(atob(hash.slice(7))));
+    // Pre-fill and auto-connect
+    document.getElementById('fbConfigInput').value = configStr;
+    if (initFirebase(configStr)) {
+      showToast('✅ QRコードから設定を読み込みました');
+      showPage('settings');
+    }
+  } catch(e) {
+    showError('QRコードの読み込みに失敗しました:\n' + e.message);
+  } finally {
+    history.replaceState(null, '', location.pathname);
+  }
 }
 
 function disconnectFirebase() {
@@ -1448,6 +1503,7 @@ function compressImage(file, maxSide=1200, quality=0.75) {
 
 document.addEventListener('DOMContentLoaded', () => {
   load();
+  checkSetupHash();
   renderDashboard();
 
   // ── Navigation ──
@@ -1631,6 +1687,13 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('fbSyncNowBtn').addEventListener('click', () => syncFromFirestore());
   document.getElementById('fbDisconnectBtn').addEventListener('click', disconnectFirebase);
   document.getElementById('fbDisconnectBtn2').addEventListener('click', disconnectFirebase);
+
+  // QRモーダル
+  document.getElementById('showQrBtn').addEventListener('click', showQRCode);
+  document.getElementById('qrCloseBtn').addEventListener('click', () => closeModal('qrModal'));
+  document.getElementById('qrModal').addEventListener('click', e => {
+    if (e.target === document.getElementById('qrModal')) closeModal('qrModal');
+  });
 
   // エラーモーダル
   document.getElementById('errorCloseBtn').addEventListener('click', () => closeModal('errorModal'));
