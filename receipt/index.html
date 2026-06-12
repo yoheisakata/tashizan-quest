@@ -629,6 +629,19 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.5)}
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
+<!-- Error Modal -->
+<div class="modal-overlay" id="errorModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" style="color:var(--danger)">⚠️ エラー</div>
+    <div id="errorMsg" style="font-size:0.8rem;color:var(--text2);line-height:1.7;margin-bottom:16px;word-break:break-all;background:var(--surface2);border-radius:10px;padding:12px;font-family:monospace"></div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" id="errorCopyBtn">📋 コピー</button>
+      <button class="btn btn-secondary" id="errorCloseBtn">閉じる</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
@@ -726,10 +739,10 @@ function initFirebase(configStr) {
   } catch(e) {
     console.error('Firebase init error:', e);
     const msg = e.message || String(e);
-    if (msg.includes('JSON')) {
-      showToast('⚠️ 設定の形式が正しくありません。Firebaseコンソールの設定をそのままコピーしてください', 5000);
+    if (msg.includes('JSON') || msg.includes('Unexpected')) {
+      showError('設定JSONのパースに失敗しました。\n\nFirebaseコンソールの「ウェブアプリの設定」に表示されるコードをそのままコピーしてください。\n\n詳細: ' + msg);
     } else {
-      showToast('⚠️ Firebase接続エラー: ' + msg, 4000);
+      showError('Firebase接続エラー:\n\n' + msg);
     }
     return false;
   }
@@ -806,7 +819,7 @@ async function syncFromFirestore() {
   } catch(e) {
     console.warn('Sync error:', e);
     if (statusEl) statusEl.textContent = '同期エラー';
-    showToast('同期エラー: ' + (e.message||'不明'), 3500);
+    showError('同期エラー:\n\n' + (e.message||'不明'));
   }
 }
 
@@ -894,6 +907,11 @@ function today() {
 
 function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+}
+
+function showError(msg) {
+  document.getElementById('errorMsg').textContent = msg;
+  openModal('errorModal');
 }
 
 function showToast(msg, dur=2200) {
@@ -1590,10 +1608,22 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!val) { showToast('設定JSONを入力してください'); return; }
     if (initFirebase(val)) showToast('✅ Firebaseに接続しました');
   });
-  document.getElementById('fbLoginBtn').addEventListener('click', () => {
+  document.getElementById('fbLoginBtn').addEventListener('click', async () => {
     if (!fbAuth) return;
     const provider = new firebase.auth.GoogleAuthProvider();
-    fbAuth.signInWithPopup(provider).catch(e => showToast('ログインエラー: ' + e.message, 3500));
+    try {
+      await fbAuth.signInWithPopup(provider);
+    } catch(e) {
+      // Popup blocked or unsupported → fall back to redirect
+      if (e.code === 'auth/popup-blocked' || e.code === 'auth/popup-cancelled-by-user') {
+        showToast('リダイレクトでログインします...');
+        fbAuth.signInWithRedirect(provider);
+      } else if (e.code === 'auth/unauthorized-domain') {
+        showError('このドメインがFirebaseの許可リストに登録されていません。\n\nFirebaseコンソール → Authentication → Settings → Authorized domains に\n「yoheisakata.github.io」を追加してください。\n\nエラー: ' + e.message);
+      } else {
+        showError('ログインエラー:\n\n' + (e.message || e.code));
+      }
+    }
   });
   document.getElementById('fbLogoutBtn').addEventListener('click', () => {
     if (fbAuth) fbAuth.signOut();
@@ -1602,8 +1632,31 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('fbDisconnectBtn').addEventListener('click', disconnectFirebase);
   document.getElementById('fbDisconnectBtn2').addEventListener('click', disconnectFirebase);
 
+  // エラーモーダル
+  document.getElementById('errorCloseBtn').addEventListener('click', () => closeModal('errorModal'));
+  document.getElementById('errorModal').addEventListener('click', e => {
+    if (e.target === document.getElementById('errorModal')) closeModal('errorModal');
+  });
+  document.getElementById('errorCopyBtn').addEventListener('click', () => {
+    const msg = document.getElementById('errorMsg').textContent;
+    navigator.clipboard.writeText(msg).then(
+      () => showToast('📋 コピーしました'),
+      () => { /* fallback */ document.getElementById('errorMsg').select?.(); }
+    );
+  });
+
   // Firebase自動接続（設定が保存済みの場合）
-  if (settings.fbConfig) initFirebase(settings.fbConfig);
+  if (settings.fbConfig) {
+    initFirebase(settings.fbConfig);
+    // リダイレクトログイン後の結果を受け取る
+    if (fbAuth) {
+      fbAuth.getRedirectResult().then(result => {
+        if (result.user) showToast('✅ Googleログイン完了');
+      }).catch(e => {
+        if (e.code && e.code !== 'auth/no-current-user') showError('リダイレクトログインエラー:\n\n' + e.message);
+      });
+    }
+  }
 });
 </script>
 </body>
