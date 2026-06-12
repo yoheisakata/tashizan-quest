@@ -689,9 +689,20 @@ function fbReceiptsRef() {
   return fbDb.collection('users').doc(fbCurrentUser.uid).collection('receipts');
 }
 
+function parseFirebaseConfig(input) {
+  let s = input.trim();
+  // Strip JS assignment: const firebaseConfig = {...}; or just {...}
+  s = s.replace(/^[\s\S]*?=\s*/, '').replace(/;?\s*$/, '').trim();
+  // If it doesn't start with { something went wrong, try as-is
+  if (!s.startsWith('{')) s = input.trim();
+  // Quote unquoted keys: apiKey: -> "apiKey":
+  s = s.replace(/([{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)(\s*:)/g, '$1"$2"$3');
+  return JSON.parse(s);
+}
+
 function initFirebase(configStr) {
   try {
-    const config = JSON.parse(configStr);
+    const config = parseFirebaseConfig(configStr);
     // Clean up existing app if any
     try { firebase.app('receipt').delete(); } catch(_) {}
     fbApp  = firebase.initializeApp(config, 'receipt');
